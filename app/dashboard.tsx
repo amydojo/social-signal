@@ -78,6 +78,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
   const caveats=insights.filter(i=>i.kind==="caveat");
   const igPosts=posts.filter(p=>p.platform==="instagram");
   const reels=igPosts.filter(p=>p.format==="Reel");
+  const maxInstagramViews=Math.max(1,...igPosts.map(p=>p.views??0));
   const visibleStories=[...stories].sort((a,b)=>(b.impressions??0)-(a.impressions??0));
   const tabs = [
     {id:"overview",label:"Overview",icon:Activity},
@@ -123,7 +124,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
         <div className="two">
           <section className="panel">
             <div className="sectiontop"><span>01 / THIS WEEK, IN ONE READ</span><ArrowUpRight size={17}/></div>
-            <h2>Visibility rose.<br/><em>Response needs work.</em></h2>
+            <h2>Detail held attention.<br/><em>Response is the test.</em></h2>
             <p>The scar Reel led individual Instagram posts on views: 1,309. The consultation Reel drew more interactions—23 versus 17—despite having fewer views.</p>
             <div className="takeaway"><b>Interpretation</b><p>Specific surgical-detail framing is promising for early attention. Don't confuse views with stronger intent or consultations; there is no booking attribution in this export.</p></div>
           </section>
@@ -132,7 +133,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
             <h3>What people actually watched</h3>
             <p className="muted">Views per published item, not unique reach</p>
             <div className="bars">{[...igPosts].sort((a,b)=>(b.views??0)-(a.views??0)).map(p=>
-              <div className="barrow barrow-wide" key={p.id}><span>{p.title}</span><div className="bartrack"><div style={{width:Math.max(0,(p.views??0)/1309*100)+"%"}}/></div><b>{fmt(p.views)}</b></div>
+              <div className="barrow barrow-wide" key={p.id}><span>{p.title}</span><div className="bartrack"><div style={{width:Math.max(0,(p.views??0)/maxInstagramViews*100)+"%"}}/></div><b>{fmt(p.views)}</b></div>
             )}</div>
             <p className="fine">The source reports organic post-level results. Published dates retain Metricool's unconverted timestamps.</p>
           </section>
