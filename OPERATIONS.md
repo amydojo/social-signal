@@ -3,12 +3,12 @@
 ## Deployment
 - GitHub: https://github.com/amydojo/social-signal
 - Vercel project: social-signal (Amy Do's projects)
-- Production alias: https://social-signal-iota.vercel.app
+- Canonical production site: https://social-signal-amy-dos-projects.vercel.app (old iota alias redirects here)
 - Supabase project: social-signal, project ref `ziohpcywjirynydjhgoe` (US West)
 - Current status: authenticated dashboard, one imported Metricool snapshot (2026-11-09 through 2026-11-13). **Not live synced**.
 
 ## Access activation
-1. In Supabase Dashboard > Authentication > URL Configuration, set **Site URL** to `https://social-signal-iota.vercel.app` and add **Redirect URL** `https://social-signal-iota.vercel.app/auth/callback` (and `https://social-signal-iota.vercel.app/auth/confirm` if using token-hash email templates).
+1. In Supabase Dashboard > Authentication > URL Configuration, set **Site URL** to `https://social-signal-amy-dos-projects.vercel.app` and add **Redirect URL** `https://social-signal-amy-dos-projects.vercel.app/auth/callback` (and `https://social-signal-amy-dos-projects.vercel.app/auth/confirm` if using token-hash email templates).
 2. In the deployed app, use the email sign-in link (or create a password-based Supabase Auth user in the Supabase Dashboard and use Password login).
 3. Signing in creates an Auth identity, **not** reporting permission.
 4. To approve an owner after their Auth user exists, execute this in the Supabase SQL Editor (replace the email):
@@ -36,3 +36,10 @@
 
 ## Operating principle
 Keep OPUS's reporting data separate from the product's source code and secret credentials. Preserve capture times, missing data, and historical versions.
+
+## Nov 16 sign-in loop fix
+- Supabase auth logs showed an email magic link redirecting to the configured Site URL root, not to `/auth/callback`. Older middleware discarded the `?code=` on root and sent users back to login.
+- Middleware now accepts a returned `code` at root and forwards it to the callback to exchange for a cookie-backed session.
+- The old iota Vercel alias redirects to the canonical production origin before users request a login email, so PKCE verifier cookies are scoped to the same origin as the returned link.
+- Request and open the magic link in the SAME browser, especially on iPhone. If a mail client opens a different browser, the PKCE cookie may be missing. Link scanners and repeated clicks can consume a one-use magic link.
+- Supabase Auth URL Configuration should ultimately allowlist the exact callback `https://social-signal-amy-dos-projects.vercel.app/auth/callback`, even though the root fallback is handled.
