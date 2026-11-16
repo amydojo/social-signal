@@ -70,7 +70,7 @@ export function PostVisual({post,onOpen,featured=false}:{post:Post;onOpen:(post:
         <div><strong>{fmt(post.views??post.impressions)}</strong><span>{post.views==null?"Impr.":"Views"}</span></div>
         <div><strong>{fmt(post.interactions)}</strong><span>Interactions</span></div>
       </div>
-      {featured&&post.platform==="facebook"&&<span className="visual-caveat">Cover shown from Instagram version</span>}
+      {post.platform==="facebook"&&<span className="visual-caveat">Image from Instagram version</span>}
     </div>
   </article>;
 }
