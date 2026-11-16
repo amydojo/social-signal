@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { PostVisual, StoryVisual, MediaPreviewModal } from "./media-views";
 import {
   BarChart3, Download, ExternalLink, FileText, Grid2X2, Instagram,
   Database, ArrowUpRight, ChevronDown, Eye, Layers, Check, AlertCircle
@@ -133,6 +134,11 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,adsDail
   const [tab,setTab]=useState<Tab>("overview");
   const [platform,setPlatform]=useState<Platform>("instagram");
   const [search,setSearch]=useState("");
+  const [selectedPost,setSelectedPost]=useState<Post|null>(null);
+  const [selectedStory,setSelectedStory]=useState<Story|null>(null);
+  const closeMedia=useCallback(()=>{setSelectedPost(null);setSelectedStory(null)},[]);
+  const openPost=useCallback((p:Post)=>{setSelectedStory(null);setSelectedPost(p)},[]);
+  const openStory=useCallback((s:Story)=>{setSelectedPost(null);setSelectedStory(s)},[]);
   const igPosts=posts.filter(p=>p.platform==="instagram");
   const reels=igPosts.filter(p=>p.format==="Reel");
   const sortedPosts=[...igPosts].sort((a,b)=>(b.views??0)-(a.views??0));
@@ -184,8 +190,8 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,adsDail
         <div className="content-columns">
           <section className="surface rankings">
             <SectionHead title="Top Instagram posts" meta="Views"/>
-            <div className="bar-list">
-              {sortedPosts.map(p=><BarRow key={p.id} label={p.title} value={p.views??0} max={maxViews}/>)}
+            <div className="featured-media">
+              {sortedPosts.map(p=><PostVisual key={p.id} post={p} featured onOpen={openPost}/>)}
             </div>
             <button className="inline-action" type="button" onClick={()=>setTab("posts")}>All posts <ArrowUpRight size={14}/></button>
           </section>
@@ -202,8 +208,8 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,adsDail
         <div className="content-columns">
           <section className="surface">
             <SectionHead title="Most viewed Stories" meta="Impressions"/>
-            <div className="bar-list">
-              {sortedStories.slice(0,3).map(s=><BarRow key={s.id} label={s.descriptor==="(no story text)"?"Story · "+storyDate(s.published_at_raw):s.descriptor} value={s.impressions??0} max={maxStories}/>)}
+            <div className="story-filmstrip">
+              {sortedStories.slice(0,4).map(s=><StoryVisual key={s.id} story={s} compact onOpen={openStory}/>)}
             </div>
             <button className="inline-action" type="button" onClick={()=>setTab("stories")}>All 12 stories <ArrowUpRight size={14}/></button>
           </section>
@@ -224,7 +230,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,adsDail
           </div>
           <label className="search-wrap"><span className="sr-only">Search posts</span><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search posts"/></label>
         </div>
-        <div className="item-list">{shownPosts.map(p=><PostRow key={p.id} post={p}/>)}</div>
+        <div className="media-grid">{shownPosts.map(p=><PostVisual key={p.id} post={p} onOpen={openPost}/>)}</div>
         {shownPosts.length===0&&<div className="empty-state">No matching posts.</div>}
       </section>}
 
@@ -236,7 +242,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,adsDail
         </section>
         <section className="surface">
           <SectionHead title="Stories ranked" meta="By impressions"/>
-          <div className="item-list">{sortedStories.map(s=><StoryRow key={s.id} story={s}/>)}</div>
+          <div className="story-gallery">{sortedStories.map(s=><StoryVisual key={s.id} story={s} onOpen={openStory}/>)}</div>
         </section>
       </>}
 
@@ -285,6 +291,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,adsDail
         </details>
       </>}
 
+      <MediaPreviewModal key={selectedPost?.id??selectedStory?.id??"none"} post={selectedPost} story={selectedStory} onClose={closeMedia}/>
       <footer className="app-footer">
         <span>Source: Metricool · Export Nov 16, 2026</span>
         <span>Read-only public snapshot · Not live</span>
