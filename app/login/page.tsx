@@ -43,7 +43,20 @@ export default function LoginPage() {
         setMessage("Email sent. Open the newest SIGNAL sign-in link in this same browser. Once you are signed in, your session stays remembered.");
       }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Sign-in failed. Please try again.");
+      const detail = error as { code?: string; status?: number; message?: string };
+      const isEmailLimit = method === "magic" &&
+        (detail.code === "over_email_send_rate_limit" ||
+         (detail.status === 429 && /email|rate limit/i.test(detail.message ?? "")));
+      if (isEmailLimit) {
+        // Built-in Supabase SMTP limits email sends project-wide. Don't keep
+        // offering an action which cannot succeed until the quota refills.
+        setMethod("password");
+        setMessage("SIGNAL's email sender has reached its hourly limit. If you previously set a password, you can sign in below without an email. Otherwise, use a fresh email link after the quota resets. No need to keep requesting links.");
+      } else if (method === "password" && detail.code === "invalid_credentials") {
+        setMessage("This password didn't work. If you've never created one for SIGNAL, don't keep guessing: you'll need a new email link when sending is available.");
+      } else {
+        setMessage(error instanceof Error ? error.message : "Sign-in failed. Please try again.");
+      }
     } finally {
       setBusy(false);
     }
