@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { PostVisual, StoryVisual, MediaPreviewModal } from "./media-views";
+import { historicalPosts, historicalStories, historicalDaily } from "./history-data";
 import {
   BarChart3, Download, ExternalLink, FileText, Grid2X2, Instagram,
   Database, ArrowUpRight, ChevronDown, Eye, Layers, Check, AlertCircle
@@ -19,12 +20,14 @@ export type Post = {
   format?:string; views:number|null; impressions?:number|null; reach:number|null;
   likes:number|null; comments:number|null; shares:number|null; saves:number|null;
   interactions:number|null; skip_3s_pct:number|null; avg_watch_seconds:number|null;
-  raw_timestamp?:string;
+  raw_timestamp?:string; thumbnail_path?:string; thumbnail_original_url?:string;
+  metrics_basis?:string; metrics_captured_at?:string;
 };
 export type Story = {
   id:string; published_at_raw:string; descriptor:string; impressions:number|null;
   reach:number|null; replies:number|null; exits:number|null; back_taps:number|null;
-  forward_taps:number|null; permalink:string;
+  forward_taps:number|null; permalink:string; thumbnail_path?:string|null;
+  thumbnail_original_url?:string|null;
 };
 export type Coverage = {
   channel:string; account:string; status:string; data:string; limitation:string;
@@ -48,7 +51,7 @@ type Props = {
   coverage:Coverage[]; socialDaily:DailySocial[]; adsDaily:AdsDay[];
   insights:Insight[]; experiments:Experiment[];
 };
-type Tab = "overview"|"posts"|"stories"|"sources";
+type Tab = "overview"|"posts"|"stories"|"archive"|"sources";
 type Platform = "instagram"|"facebook"|"all";
 
 const num = (n:number|null|undefined) => n==null ? "—" : n.toLocaleString("en-US");
@@ -130,10 +133,12 @@ function ExportActions({posts}:{posts:Post[]}) {
   </div>;
 }
 
-export default function SignalDashboard({snapshot,posts,stories,coverage,adsDaily,insights,experiments}:Props) {
+export default function SignalDashboard({snapshot,posts,stories,coverage,socialDaily,adsDaily,insights,experiments}:Props) {
   const [tab,setTab]=useState<Tab>("overview");
   const [platform,setPlatform]=useState<Platform>("instagram");
   const [search,setSearch]=useState("");
+  const [archiveMonth,setArchiveMonth]=useState<"all"|"2026-09"|"2026-10"|"2026-11">("all");
+  const [archiveSearch,setArchiveSearch]=useState("");
   const [selectedPost,setSelectedPost]=useState<Post|null>(null);
   const [selectedStory,setSelectedStory]=useState<Story|null>(null);
   const closeMedia=useCallback(()=>{setSelectedPost(null);setSelectedStory(null)},[]);
@@ -149,10 +154,28 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,adsDail
   const visualStories=sortedStories.filter(s=>archivedStoryIds.has(s.id));
   const storyWithoutCover=sortedStories.filter(s=>!archivedStoryIds.has(s.id));
   const shownPosts=useMemo(()=>posts.filter(p=>(platform==="all"||p.platform===platform)&&p.title.toLowerCase().includes(search.toLowerCase())),[posts,platform,search]);
+  const allInstagramPosts=[...historicalPosts,...igPosts].sort((a,b)=>b.published_on.localeCompare(a.published_on));
+  const archivePosts=allInstagramPosts.filter(p=>(archiveMonth==="all"||p.published_on.startsWith(archiveMonth))&&p.title.toLowerCase().includes(archiveSearch.toLowerCase()));
+  const historyVisualStories=historicalStories.filter(s=>Boolean(s.thumbnail_path));
+  const weeklyHistory=useMemo(()=>{
+    const viewDays=[...historicalDaily,...socialDaily]
+      .filter(d=>d.account_views!=null&&(!archiveMonth||archiveMonth==="all"||d.date.startsWith(archiveMonth)));
+    const groups=new Map<string,{start:string,views:number,days:number}>();
+    for(const d of viewDays){
+      const x=new Date(d.date+"T12:00:00Z");
+      x.setUTCDate(x.getUTCDate()-(x.getUTCDay()+6)%7);
+      const k=x.toISOString().slice(0,10);
+      const v=groups.get(k)??{start:k,views:0,days:0};
+      v.views+=d.account_views??0;v.days+=1;groups.set(k,v);
+    }
+    return [...groups.values()].sort((a,b)=>a.start.localeCompare(b.start));
+  },[archiveMonth,socialDaily]);
+  const maxHistoryViews=Math.max(1,...weeklyHistory.map(w=>w.views));
   const tabs = [
     {id:"overview" as Tab,name:"Overview",icon:Grid2X2},
     {id:"posts" as Tab,name:"Posts",icon:Layers},
     {id:"stories" as Tab,name:"Stories",icon:Instagram},
+    {id:"archive" as Tab,name:"Archive",icon:BarChart3},
     {id:"sources" as Tab,name:"Data & ads",icon:Database}
   ];
   const findings=insights.filter(i=>i.kind==="finding");
@@ -179,8 +202,8 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,adsDail
       <header className="app-header">
         <div className="heading-wrap">
           <div className="eyeline">OPUS PLASTIC SURGERY <span>/</span> WEEKLY REPORT</div>
-          <h1>{tab==="overview"?"Overview":tab==="posts"?"Posts":tab==="stories"?"Stories":"Data & ads"}</h1>
-          <div className="header-sub">{date(snapshot.week_start)}–{date(snapshot.week_end)}, 2026 <span>·</span> Metricool export, Nov 16</div>
+          <h1>{tab==="overview"?"Overview":tab==="posts"?"Posts":tab==="stories"?"Stories":tab==="archive"?"Archive":"Data & ads"}</h1>
+          <div className="header-sub">{tab==="archive"?"Sep–Nov 2026":date(snapshot.week_start)+"–"+date(snapshot.week_end)+", 2026"} <span>·</span> Metricool export, Nov 16</div>
         </div>
         <ExportActions posts={posts}/>
       </header>
@@ -254,6 +277,41 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,adsDail
             <div className="item-list">{storyWithoutCover.map(s=><StoryRow key={s.id} story={s}/>)}</div>
           </details>}
         </section>
+      </>}
+
+      {tab==="archive"&&<>
+        <section className="stats-grid stats-grid-three">
+          <Stat label="Instagram posts" value={num(allInstagramPosts.length)} note="Since Sep 2 · 2 sources merged"/>
+          <Stat label="Historical view days" value={num(historicalDaily.filter(d=>d.account_views!=null).length)} note="Before Nov 9"/>
+          <Stat label="Older Story previews" value={num(historyVisualStories.length)} note="Original source images"/>
+        </section>
+        <section className="surface archive-controls">
+          <div className="section-head"><h2>Published content</h2><span>Images from Metricool</span></div>
+          <div className="filter-line">
+            <div className="segmented archive-months">
+              {([["all","All"],["2026-09","Sep"],["2026-10","Oct"],["2026-11","Nov"]] as const).map(([v,label])=><button type="button" key={v} aria-pressed={archiveMonth===v} onClick={()=>setArchiveMonth(v)}>{label}</button>)}
+            </div>
+            <label className="search-wrap"><span className="sr-only">Search historical content</span><input value={archiveSearch} onChange={e=>setArchiveSearch(e.target.value)} placeholder="Search content"/></label>
+          </div>
+          <div className="archive-info"><span>{archivePosts.length} posts</span><span>Views shown are cumulative as of Nov 16—not views earned during the posting week</span></div>
+          <div className="media-grid">{archivePosts.map(p=><PostVisual key={p.id} post={p} onOpen={openPost}/>)}</div>
+          {archivePosts.length===0&&<p className="small-note">No posts for that filter.</p>}
+        </section>
+        <section className="surface archive-trends">
+          <SectionHead title="Account views over time" meta="Recorded daily views · grouped by week"/>
+          <p className="small-note">These are day-level account views, not post lifetime views. Incomplete weeks are labeled.</p>
+          <div className="bar-list history-bar-list">
+            {weeklyHistory.map(w=><div className="history-bar" key={w.start}>
+              <BarRow label={date(w.start)} value={w.views} max={maxHistoryViews}/>
+              <span>{w.days}/7 days</span>
+            </div>)}
+          </div>
+        </section>
+        {historyVisualStories.length>0&&<section className="surface archive-stories">
+          <SectionHead title="Early Stories" meta="Saved previews"/>
+          <div className="story-filmstrip">{historyVisualStories.map(s=><StoryVisual key={s.id} story={s} onOpen={openStory} compact/>)}</div>
+          <p className="small-note">Three other early Story records have no recoverable image or original link. Their metrics remain stored.</p>
+        </section>}
       </>}
 
       {tab==="sources" && <>
