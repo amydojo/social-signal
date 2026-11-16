@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PostVisual, StoryVisual, MediaPreviewModal } from "./media-views";
 import { historicalPosts, historicalStories, historicalDaily } from "./history-data";
 import archiveIndex from "../public/media/archive/index.json";
 import {
   BarChart3, Download, ExternalLink, FileText, Grid2X2, Instagram,
-  Database, ArrowUpRight, ChevronDown, Eye, Layers, Check, AlertCircle
+  Database, ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, Eye, Layers, Check, AlertCircle, PanelLeftClose, PanelLeftOpen, Menu, CalendarDays
 } from "lucide-react";
 
 export type Snapshot = {
@@ -59,6 +59,16 @@ const num = (n:number|null|undefined) => n==null ? "—" : n.toLocaleString("en-
 const date = (s:string) => new Date(s+"T12:00:00Z").toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
 const storyDate = (s:string) => s.length>=8 ? date(s.slice(0,4)+"-"+s.slice(4,6)+"-"+s.slice(6,8)) : "—";
 const money = (n:number|null) => n==null ? "—" : "$"+n.toFixed(2);
+const weekOf = (day:string) => {
+  const d=new Date(day.slice(0,10)+"T12:00:00Z");
+  d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);
+  return d.toISOString().slice(0,10);
+};
+const endOfWeek=(start:string)=>{
+  const d=new Date(start+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+6);
+  return d.toISOString().slice(0,10);
+};
+const weekFromStory=(s:Story)=>weekOf(s.published_at_raw.slice(0,4)+"-"+s.published_at_raw.slice(4,6)+"-"+s.published_at_raw.slice(6,8));
 const csv = (rows:(string|number|null|undefined)[][]) =>
   rows.map(row=>row.map(value=>'"'+String(value??"").replaceAll('"','""')+'"').join(",")).join("\r\n");
 
@@ -118,14 +128,14 @@ function StoryRow({story}:{story:Story}) {
     </div>
   </div>;
 }
-function ExportActions({posts}:{posts:Post[]}) {
+function ExportActions({posts,period}:{posts:Post[];period:string}) {
   function exportPosts() {
     const head=["Date","Platform","Format","Title","URL","Views","Impressions","Reach","Interactions","Likes","Comments","Shares","Saves","3s skip %","Avg watch seconds"];
     const rows=posts.map(p=>[p.raw_timestamp??p.published_on,p.platform,p.format,p.title,p.permalink,p.views,p.impressions,p.reach,p.interactions,p.likes,p.comments,p.shares,p.saves,p.skip_3s_pct,p.avg_watch_seconds]);
     const blob=new Blob([csv([head,...rows])],{type:"text/csv;charset=utf-8"});
     const url=URL.createObjectURL(blob);
     const anchor=document.createElement("a");
-    anchor.href=url;anchor.download="SIGNAL_OPUS_Nov_09-15_2026.csv";anchor.click();
+    anchor.href=url;anchor.download="SIGNAL_OPUS_"+period+".csv";anchor.click();
     URL.revokeObjectURL(url);
   }
   return <div className="export-actions">
@@ -136,31 +146,84 @@ function ExportActions({posts}:{posts:Post[]}) {
 
 export default function SignalDashboard({snapshot,posts,stories,coverage,socialDaily,adsDaily,insights,experiments}:Props) {
   const [tab,setTab]=useState<Tab>("overview");
+  const [navCollapsed,setNavCollapsed]=useState(false);
+  const [mobileNavOpen,setMobileNavOpen]=useState(false);
+  const [selectedWeek,setSelectedWeek]=useState<string>(snapshot.week_start);
   const [platform,setPlatform]=useState<Platform>("instagram");
   const [search,setSearch]=useState("");
   const [archiveMonth,setArchiveMonth]=useState<"all"|"2026-09"|"2026-10"|"2026-11">("all");
   const [archiveSearch,setArchiveSearch]=useState("");
   const [selectedPost,setSelectedPost]=useState<Post|null>(null);
   const [selectedStory,setSelectedStory]=useState<Story|null>(null);
+  const setView=(next:Tab)=>{setTab(next);setMobileNavOpen(false);};
+  const changeWeek=(next:string)=>{
+    setSelectedWeek(next);
+    const url=new URL(window.location.href);
+    if(next===snapshot.week_start)url.searchParams.delete("week");
+    else url.searchParams.set("week",next);
+    window.history.replaceState(null,"",url.pathname+url.search+url.hash);
+  };
+  useEffect(()=>{
+    try{setNavCollapsed(window.localStorage.getItem("signal-nav-collapsed")==="yes")}catch{}
+  },[]);
+  const toggleNav=()=>{
+    setNavCollapsed(prev=>{
+      const next=!prev;
+      try{window.localStorage.setItem("signal-nav-collapsed",next?"yes":"no")}catch{}
+      return next;
+    });
+  };
   const closeMedia=useCallback(()=>{setSelectedPost(null);setSelectedStory(null)},[]);
   const openPost=useCallback((p:Post)=>{setSelectedStory(null);setSelectedPost(p)},[]);
   const openStory=useCallback((s:Story)=>{setSelectedPost(null);setSelectedStory(s)},[]);
-  const igPosts=posts.filter(p=>p.platform==="instagram");
-  const reels=igPosts.filter(p=>p.format==="Reel");
-  const sortedPosts=[...igPosts].sort((a,b)=>(b.views??0)-(a.views??0));
-  const sortedStories=[...stories].sort((a,b)=>(b.impressions??0)-(a.impressions??0));
-  // Archived source-image URLs verified from the November 16 build.
-  // Older story objects are retained as metric records, not fabricated covers.
-  const archivedStoryIds=new Set(["story-07","story-08","story-09","story-10","story-11","story-12"]);
-  const visualStories=sortedStories.filter(s=>archivedStoryIds.has(s.id));
-  const storyWithoutCover=sortedStories.filter(s=>!archivedStoryIds.has(s.id));
-  const shownPosts=useMemo(()=>posts.filter(p=>(platform==="all"||p.platform===platform)&&p.title.toLowerCase().includes(search.toLowerCase())),[posts,platform,search]);
-  const allInstagramPosts=[...historicalPosts,...igPosts].sort((a,b)=>b.published_on.localeCompare(a.published_on));
-  const archivePosts=allInstagramPosts.filter(p=>(archiveMonth==="all"||p.published_on.startsWith(archiveMonth))&&p.title.toLowerCase().includes(archiveSearch.toLowerCase()));
+  const allPosts:Post[]=[...historicalPosts,...posts];
+  const allStories:Story[]=[...historicalStories,...stories];
+  const allDaily=[...historicalDaily,...socialDaily];
+  const availableWeeks=[...new Set([
+    snapshot.week_start,
+    ...allDaily.map(d=>weekOf(d.date)),
+    ...allPosts.map(p=>weekOf(p.published_on)),
+    ...allStories.map(weekFromStory),
+  ])].sort();
+  useEffect(()=>{
+    const query=new URLSearchParams(window.location.search).get("week");
+    if(query&&availableWeeks.includes(query))setSelectedWeek(query);
+  // Only read the browser's deep link on mount; subsequent changes use local state.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
+  const latestWeek=selectedWeek===snapshot.week_start;
+  const periodPosts=allPosts.filter(p=>weekOf(p.published_on)===selectedWeek);
+  const periodStories=allStories.filter(story=>weekFromStory(story)===selectedWeek);
+  const periodDaily=allDaily.filter(d=>weekOf(d.date)===selectedWeek);
+  const reportedViewDays=periodDaily.filter(d=>d.account_views!=null);
+  const periodAccountViews=reportedViewDays.length
+    ?reportedViewDays.reduce((n,d)=>n+(d.account_views??0),0):null;
+  const periodIgPosts=periodPosts.filter(p=>p.platform==="instagram");
+  const reels=periodIgPosts.filter(p=>p.format==="Reel"&&p.skip_3s_pct!=null);
+  const sortedPosts=[...periodIgPosts].sort((a,b)=>(b.views??0)-(a.views??0));
+  const sortedStories=[...periodStories].sort((a,b)=>(b.impressions??0)-(a.impressions??0));
+  const periodStoryImpressions=latestWeek?snapshot.story_impressions:
+    periodStories.some(s=>s.impressions!=null)?
+      periodStories.reduce((n,s)=>n+(s.impressions??0),0):
+    periodDaily.some(d=>("story_impressions" in d)&&d.story_impressions!=null)?
+      periodDaily.reduce((n,d)=>n+("story_impressions" in d?(d.story_impressions??0):0),0):null;
+  const periodStoryReplies=latestWeek?snapshot.story_replies:
+    periodStories.some(s=>s.replies!=null)?
+      periodStories.reduce((n,s)=>n+(s.replies??0),0):null;
   const savedHistoricalFiles=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
+  const storyHasCover=(story:Story)=>{
+    const id=story.permalink.match(/\\/stories\\/[^/]+\\/(\\d+)/)?.[1];
+    const path=story.thumbnail_path||(id?"/media/archive/story-"+id+".jpg":"");
+    return !!path&&savedHistoricalFiles.has(path);
+  };
+  const visualStories=sortedStories.filter(storyHasCover);
+  const storyWithoutCover=sortedStories.filter(s=>!storyHasCover(s));
+  const shownPosts=periodPosts.filter(p=>(platform==="all"||p.platform===platform)&&p.title.toLowerCase().includes(search.toLowerCase()));
+  const allInstagramPosts=[...historicalPosts,...posts.filter(p=>p.platform==="instagram")].sort((a,b)=>b.published_on.localeCompare(a.published_on));
+  const archivePosts=allInstagramPosts.filter(p=>(archiveMonth==="all"||p.published_on.startsWith(archiveMonth))&&p.title.toLowerCase().includes(archiveSearch.toLowerCase()));
   const historyVisualStories=historicalStories.filter(s=>Boolean(s.thumbnail_path)&&savedHistoricalFiles.has(s.thumbnail_path!));
   const weeklyHistory=useMemo(()=>{
-    const viewDays=[...historicalDaily,...socialDaily]
+    const viewDays=allDaily
       .filter(d=>d.account_views!=null&&(!archiveMonth||archiveMonth==="all"||d.date.startsWith(archiveMonth)));
     const groups=new Map<string,{start:string,views:number,days:number}>();
     for(const d of viewDays){
@@ -171,7 +234,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
       v.views+=d.account_views??0;v.days+=1;groups.set(k,v);
     }
     return [...groups.values()].sort((a,b)=>a.start.localeCompare(b.start));
-  },[archiveMonth,socialDaily]);
+  },[archiveMonth,allDaily]);
   const maxHistoryViews=Math.max(1,...weeklyHistory.map(w=>w.views));
   const tabs = [
     {id:"overview" as Tab,name:"Overview",icon:Grid2X2},
@@ -186,8 +249,10 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
   const metaDays=adsDaily.filter(d=>d.meta_spend!==null);
   const googleDays=adsDaily.filter(d=>d.google_spend!==null);
   const metaTotal=metaDays.reduce((n,d)=>n+(d.meta_spend??0),0);
-  const firstReel=reels.find(p=>p.id==="ig-reel-scar");
-  const secondReel=reels.find(p=>p.id==="ig-reel-keep");
+  const selectedIndex=availableWeeks.indexOf(selectedWeek);
+  const strongestPost=sortedPosts[0]??null;
+  const mostInteractive=[...periodIgPosts].sort((a,b)=>(b.interactions??0)-(a.interactions??0))[0]??null;
+  const bestStory=sortedStories[0]??null;
   const maxViews=Math.max(1,...sortedPosts.map(p=>p.views??0));
   const maxStories=Math.max(1,...sortedStories.map(s=>s.impressions??0));
 
