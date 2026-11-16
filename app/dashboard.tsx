@@ -295,7 +295,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
           <div className="week-picker" role="group" aria-label="Choose reporting week">
             <button type="button" aria-label="Previous available week"
               disabled={selectedIndex<=0}
-              onClick={()=>changeWeek(availableWeeks[Math.max(0,selectedIndex-1)])}>
+              onClick={()=>{changeWeek(availableWeeks[Math.max(0,selectedIndex-1)]);if(tab==="archive")setView("overview")}}>
               <ChevronLeft size={17}/>
             </button>
             <label className="week-select-label" htmlFor="reporting-week">
@@ -309,7 +309,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
             </label>
             <button type="button" aria-label="Next available week"
               disabled={selectedIndex>=availableWeeks.length-1}
-              onClick={()=>changeWeek(availableWeeks[Math.min(availableWeeks.length-1,selectedIndex+1)])}>
+              onClick={()=>{changeWeek(availableWeeks[Math.min(availableWeeks.length-1,selectedIndex+1)]);if(tab==="archive")setView("overview")}}>
               <ChevronRight size={17}/>
             </button>
           </div>
@@ -440,7 +440,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
         </section>}
       </>}
 
-      {tab==="sources" && <>
+      {tab==="sources" && (latestWeek ? <>
         <div className="content-columns">
           <section className="surface ad-card">
             <SectionHead title="Meta Ads"/>
@@ -483,7 +483,11 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
           <p className="small-note">{snapshot.coverage_notes}</p>
           <p className="small-note">— means no data returned, not zero. Story impressions count repeat exposure. Views and interactions do not measure consultations. This is a saved export, not live sync.</p>
         </details>
-      </>}
+      </> : <section className="surface period-unavailable">
+        <SectionHead title="Paid data" meta={date(selectedWeek)+" – "+date(endOfWeek(selectedWeek))}/>
+        <p>Metricool advertising data wasn't included in the earlier backfill. Choose Nov 9–15 to view the available ad records.</p>
+        <button type="button" className="inline-action" onClick={()=>changeWeek(snapshot.week_start)}>View latest ad data <ArrowUpRight size={14}/></button>
+      </section>)}
 
       <MediaPreviewModal key={selectedPost?.id??selectedStory?.id??"none"} post={selectedPost} story={selectedStory} onClose={closeMedia}/>
       <footer className="app-footer">
