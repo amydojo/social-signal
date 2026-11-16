@@ -212,7 +212,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
       periodStories.reduce((n,s)=>n+(s.replies??0),0):null;
   const savedHistoricalFiles=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
   const storyHasCover=(story:Story)=>{
-    const id=story.permalink.match(/\\/stories\\/[^/]+\\/(\\d+)/)?.[1];
+    const id=story.permalink?.split("/stories/")[1]?.split("/")[1];
     const path=story.thumbnail_path||(id?"/media/archive/story-"+id+".jpg":"");
     return !!path&&savedHistoricalFiles.has(path);
   };
@@ -256,63 +256,119 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
   const maxViews=Math.max(1,...sortedPosts.map(p=>p.views??0));
   const maxStories=Math.max(1,...sortedStories.map(s=>s.impressions??0));
 
-  return <div className="app-shell">
+  return <div className={"app-shell"+(navCollapsed?" nav-collapsed":"")+(mobileNavOpen?" nav-mobile-open":"")}>
     <aside className="app-sidebar">
-      <div className="logo"><span className="logo-symbol">S<span>.</span></span><span className="logo-word">SIGNAL<small>OPUS / SOCIAL</small></span></div>
-      <nav aria-label="Dashboard views" className="app-nav">
-        {tabs.map(t=><button type="button" key={t.id} onClick={()=>setTab(t.id)} aria-pressed={tab===t.id} className={tab===t.id?"active":""}><t.icon size={17}/>{t.name}</button>)}
+      <div className="sidebar-top">
+        <div className="logo"><span className="logo-symbol">S<span>.</span></span><span className="logo-word">SIGNAL<small>OPUS / SOCIAL</small></span></div>
+        <span className="mobile-current-view">{tabs.find(t=>t.id===tab)?.name}</span>
+        <button type="button" className="sidebar-toggle" onClick={toggleNav}
+          title={navCollapsed?"Expand sidebar":"Collapse sidebar"}
+          aria-label={navCollapsed?"Expand sidebar":"Collapse sidebar"}>
+          {navCollapsed?<PanelLeftOpen size={18}/>:<PanelLeftClose size={18}/>}
+        </button>
+        <button type="button" className="mobile-nav-toggle"
+          onClick={()=>setMobileNavOpen(v=>!v)} aria-expanded={mobileNavOpen}
+          aria-controls="signal-main-nav" aria-label={mobileNavOpen?"Close navigation":"Open navigation"}>
+          {mobileNavOpen?<ChevronDown size={21}/>:<Menu size={21}/>}
+        </button>
+      </div>
+      <nav id="signal-main-nav" aria-label="Dashboard views" className="app-nav">
+        {tabs.map(t=><button type="button" key={t.id} title={t.name}
+          onClick={()=>setView(t.id)} aria-pressed={tab===t.id} className={tab===t.id?"active":""}>
+          <t.icon size={17}/><span className="nav-label">{t.name}</span>
+        </button>)}
       </nav>
-      <div className="sidebar-foot"><span className="status-dot"/> Read-only snapshot</div>
+      <div className="sidebar-foot"><span className="status-dot"/><span className="sidebar-foot-label">Read-only snapshot</span></div>
     </aside>
 
     <main className="app-main">
       <header className="app-header">
         <div className="heading-wrap">
-          <div className="eyeline">OPUS PLASTIC SURGERY <span>/</span> WEEKLY REPORT</div>
-          <h1>{tab==="overview"?"Overview":tab==="posts"?"Posts":tab==="stories"?"Stories":tab==="archive"?"Archive":"Data & ads"}</h1>
-          <div className="header-sub">{tab==="archive"?"Sep–Nov 2026":date(snapshot.week_start)+"–"+date(snapshot.week_end)+", 2026"} <span>·</span> Metricool export, Nov 16</div>
+          <div className="eyeline">OPUS PLASTIC SURGERY <span>/</span> SIGNAL</div>
+          <h1>{tabs.find(t=>t.id===tab)?.name}</h1>
+          <div className="header-sub">
+            {tab==="archive"?"Sep–Nov 2026":date(selectedWeek)+"–"+date(endOfWeek(selectedWeek))+", 2026"}
+            <span>·</span> Metricool export, Nov 16
+          </div>
         </div>
-        <ExportActions posts={posts}/>
+        <div className="app-header-actions">
+          <div className="week-picker" role="group" aria-label="Choose reporting week">
+            <button type="button" aria-label="Previous available week"
+              disabled={selectedIndex<=0}
+              onClick={()=>changeWeek(availableWeeks[Math.max(0,selectedIndex-1)])}>
+              <ChevronLeft size={17}/>
+            </button>
+            <label className="week-select-label" htmlFor="reporting-week">
+              <CalendarDays size={15}/>
+              <select id="reporting-week" value={selectedWeek}
+                onChange={e=>{changeWeek(e.target.value);if(tab==="archive")setView("overview")}}>
+                {availableWeeks.map(w=><option key={w} value={w}>
+                  {date(w)} – {date(endOfWeek(w))}
+                </option>)}
+              </select>
+            </label>
+            <button type="button" aria-label="Next available week"
+              disabled={selectedIndex>=availableWeeks.length-1}
+              onClick={()=>changeWeek(availableWeeks[Math.min(availableWeeks.length-1,selectedIndex+1)])}>
+              <ChevronRight size={17}/>
+            </button>
+          </div>
+          <ExportActions posts={tab==="archive"?archivePosts:periodPosts}
+            period={tab==="archive"?archiveMonth:selectedWeek}/>
+        </div>
       </header>
+      {!latestWeek&&tab!=="archive"&&<p className="period-note">
+        Older post counts are cumulative as of Nov 16. Account views are counted only on reporting days.
+      </p>}
 
       {tab==="overview" && <>
         <section className="stats-grid" aria-label="Weekly Instagram statistics">
-          <Stat label="Feed views" value={num(snapshot.feed_views)} note="3 posts"/>
-          <Stat label="Interactions" value={num(snapshot.feed_interactions)} note="Instagram feed"/>
-          <Stat label="Story impressions" value={num(snapshot.story_impressions)} note="12 stories"/>
-          <Stat label="Story replies" value={num(snapshot.story_replies)} note="Across 12 stories"/>
+          {latestWeek ? <>
+            <Stat label="Feed views" value={num(snapshot.feed_views)} note={periodIgPosts.length+" posts · lifetime views at export"}/>
+            <Stat label="Interactions" value={num(snapshot.feed_interactions)} note="Instagram feed"/>
+            <Stat label="Story impressions" value={num(snapshot.story_impressions)} note={periodStories.length+" Stories"}/>
+            <Stat label="Story replies" value={num(snapshot.story_replies)} note="Across published Stories"/>
+          </> : <>
+            <Stat label="Account views" value={num(periodAccountViews)} note={reportedViewDays.length+"/7 days recorded"}/>
+            <Stat label="Feed posts" value={num(periodIgPosts.length)} note="Published this week"/>
+            <Stat label="Story impressions" value={num(periodStoryImpressions)} note="From available records"/>
+            <Stat label="Story replies" value={num(periodStoryReplies)} note="Not reported = —"/>
+          </>}
         </section>
         <div className="content-columns">
           <section className="surface rankings">
-            <SectionHead title="Top Instagram posts" meta="Views"/>
-            <div className="featured-media">
-              {sortedPosts.map(p=><PostVisual key={p.id} post={p} featured onOpen={openPost}/>)}
-            </div>
-            <button className="inline-action" type="button" onClick={()=>setTab("posts")}>All posts <ArrowUpRight size={14}/></button>
+            <SectionHead title="Posts published" meta={latestWeek?"Views at export":"Lifetime views · Nov 16"}/>
+            {sortedPosts.length ? <div className="featured-media">
+              {sortedPosts.slice(0,4).map(p=><PostVisual key={p.id} post={p} featured onOpen={openPost}/>)}
+            </div> : <p className="empty-state">No Instagram feed posts recorded this week.</p>}
+            <button className="inline-action" type="button" onClick={()=>setView("posts")}>All posts <ArrowUpRight size={14}/></button>
           </section>
           <section className="surface compact-findings">
             <SectionHead title="Reel retention" meta="3-second skip"/>
-            {firstReel&&secondReel&&<div className="retention-comparison">
-              <div className="retention-stat"><span>Scar</span><strong>{firstReel.skip_3s_pct?.toFixed(1)}%</strong></div>
-              <div className="versus">vs</div>
-              <div className="retention-stat"><span>Consultation</span><strong>{secondReel.skip_3s_pct?.toFixed(1)}%</strong></div>
-            </div>}
-            <p className="small-note">Lower skip is better. Two Reels, not a controlled test.</p>
+            {reels.length ? <div className="retention-list">
+              {reels.slice(0,4).map(p=><div key={p.id} className="retention-list-item">
+                <span>{p.title}</span><strong>{p.skip_3s_pct?.toFixed(1)}%</strong>
+              </div>)}
+            </div> : <p className="empty-state">No Reel retention data for this week.</p>}
+            <p className="small-note">Lower skip is better. Not a controlled comparison.</p>
           </section>
         </div>
         <div className="content-columns">
           <section className="surface">
-            <SectionHead title="Story previews" meta="From saved posts"/>
-            <div className="story-filmstrip">
+            <SectionHead title="Story previews" meta={visualStories.length+" saved covers"}/>
+            {visualStories.length ? <div className="story-filmstrip">
               {visualStories.slice(0,4).map(s=><StoryVisual key={s.id} story={s} compact onOpen={openStory}/>)}
-            </div>
-            <button className="inline-action" type="button" onClick={()=>setTab("stories")}>All 12 stories <ArrowUpRight size={14}/></button>
+            </div> : <p className="empty-state">No saved Story covers for this week.</p>}
+            <button className="inline-action" type="button" onClick={()=>setView("stories")}>Story details <ArrowUpRight size={14}/></button>
           </section>
           <section className="surface facts-panel">
-            <SectionHead title="This week"/>
-            <div className="fact"><strong>1,309</strong><span>Views on the scar Reel (highest)</span></div>
-            <div className="fact"><strong>23</strong><span>Interactions on the consultation Reel (highest)</span></div>
-            <div className="fact"><strong>603</strong><span>Birthday Story impressions (highest)</span></div>
+            <SectionHead title="At a glance"/>
+            <div className="fact"><strong>{num(strongestPost?.views)}</strong>
+              <span>Most viewed published post (lifetime)</span></div>
+            <div className="fact"><strong>{num(mostInteractive?.interactions)}</strong>
+              <span>Highest post interactions (lifetime)</span></div>
+            <div className="fact"><strong>{num(bestStory?.impressions)}</strong>
+              <span>Most impressions on one recorded Story</span></div>
           </section>
         </div>
       </>}
@@ -326,23 +382,26 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
           <label className="search-wrap"><span className="sr-only">Search posts</span><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search posts"/></label>
         </div>
         <div className="media-grid">{shownPosts.map(p=><PostVisual key={p.id} post={p} onOpen={openPost}/>)}</div>
-        {shownPosts.length===0&&<div className="empty-state">No matching posts.</div>}
+        {shownPosts.length===0&&<div className="empty-state">No posts for this week or filter.</div>}
       </section>}
 
       {tab==="stories" && <>
         <section className="stats-grid stats-grid-three">
-          <Stat label="Stories" value={num(stories.length)}/>
-          <Stat label="Impressions" value={num(snapshot.story_impressions)}/>
-          <Stat label="Replies" value={num(snapshot.story_replies)}/>
+          <Stat label="Stories logged" value={num(periodStories.length)}/>
+          <Stat label="Impressions" value={num(periodStoryImpressions)}/>
+          <Stat label="Replies" value={num(periodStoryReplies)}/>
         </section>
         <section className="surface">
-          <SectionHead title="Story gallery" meta={visualStories.length+" available previews"}/>
-          <div className="story-gallery">{visualStories.map(s=><StoryVisual key={s.id} story={s} onOpen={openStory}/>)}</div>
+          <SectionHead title="Story gallery" meta={visualStories.length+" saved covers"}/>
+          {visualStories.length>0&&<div className="story-gallery">
+            {visualStories.map(s=><StoryVisual key={s.id} story={s} onOpen={openStory}/>)}
+          </div>}
           {storyWithoutCover.length>0&&<details className="missing-stories">
-            <summary>{storyWithoutCover.length} older Stories · metrics only <ChevronDown size={15}/></summary>
-            <p className="small-note">The original images expired. Their Metricool results are still included.</p>
+            <summary>{storyWithoutCover.length} Stories · metrics only <ChevronDown size={15}/></summary>
+            <p className="small-note">Their original images are unavailable; performance records remain intact.</p>
             <div className="item-list">{storyWithoutCover.map(s=><StoryRow key={s.id} story={s}/>)}</div>
           </details>}
+          {periodStories.length===0&&<p className="empty-state">No Story records for this week.</p>}
         </section>
       </>}
 
