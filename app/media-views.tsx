@@ -12,6 +12,7 @@ const postCode=(post:Post)=>post.permalink.match(/instagram\.com\/(?:reel|p)\/([
 const storyId=(story:Story)=>story.permalink.match(/\/stories\/[^/]+\/(\d+)/)?.[1]??"";
 
 function getPostCover(post:Post){
+  if(post.thumbnail_original_url)return post.thumbnail_original_url;
   const code=postCode(post);
   if(code&&postCoverUrls[code]) return postCoverUrls[code];
   // These are the same named creative concepts cross-posted on Facebook.
@@ -20,38 +21,33 @@ function getPostCover(post:Post){
   if(post.platform==="facebook"&&post.id==="fb-carousel-bulge") return postCoverUrls["DftDagtkR6i"]??"";
   return "";
 }
-function getStoryCover(story:Story){return storyCoverUrls[storyId(story)]??""}
+function getStoryCover(story:Story){return story.thumbnail_original_url??storyCoverUrls[storyId(story)]??""}
 function localPostCover(post:Post) {
+  if(post.thumbnail_path)return post.thumbnail_path;
   const code=postCode(post) || (post.id==="fb-reel-scar"?"DfqeQMZMKqR":post.id==="fb-carousel-bulge"?"DftDagtkR6i":"");
   return code?"/media/p-"+encodeURIComponent(code):"";
 }
 function localStoryCover(story:Story) {
+  if(story.thumbnail_path)return story.thumbnail_path;
   const id=storyId(story);
   return id?"/media/s-"+encodeURIComponent(id):"";
 }
 
-function Cover({src,localSrc,alt,mode,loading="lazy"}:{src:string;localSrc?:string;alt:string;mode:"reel"|"carousel"|"story";loading?:"lazy"|"eager"}) {
-  const initial=localSrc||src;
-  const [current,setCurrent]=useState(initial);
-  const [failed,setFailed]=useState(!initial);
-  useEffect(()=>{setCurrent(localSrc||src);setFailed(!(localSrc||src))},[localSrc,src]);
-  return <div className={"real-cover real-cover-"+mode}>
-    {!failed?
-      <img
-        src={current}
-        alt={alt}
-        loading={loading}
-        referrerPolicy="no-referrer"
-        onError={()=>{
-          // If the build-time cached cover isn't available, fall back to the
-          // original Metricool URL while it remains valid.
-          if(localSrc&&current===localSrc&&src&&src!==localSrc){setCurrent(src)}
-          else setFailed(true)
-        }}
-      />:
-      <div className="cover-missing"><ImageOff size={26}/><span>Preview unavailable</span></div>
-    }
-  </div>;
+function snapshotCover(post:Post|null,story:Story|null){
+ const id=post?.id??story?.id??"";
+ return id.startsWith("hist-")?"/media/history/"+encodeURIComponent(id):"";
+}
+function Cover({src,localSrc,snapshotSrc,alt,mode,loading="lazy"}:{src:string;localSrc?:string;snapshotSrc?:string;alt:string;mode:"reel"|"carousel"|"story";loading?:"lazy"|"eager"}) {
+ const paths=[...new Set([localSrc,snapshotSrc,src].filter((p):p is string=>!!p))];
+ const [step,setStep]=useState(0);
+ useEffect(()=>setStep(0),[src,localSrc,snapshotSrc]);
+ const current=paths[step];
+ return <div className={"real-cover real-cover-"+mode}>
+  {current?
+   <img src={current} alt={alt} loading={loading} referrerPolicy="no-referrer"
+    onError={()=>setStep(i=>i+1)}/>:
+   <div className="cover-missing"><ImageOff size={26}/><span>Preview unavailable</span></div>}
+ </div>;
 }
 
 export function PostVisual({post,onOpen,featured=false}:{post:Post;onOpen:(post:Post)=>void;featured?:boolean}){
@@ -59,7 +55,7 @@ export function PostVisual({post,onOpen,featured=false}:{post:Post;onOpen:(post:
   const cover=getPostCover(post);
   return <article className={"visual-card "+(featured?"visual-card-featured":"")}>
     <button type="button" className="visual-poster" onClick={()=>onOpen(post)} aria-label={"Preview "+post.title}>
-      <Cover src={cover} localSrc={localPostCover(post)} alt={"Actual cover for "+post.title} mode={isReel?"reel":"carousel"}/>
+      <Cover src={cover} localSrc={localPostCover(post)} snapshotSrc={snapshotCover(post,null)} alt={"Actual cover for "+post.title} mode={isReel?"reel":"carousel"}/>
       <span className="poster-format">{isReel?<Play size={12} fill="currentColor"/>:<Images size={12}/>} {isReel?"Reel":"Carousel"}</span>
       <span className="poster-open"><ArrowUpRight size={19}/></span>
     </button>
@@ -79,7 +75,7 @@ export function StoryVisual({story,onOpen,compact=false}:{story:Story;onOpen:(st
   const cover=getStoryCover(story);
   const name=story.descriptor==="(no story text)"?"Story · "+String(story.published_at_raw).slice(6,8)+" Nov":story.descriptor;
   return <button type="button" className={"story-visual "+(compact?"story-visual-compact":"")} onClick={()=>onOpen(story)} aria-label={"View story preview: "+name}>
-    <Cover src={cover} localSrc={localStoryCover(story)} alt={"Metricool image from "+name} mode="story"/>
+    <Cover src={cover} localSrc={localStoryCover(story)} snapshotSrc={snapshotCover(null,story)} alt={"Metricool image from "+name} mode="story"/>
     <span className="story-visual-info"><strong>{fmt(story.impressions)}</strong><span>impr.</span></span>
     <span className="story-visual-name">{name}</span>
     {!compact&&<span className="story-visual-replies">{fmt(story.replies)} replies</span>}
@@ -106,7 +102,7 @@ export function MediaPreviewModal({post,story,onClose}:{post:Post|null;story:Sto
     <section className="media-dialog" role="dialog" aria-modal="true" aria-label={"Preview: "+name}>
       <button className="media-close" type="button" ref={closeRef} onClick={onClose} aria-label="Close preview"><X size={20}/></button>
       <div className="media-large">
-        <Cover src={cover} localSrc={post?localPostCover(post):localStoryCover(story!)} alt={"Original Metricool cover: "+name} mode={post?(post.format==="Reel"?"reel":"carousel"):"story"} loading="eager"/>
+        <Cover src={cover} localSrc={post?localPostCover(post):localStoryCover(story!)} snapshotSrc={snapshotCover(post,story)} alt={"Original Metricool cover: "+name} mode={post?(post.format==="Reel"?"reel":"carousel"):"story"} loading="eager"/>
       </div>
       <div className="media-details">
         <span className="media-eyebrow">{post?(post.platform+" / "+(post.format??"post")):"Instagram / Story"}</span>
