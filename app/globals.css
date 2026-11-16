@@ -309,3 +309,35 @@ a.item-title:hover {color:var(--accent);text-decoration:underline;}
 .missing-stories[open]>summary svg{transform:rotate(180deg);}
 .missing-stories>.small-note{margin:10px 0 14px;}
 .missing-stories .item-row{padding:14px 0;}
+
+
+/* Historical archive: source-faithful media, monthly navigation and account-view trend */
+.archive-controls,.archive-trends,.archive-stories{margin-top:14px;}
+.archive-controls .section-head{margin-bottom:17px;}
+.archive-controls .archive-info{display:flex;gap:14px;justify-content:space-between;align-items:center;margin-bottom:19px;color:var(--sub);font-size:11px;line-height:1.55;}
+.archive-controls .archive-info span:first-child{font-weight:720;color:var(--ink);white-space:nowrap;}
+.archive-controls .media-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;}
+.archive-months button{padding-inline:16px;min-width:50px;}
+.archive-trends .small-note{margin-top:-12px;margin-bottom:23px;}
+.history-bar{display:grid;grid-template-columns:1fr 58px;align-items:center;gap:17px;}
+.history-bar>span{font-size:10px;color:var(--sub);text-align:right;font-variant-numeric:tabular-nums;}
+.history-bar .ranking-row{grid-template-columns:100px minmax(0,1fr) 62px;}
+.history-bar .ranking-track{height:10px;}
+.history-bar-list{display:grid;gap:16px;}
+.archive-stories .story-filmstrip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));}
+@media(max-width:1120px){
+ .archive-controls .media-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+ .archive-stories .story-filmstrip{grid-template-columns:repeat(5,minmax(0,1fr));}
+}
+@media(max-width:760px){
+ .app-nav{display:flex;overflow-x:auto;scrollbar-width:none;}
+ .app-nav button{flex:1 0 auto;white-space:nowrap;padding-inline:9px;font-size:10px;}
+ .archive-controls .media-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;}
+ .archive-controls .archive-info{display:block;}
+ .archive-controls .archive-info span{display:block;margin-bottom:4px;}
+ .archive-stories .story-filmstrip{grid-template-columns:repeat(3,minmax(0,1fr));}
+ .history-bar{gap:7px;grid-template-columns:1fr 40px;}
+ .history-bar .ranking-row{grid-template-columns:45px minmax(0,1fr) 48px;gap:7px;}
+ .archive-months{display:flex;justify-content:space-between;}
+ .archive-months button{min-width:44px;padding-inline:10px;flex:1;}
+}
