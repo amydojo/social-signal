@@ -143,6 +143,11 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,adsDail
   const reels=igPosts.filter(p=>p.format==="Reel");
   const sortedPosts=[...igPosts].sort((a,b)=>(b.views??0)-(a.views??0));
   const sortedStories=[...stories].sort((a,b)=>(b.impressions??0)-(a.impressions??0));
+  // Archived source-image URLs verified from the November 16 build.
+  // Older story objects are retained as metric records, not fabricated covers.
+  const archivedStoryIds=new Set(["story-07","story-08","story-09","story-10","story-11","story-12"]);
+  const visualStories=sortedStories.filter(s=>archivedStoryIds.has(s.id));
+  const storyWithoutCover=sortedStories.filter(s=>!archivedStoryIds.has(s.id));
   const shownPosts=useMemo(()=>posts.filter(p=>(platform==="all"||p.platform===platform)&&p.title.toLowerCase().includes(search.toLowerCase())),[posts,platform,search]);
   const tabs = [
     {id:"overview" as Tab,name:"Overview",icon:Grid2X2},
@@ -207,9 +212,9 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,adsDail
         </div>
         <div className="content-columns">
           <section className="surface">
-            <SectionHead title="Most viewed Stories" meta="Impressions"/>
+            <SectionHead title="Story previews" meta="From saved posts"/>
             <div className="story-filmstrip">
-              {sortedStories.slice(0,4).map(s=><StoryVisual key={s.id} story={s} compact onOpen={openStory}/>)}
+              {visualStories.slice(0,4).map(s=><StoryVisual key={s.id} story={s} compact onOpen={openStory}/>)}
             </div>
             <button className="inline-action" type="button" onClick={()=>setTab("stories")}>All 12 stories <ArrowUpRight size={14}/></button>
           </section>
@@ -217,7 +222,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,adsDail
             <SectionHead title="This week"/>
             <div className="fact"><strong>1,309</strong><span>Views on the scar Reel (highest)</span></div>
             <div className="fact"><strong>23</strong><span>Interactions on the consultation Reel (highest)</span></div>
-            <div className="fact"><strong>6</strong><span>Total Story replies</span></div>
+            <div className="fact"><strong>603</strong><span>Birthday Story impressions (highest)</span></div>
           </section>
         </div>
       </>}
@@ -241,8 +246,13 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,adsDail
           <Stat label="Replies" value={num(snapshot.story_replies)}/>
         </section>
         <section className="surface">
-          <SectionHead title="Stories ranked" meta="By impressions"/>
-          <div className="story-gallery">{sortedStories.map(s=><StoryVisual key={s.id} story={s} onOpen={openStory}/>)}</div>
+          <SectionHead title="Story gallery" meta={visualStories.length+" available previews"}/>
+          <div className="story-gallery">{visualStories.map(s=><StoryVisual key={s.id} story={s} onOpen={openStory}/>)}</div>
+          {storyWithoutCover.length>0&&<details className="missing-stories">
+            <summary>{storyWithoutCover.length} older Stories · metrics only <ChevronDown size={15}/></summary>
+            <p className="small-note">The original images expired. Their Metricool results are still included.</p>
+            <div className="item-list">{storyWithoutCover.map(s=><StoryRow key={s.id} story={s}/>)}</div>
+          </details>}
         </section>
       </>}
 
