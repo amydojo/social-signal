@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, ExternalLink, ImageOff, Play, X, Images } from "lucide-react";
 import type { Post, Story } from "./dashboard";
 import { postCoverUrls, storyCoverUrls } from "./media-source";
+import archiveIndex from "../public/media/archive/index.json";
+const savedImagePaths=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
 
 const fmt=(n:number|null|undefined)=>n==null?"—":n.toLocaleString("en-US");
 const date=(d:string)=>new Date(d+"T12:00:00Z").toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
@@ -23,13 +25,17 @@ function getPostCover(post:Post){
 }
 function getStoryCover(story:Story){return story.thumbnail_original_url??storyCoverUrls[storyId(story)]??""}
 function localPostCover(post:Post) {
-  if(post.thumbnail_path)return post.thumbnail_path;
   const code=postCode(post) || (post.id==="fb-reel-scar"?"DfqeQMZMKqR":post.id==="fb-carousel-bulge"?"DftDagtkR6i":"");
+  const archived=code?"/media/archive/ig-"+code+".jpg":"";
+  if(archived&&savedImagePaths.has(archived))return archived;
+  if(post.thumbnail_path&&savedImagePaths.has(post.thumbnail_path))return post.thumbnail_path;
   return code?"/media/p-"+encodeURIComponent(code):"";
 }
 function localStoryCover(story:Story) {
-  if(story.thumbnail_path)return story.thumbnail_path;
   const id=storyId(story);
+  const archived=id?"/media/archive/story-"+id+".jpg":"";
+  if(archived&&savedImagePaths.has(archived))return archived;
+  if(story.thumbnail_path&&savedImagePaths.has(story.thumbnail_path))return story.thumbnail_path;
   return id?"/media/s-"+encodeURIComponent(id):"";
 }
 
