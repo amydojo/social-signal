@@ -21,15 +21,34 @@ function getPostCover(post:Post){
   return "";
 }
 function getStoryCover(story:Story){return storyCoverUrls[storyId(story)]??""}
+function localPostCover(post:Post) {
+  const code=postCode(post) || (post.id==="fb-reel-scar"?"DfqeQMZMKqR":post.id==="fb-carousel-bulge"?"DftDagtkR6i":"");
+  return code?"/media/p-"+encodeURIComponent(code):"";
+}
+function localStoryCover(story:Story) {
+  const id=storyId(story);
+  return id?"/media/s-"+encodeURIComponent(id):"";
+}
 
-function Cover({src,alt,mode,loading="lazy"}:{src:string;alt:string;mode:"reel"|"carousel"|"story";loading?:"lazy"|"eager"}){
-  const [failed,setFailed]=useState(!src);
-  useEffect(()=>setFailed(!src),[src]);
+function Cover({src,localSrc,alt,mode,loading="lazy"}:{src:string;localSrc?:string;alt:string;mode:"reel"|"carousel"|"story";loading?:"lazy"|"eager"}) {
+  const initial=localSrc||src;
+  const [current,setCurrent]=useState(initial);
+  const [failed,setFailed]=useState(!initial);
+  useEffect(()=>{setCurrent(localSrc||src);setFailed(!(localSrc||src))},[localSrc,src]);
   return <div className={"real-cover real-cover-"+mode}>
     {!failed?
-      // Metricool supplies original Instagram media CDN URLs. They may expire.
-      // Fall back cleanly rather than showing a fabricated or mismatched image.
-      <img src={src} alt={alt} loading={loading} referrerPolicy="no-referrer" onError={()=>setFailed(true)}/>:
+      <img
+        src={current}
+        alt={alt}
+        loading={loading}
+        referrerPolicy="no-referrer"
+        onError={()=>{
+          // If the build-time cached cover isn't available, fall back to the
+          // original Metricool URL while it remains valid.
+          if(localSrc&&current===localSrc&&src&&src!==localSrc){setCurrent(src)}
+          else setFailed(true)
+        }}
+      />:
       <div className="cover-missing"><ImageOff size={26}/><span>Preview unavailable</span></div>
     }
   </div>;
@@ -40,7 +59,7 @@ export function PostVisual({post,onOpen,featured=false}:{post:Post;onOpen:(post:
   const cover=getPostCover(post);
   return <article className={"visual-card "+(featured?"visual-card-featured":"")}>
     <button type="button" className="visual-poster" onClick={()=>onOpen(post)} aria-label={"Preview "+post.title}>
-      <Cover src={cover} alt={"Actual cover for "+post.title} mode={isReel?"reel":"carousel"}/>
+      <Cover src={cover} localSrc={localPostCover(post)} alt={"Actual cover for "+post.title} mode={isReel?"reel":"carousel"}/>
       <span className="poster-format">{isReel?<Play size={12} fill="currentColor"/>:<Images size={12}/>} {isReel?"Reel":"Carousel"}</span>
       <span className="poster-open"><ArrowUpRight size={19}/></span>
     </button>
@@ -60,7 +79,7 @@ export function StoryVisual({story,onOpen,compact=false}:{story:Story;onOpen:(st
   const cover=getStoryCover(story);
   const name=story.descriptor==="(no story text)"?"Story · "+String(story.published_at_raw).slice(6,8)+" Nov":story.descriptor;
   return <button type="button" className={"story-visual "+(compact?"story-visual-compact":"")} onClick={()=>onOpen(story)} aria-label={"View story preview: "+name}>
-    <Cover src={cover} alt={"Metricool image from "+name} mode="story"/>
+    <Cover src={cover} localSrc={localStoryCover(story)} alt={"Metricool image from "+name} mode="story"/>
     <span className="story-visual-info"><strong>{fmt(story.impressions)}</strong><span>impr.</span></span>
     <span className="story-visual-name">{name}</span>
     {!compact&&<span className="story-visual-replies">{fmt(story.replies)} replies</span>}
@@ -94,7 +113,7 @@ export function MediaPreviewModal({post,story,onClose}:{post:Post|null;story:Sto
       <div className="media-large">
         {player&&embedUrl?
           <iframe key={embedUrl} title={"Instagram "+name} src={embedUrl} loading="lazy" allow="fullscreen; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin"/>:
-          <Cover src={cover} alt={"Original Metricool cover: "+name} mode={post?(post.format==="Reel"?"reel":"carousel"):"story"} loading="eager"/>
+          <Cover src={cover} localSrc={post?localPostCover(post):localStoryCover(story!)} alt={"Original Metricool cover: "+name} mode={post?(post.format==="Reel"?"reel":"carousel"):"story"} loading="eager"/>
         }
       </div>
       <div className="media-details">
