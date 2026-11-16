@@ -87,7 +87,6 @@ export function StoryVisual({story,onOpen,compact=false}:{story:Story;onOpen:(st
 }
 
 export function MediaPreviewModal({post,story,onClose}:{post:Post|null;story:Story|null;onClose:()=>void}){
-  const [player,setPlayer]=useState(false);
   const closeRef=useRef<HTMLButtonElement>(null);
   useEffect(()=>{
     if(!post&&!story)return;
@@ -101,20 +100,13 @@ export function MediaPreviewModal({post,story,onClose}:{post:Post|null;story:Sto
   if(!post&&!story)return null;
   const cover=post?getPostCover(post):getStoryCover(story!);
   const name=post?.title??(story?.descriptor==="(no story text)"?"Instagram Story":story?.descriptor??"Instagram Story");
-  const instagram=post?.platform==="instagram";
-  const code=post?postCode(post):"";
-  const embedUrl=instagram&&code?
-    "https://www.instagram.com/"+(post!.format==="Reel"?"reel":"p")+"/"+encodeURIComponent(code)+"/embed/":"";
   const external=post?.permalink??story?.permalink??"";
 
   return <div className="media-shade" onMouseDown={e=>{if(e.target===e.currentTarget)onClose()}}>
     <section className="media-dialog" role="dialog" aria-modal="true" aria-label={"Preview: "+name}>
       <button className="media-close" type="button" ref={closeRef} onClick={onClose} aria-label="Close preview"><X size={20}/></button>
       <div className="media-large">
-        {player&&embedUrl?
-          <iframe key={embedUrl} title={"Instagram "+name} src={embedUrl} loading="lazy" allow="fullscreen; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin"/>:
-          <Cover src={cover} localSrc={post?localPostCover(post):localStoryCover(story!)} alt={"Original Metricool cover: "+name} mode={post?(post.format==="Reel"?"reel":"carousel"):"story"} loading="eager"/>
-        }
+        <Cover src={cover} localSrc={post?localPostCover(post):localStoryCover(story!)} alt={"Original Metricool cover: "+name} mode={post?(post.format==="Reel"?"reel":"carousel"):"story"} loading="eager"/>
       </div>
       <div className="media-details">
         <span className="media-eyebrow">{post?(post.platform+" / "+(post.format??"post")):"Instagram / Story"}</span>
@@ -132,10 +124,8 @@ export function MediaPreviewModal({post,story,onClose}:{post:Post|null;story:Sto
           <div><strong>{fmt(story.replies)}</strong><span>Replies</span></div>
         </div>:null}
         <div className="media-modal-actions">
-          {embedUrl&&!player&&<button className="watch-button" type="button" onClick={()=>setPlayer(true)}><Play size={15} fill="currentColor"/>{post?.format==="Reel"?"Watch Reel":"Browse carousel"}</button>}
-          {external&&<a className="source-button" href={external} target="_blank" rel="noopener noreferrer">Open original <ExternalLink size={14}/></a>}
+          {external&&<a className="source-button" href={external} target="_blank" rel="noopener noreferrer">Open original post <ExternalLink size={14}/></a>}
         </div>
-        {player&&<p className="media-note">Instagram controls this player. If it doesn't load, use Open original.</p>}
         {story&&<p className="media-note">Story previews are from the saved Metricool export. Instagram's original Story link may have expired.</p>}
         {post?.platform==="facebook"&&cover&&<p className="media-note">Preview image from the same-titled Instagram creative; Facebook metrics shown separately.</p>}
       </div>
