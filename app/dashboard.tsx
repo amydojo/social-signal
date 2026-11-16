@@ -6,7 +6,7 @@ import { historicalPosts, historicalStories, historicalDaily } from "./history-d
 import archiveIndex from "../public/media/archive/index.json";
 import {
   BarChart3, Download, ExternalLink, FileText, Grid2X2, Instagram,
-  Database, ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, Eye, Layers, Check, AlertCircle, PanelLeftClose, PanelLeftOpen, Menu, CalendarDays
+  Database, ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, Eye, Layers, Check, AlertCircle, PanelLeftClose, PanelLeftOpen, Menu, CalendarDays, ClipboardList
 } from "lucide-react";
 
 export type Snapshot = {
@@ -277,6 +277,9 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
           onClick={()=>setView(t.id)} aria-pressed={tab===t.id} className={tab===t.id?"active":""}>
           <t.icon size={17}/><span className="nav-label">{t.name}</span>
         </button>)}
+        <a href="/frew" className="frew-nav-link" title="Dr. Frew report" aria-label="Open Dr. Frew performance report">
+          <ClipboardList size={17}/><span className="nav-label">Dr. Frew report</span>
+        </a>
       </nav>
       <div className="sidebar-foot"><span className="status-dot"/><span className="sidebar-foot-label">Read-only snapshot</span></div>
     </aside>
