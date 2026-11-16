@@ -1,7 +1,9 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { createSignalBrowserClient } from "../../lib/supabase/browser";
 import { LockKeyhole, ArrowRight, Mail, KeyRound, CheckCircle2 } from "lucide-react";
+
+const CANONICAL = "https://social-signal-amy-dos-projects.vercel.app";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -9,6 +11,14 @@ export default function LoginPage() {
   const [method, setMethod] = useState<"magic" | "password">("magic");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    const error = new URLSearchParams(window.location.search).get("error");
+    if (error) {
+      setMessage("That sign-in link couldn't complete. Please request a fresh link, then open it in the same browser you used to request it. Older links only work once.");
+    }
+  }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -16,23 +26,21 @@ export default function LoginPage() {
     setMessage("");
     try {
       const supabase = createSignalBrowserClient();
-
       if (method === "password") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        // Supabase stores refresh credentials in cookies. Server middleware
-        // then recognizes the returning user without another login.
         window.location.replace("/");
       } else {
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-            emailRedirectTo: window.location.origin + "/auth/callback",
-            shouldCreateUser: true,
+            emailRedirectTo: CANONICAL + "/auth/callback",
+            shouldCreateUser: false,
           },
         });
         if (error) throw error;
-        setMessage("Check your email for a one-time sign-in link. Once you're in, SIGNAL remembers this device.");
+        setSent(true);
+        setMessage("Email sent. Open the newest SIGNAL sign-in link in this same browser. Once you are signed in, your session stays remembered.");
       }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Sign-in failed. Please try again.");
@@ -47,7 +55,7 @@ export default function LoginPage() {
     </div>
     <div className="auth-kicker"><LockKeyhole size={14}/> OPUS / PRIVATE WORKSPACE</div>
     <h1>Sign in once.<br/><em>Stay connected.</em></h1>
-    <p>One-time access for your private OPUS intelligence workspace. Returning to this app on the same device won't require daily sign-ins.</p>
+    <p>SIGNAL remembers your sign-in on this device. A one-time email verification is needed to activate your session.</p>
     <form onSubmit={submit}>
       <label htmlFor="email">Email</label>
       <input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)}
@@ -59,15 +67,16 @@ export default function LoginPage() {
       </>}
       <button type="submit" disabled={busy}>
         {method === "magic" ? <Mail size={17}/> : <KeyRound size={17}/>}
-        {busy ? "Connecting…" : method === "magic" ? "Email my sign-in link" : "Sign in"}
+        {busy ? "Connecting…" : method === "magic" ? (sent ? "Resend new sign-in link" : "Email my sign-in link") : "Sign in"}
         <ArrowRight size={16}/>
       </button>
     </form>
     {message && <div className="auth-message" role="status">{message}</div>}
+    {method === "magic" && <p className="auth-hint">Tip: If you're using Safari, open the email link in Safari—not Gmail's in-app browser or Chrome. Switching browsers can break the one-time sign-in.</p>}
     <button type="button" className="auth-switch" onClick={() => {
       setMethod(method === "magic" ? "password" : "magic");
       setMessage("");
     }}>{method === "magic" ? "Use password instead" : "Use email link instead"}</button>
-    <div className="auth-footer"><CheckCircle2 size={14}/> Session stays remembered on this device. Sign out whenever you want. Access requires approval.</div>
+    <div className="auth-footer"><CheckCircle2 size={14}/> Approved accounts only. Session is remembered until you sign out or the device clears its cookies.</div>
   </div></div>;
 }
