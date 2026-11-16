@@ -206,7 +206,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
     periodStories.some(s=>s.impressions!=null)?
       periodStories.reduce((n,s)=>n+(s.impressions??0),0):
     periodDaily.some(d=>("story_impressions" in d)&&d.story_impressions!=null)?
-      periodDaily.reduce((n,d)=>n+("story_impressions" in d?(d.story_impressions??0):0),0):null;
+      periodDaily.reduce((n,d)=>n+Number("story_impressions" in d?(d.story_impressions??0):0),0):null;
   const periodStoryReplies=latestWeek?snapshot.story_replies:
     periodStories.some(s=>s.replies!=null)?
       periodStories.reduce((n,s)=>n+(s.replies??0),0):null;
