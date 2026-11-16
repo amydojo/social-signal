@@ -1,3 +1,14 @@
+# SIGNAL / OPUS — current release notes
+
+## Current access model (Nov 16, 2026)
+The public production URL `https://social-signal-amy-dos-projects.vercel.app` opens a **no-login, read-only historical preview**, displaying only the verified Nov 9–13 Metricool snapshot included in `app/page.tsx`. This was changed at the owner's explicit request after email sign-in proved cumbersome and rate-limited. **Anyone with the URL can read and export this preview snapshot.** Do not put private CRM records, personally identifiable information, unpublished financial data, or secret tokens in `app/page.tsx` or client bundles.
+
+The Supabase project `ziohpcywjirynydjhgoe` and its row-level security rules remain intact. Anonymous clients cannot access `signal_* ` reporting tables; the public preview deliberately does **not** query Supabase. The historic snapshots in Supabase do not automatically appear publicly. Future imports and live Metricool syncing require a deliberate data-publication model. The previous login/callback code remains unused and can be retired after the public preview is reviewed.
+
+To restore authenticated full reporting in the future, re-introduce the server-side RLS-authorized dashboard separately from the public preview rather than making private tables anonymously readable.
+
+---
+
 # SIGNAL / OPUS — Operations and access
 
 ## Deployment
