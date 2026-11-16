@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { PostVisual, StoryVisual, MediaPreviewModal } from "./media-views";
 import { historicalPosts, historicalStories, historicalDaily } from "./history-data";
+import archiveIndex from "../public/media/archive/index.json";
 import {
   BarChart3, Download, ExternalLink, FileText, Grid2X2, Instagram,
   Database, ArrowUpRight, ChevronDown, Eye, Layers, Check, AlertCircle
@@ -156,7 +157,8 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
   const shownPosts=useMemo(()=>posts.filter(p=>(platform==="all"||p.platform===platform)&&p.title.toLowerCase().includes(search.toLowerCase())),[posts,platform,search]);
   const allInstagramPosts=[...historicalPosts,...igPosts].sort((a,b)=>b.published_on.localeCompare(a.published_on));
   const archivePosts=allInstagramPosts.filter(p=>(archiveMonth==="all"||p.published_on.startsWith(archiveMonth))&&p.title.toLowerCase().includes(archiveSearch.toLowerCase()));
-  const historyVisualStories=historicalStories.filter(s=>Boolean(s.thumbnail_path));
+  const savedHistoricalFiles=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
+  const historyVisualStories=historicalStories.filter(s=>Boolean(s.thumbnail_path)&&savedHistoricalFiles.has(s.thumbnail_path!));
   const weeklyHistory=useMemo(()=>{
     const viewDays=[...historicalDaily,...socialDaily]
       .filter(d=>d.account_views!=null&&(!archiveMonth||archiveMonth==="all"||d.date.startsWith(archiveMonth)));
@@ -283,7 +285,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
         <section className="stats-grid stats-grid-three">
           <Stat label="Instagram posts" value={num(allInstagramPosts.length)} note="Since Sep 2 · 2 sources merged"/>
           <Stat label="Historical view days" value={num(historicalDaily.filter(d=>d.account_views!=null).length)} note="Before Nov 9"/>
-          <Stat label="Older Story previews" value={num(historyVisualStories.length)} note="Original source images"/>
+          <Stat label="Older Stories logged" value={num(historicalStories.length)} note="Original images expired for this period"/>
         </section>
         <section className="surface archive-controls">
           <div className="section-head"><h2>Published content</h2><span>Images from Metricool</span></div>
