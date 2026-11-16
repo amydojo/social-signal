@@ -61,7 +61,7 @@ export function StoryVisual({story,onOpen,compact=false}:{story:Story;onOpen:(st
   const name=story.descriptor==="(no story text)"?"Story · "+String(story.published_at_raw).slice(6,8)+" Nov":story.descriptor;
   return <button type="button" className={"story-visual "+(compact?"story-visual-compact":"")} onClick={()=>onOpen(story)} aria-label={"View story preview: "+name}>
     <Cover src={cover} alt={"Metricool image from "+name} mode="story"/>
-    <span className="story-visual-info"><strong>{fmt(story.impressions)}</strong><span>views*</span></span>
+    <span className="story-visual-info"><strong>{fmt(story.impressions)}</strong><span>impr.</span></span>
     <span className="story-visual-name">{name}</span>
     {!compact&&<span className="story-visual-replies">{fmt(story.replies)} replies</span>}
   </button>;
