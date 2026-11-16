@@ -3,7 +3,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "SIGNAL / OPUS",
-  description: "Private social intelligence for OPUS Plastic Surgery",
+  description: "Read-only social intelligence for OPUS Plastic Surgery",
+  robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
   applicationName: "SIGNAL",
   appleWebApp: {
     capable: true,
