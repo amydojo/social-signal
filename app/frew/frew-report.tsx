@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect,useMemo,useState} from "react";
+import {useEffect,useState} from "react";
 import {ArrowLeft,Download,FileText,ExternalLink,ChevronDown,CalendarDays,Eye,ImageIcon} from "lucide-react";
 import {posts as metricoolPosts, stories as metricoolStories, snapshot as metricoolSnapshot} from "../report-data";
 import {historicalPosts} from "../history-data";
@@ -95,7 +95,7 @@ export default function FrewDashboard(){
   const feedRows=rows.filter(r=>r.format!=="Story");
   const storyRows=rows.filter(r=>r.format==="Story");
   const platforms:PlatformFilter[]=["all",...new Set(feedRows.map(r=>r.platform as PlatformFilter))];
-  const filtered=useMemo(()=>feedRows.filter(r=>filter==="all"||r.platform===filter),[rows,filter]);
+  const filtered=feedRows.filter(r=>filter==="all"||r.platform===filter);
   const visible=showAllPosts?filtered:filtered.slice(0,7);
   const sourceLabel=sheetWeek?"Original Google Sheet · values entered by Nov 10":"Metricool export · compiled Nov 16";
   const headline=sheetWeek?
