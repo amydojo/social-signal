@@ -53,7 +53,7 @@ export const coverage: Coverage[] = [
   {channel:"Google Business Profile",account:"OPUS GBP",status:"Connected",data:"No media/post rows returned",limitation:"Only Nov 15 zero daily observation"},
   {channel:"Meta Ads",account:"OPUS Meta Ads",status:"Connected",data:"7 daily zero-spend, zero-click rows",limitation:"No campaign or ad rows were returned"},
   {channel:"Google Ads",account:"OPUS Google Ads",status:"Connected",data:"One zero row (Nov 15)",limitation:"Nov 9–14 absent: weekly spend unknown"},
-  {channel:"Separate OPUS accounts",account:"@dr.frew / results",status:"Not included",data:"Not in this Metricool brand",limitation:"Need separate connection/export"}
+  {channel:"Separate OPUS accounts",account:"@dr.frew / results",status:"Not included",data:"Separate account data",limitation:"Independent account reporting required"}
 ];
 
 export const socialDaily: DailySocial[] = [
