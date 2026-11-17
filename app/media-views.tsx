@@ -81,7 +81,7 @@ export function StoryVisual({story,onOpen,compact=false}:{story:Story;onOpen:(st
   const cover=getStoryCover(story);
   const name=story.descriptor==="(no story text)"?"Story · "+String(story.published_at_raw).slice(6,8)+" Nov":story.descriptor;
   return <button type="button" className={"story-visual "+(compact?"story-visual-compact":"")} onClick={()=>onOpen(story)} aria-label={"View story preview: "+name}>
-    <Cover src={cover} localSrc={localStoryCover(story)} snapshotSrc={snapshotCover(null,story)} alt={"Metricool image from "+name} mode="story"/>
+    <Cover src={cover} localSrc={localStoryCover(story)} snapshotSrc={snapshotCover(null,story)} alt={"Story preview: "+name} mode="story"/>
     <span className="story-visual-info"><strong>{fmt(story.impressions)}</strong><span>impr.</span></span>
     <span className="story-visual-name">{name}</span>
     {!compact&&<span className="story-visual-replies">{fmt(story.replies)} replies</span>}
@@ -108,7 +108,7 @@ export function MediaPreviewModal({post,story,onClose}:{post:Post|null;story:Sto
     <section className="media-dialog" role="dialog" aria-modal="true" aria-label={"Preview: "+name}>
       <button className="media-close" type="button" ref={closeRef} onClick={onClose} aria-label="Close preview"><X size={20}/></button>
       <div className="media-large">
-        <Cover src={cover} localSrc={post?localPostCover(post):localStoryCover(story!)} snapshotSrc={snapshotCover(post,story)} alt={"Original Metricool cover: "+name} mode={post?(post.format==="Reel"?"reel":"carousel"):"story"} loading="eager"/>
+        <Cover src={cover} localSrc={post?localPostCover(post):localStoryCover(story!)} snapshotSrc={snapshotCover(post,story)} alt={"Post cover: "+name} mode={post?(post.format==="Reel"?"reel":"carousel"):"story"} loading="eager"/>
       </div>
       <div className="media-details">
         <span className="media-eyebrow">{post?(post.platform+" / "+(post.format??"post")):"Instagram / Story"}</span>
@@ -128,7 +128,7 @@ export function MediaPreviewModal({post,story,onClose}:{post:Post|null;story:Sto
         <div className="media-modal-actions">
           {external&&<a className="source-button" href={external} target="_blank" rel="noopener noreferrer">Open original post <ExternalLink size={14}/></a>}
         </div>
-        {story&&<p className="media-note">Story previews are from the saved Metricool export. Instagram's original Story link may have expired.</p>}
+        {story&&<p className="media-note">Story previews are saved images. Instagram Story links may have expired.</p>}
         {post?.platform==="facebook"&&cover&&<p className="media-note">Preview image from the same-titled Instagram creative; Facebook metrics shown separately.</p>}
       </div>
     </section>
