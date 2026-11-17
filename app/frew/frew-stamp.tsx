@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState,type FormEvent} from "react";
 import {createBrowserClient} from "@supabase/ssr";
-import {Check,ChevronDown,LockKeyhole,Mail,MessageCircle} from "lucide-react";
+import {Check,ChevronDown,Mail,X} from "lucide-react";
 
 type Reaction="seen"|"more"|"discuss";
 type Access="loading"|"guest"|"frew"|"owner"|"unapproved"|"unavailable";
@@ -11,12 +11,11 @@ type Featured={id:string;title:string};
 const FREW_EMAIL="drfrew@opusplasticsurgery.ai";
 const reactions:{id:Reaction;icon:string;label:string}[]=[
   {id:"seen",icon:"👀",label:"Seen"},
-  {id:"more",icon:"🔥",label:"More like this"},
-  {id:"discuss",icon:"💬",label:"Let's talk"}
+  {id:"more",icon:"🔥",label:"More of this"},
+  {id:"discuss",icon:"💬",label:"Discuss"}
 ];
-const reactionText=(reaction:Reaction|null)=>reactions.find(x=>x.id===reaction)?.label??"";
-const reactionIcon=(reaction:Reaction|null)=>reactions.find(x=>x.id===reaction)?.icon??"";
-const conciseDate=(value:string)=>new Date(value).toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"America/Los_Angeles"});
+const reactionText=(r:Reaction|null)=>reactions.find(x=>x.id===r)?.label??"";
+const reactionIcon=(r:Reaction|null)=>reactions.find(x=>x.id===r)?.icon??"";
 
 export default function FrewStamp({weekStart,featured}:{weekStart:string;featured:Featured[]}){
   const supabase=useMemo(()=>{
@@ -27,178 +26,165 @@ export default function FrewStamp({weekStart,featured}:{weekStart:string;feature
   const [access,setAccess]=useState<Access>("loading");
   const [userId,setUserId]=useState<string|null>(null);
   const [stamps,setStamps]=useState<Stamp[]>([]);
-  const [loading,setLoading]=useState(false);
-  const [busy,setBusy]=useState<string|null>(null);
-  const [error,setError]=useState("");
-  const [draft,setDraft]=useState("");
-  const [noteOpen,setNoteOpen]=useState(false);
-  const [postOpen,setPostOpen]=useState(false);
-  const [loginOpen,setLoginOpen]=useState(false);
+  const [open,setOpen]=useState(false);
+  const [showNote,setShowNote]=useState(false);
+  const [showPosts,setShowPosts]=useState(false);
   const [email,setEmail]=useState("");
   const [sent,setSent]=useState(false);
+  const [draft,setDraft]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [error,setError]=useState("");
   const [sessionEpoch,setSessionEpoch]=useState(0);
   useEffect(()=>{
     let active=true;
     if(!supabase){setAccess("unavailable");return;}
-    void (async()=>{
+    void(async()=>{
       const {data,error:authError}=await supabase.auth.getUser();
       if(!active)return;
       if(authError||!data.user){setAccess("guest");setUserId(null);return;}
-      const u=data.user;
-      setUserId(u.id);
-      if(u.email?.toLowerCase()===FREW_EMAIL&&!!u.email_confirmed_at){setAccess("frew");return;}
-      const {data:member}=await supabase.from("signal_members").select("role").eq("user_id",u.id).maybeSingle();
+      const user=data.user;
+      setUserId(user.id);
+      if(user.email?.toLowerCase()===FREW_EMAIL&&!!user.email_confirmed_at){
+        setAccess("frew");return;
+      }
+      const {data:member}=await supabase.from("signal_members")
+        .select("role").eq("user_id",user.id).maybeSingle();
       if(active)setAccess(member?.role==="owner"?"owner":"unapproved");
     })();
-    return ()=>{active=false};
+    return ()=>{active=false;};
   },[supabase,sessionEpoch]);
   useEffect(()=>{
     let active=true;
-    if(!supabase||(access!=="owner"&&access!=="frew")){setStamps([]);return;}
-    setStamps([]);setLoading(true);setError("");
+    setStamps([]);setError("");
+    if(!supabase||(access!=="owner"&&access!=="frew"))return;
     void supabase.from("signal_frew_stamps")
       .select("post_key,reaction,note,updated_at")
       .eq("week_start",weekStart)
-      .order("updated_at",{ascending:false})
       .then(({data,error:readError})=>{
         if(!active)return;
-        setLoading(false);
-        if(readError){setError("Couldn't load the stamps.");return;}
+        if(readError){setError("Couldn't load feedback.");return;}
         setStamps((data??[]) as Stamp[]);
       });
-    return ()=>{active=false};
+    return ()=>{active=false;};
   },[supabase,access,weekStart]);
   const weekly=stamps.find(s=>s.post_key==="week")??null;
+  const postStamps=stamps.filter(s=>s.post_key.startsWith("post:"));
   useEffect(()=>{
     setDraft(weekly?.note??"");
-    setNoteOpen(Boolean(weekly?.note));
-  },[weekStart,weekly?.note]);
-  const postStamps=stamps.filter(s=>s.post_key.startsWith("post:"));
-  const save=async(postKey:string,reaction:Reaction|null,note:string)=>{
+  },[weekly?.note,weekStart]);
+  useEffect(()=>{
+    setOpen(false);setShowNote(false);setShowPosts(false);setSent(false);
+  },[weekStart]);
+
+  async function save(postKey:string,reaction:Reaction|null,note:string){
     if(!supabase||access!=="frew"||!userId)return;
+    setBusy(true);setError("");
     const trimmed=note.trim();
-    setError("");setBusy(postKey);
-    let saveError;
-    if(!reaction&&!trimmed){
-      const out=await supabase.from("signal_frew_stamps").delete()
-        .eq("user_id",userId).eq("week_start",weekStart).eq("post_key",postKey);
-      saveError=out.error;
-    }else{
-      const out=await supabase.from("signal_frew_stamps")
+    const result=!reaction&&!trimmed
+      ?await supabase.from("signal_frew_stamps").delete()
+        .eq("user_id",userId).eq("week_start",weekStart).eq("post_key",postKey)
+      :await supabase.from("signal_frew_stamps")
         .upsert({user_id:userId,week_start:weekStart,post_key:postKey,reaction,note:trimmed},
-          {onConflict:"user_id,week_start,post_key"})
-        .select("post_key,reaction,note,updated_at").single();
-      saveError=out.error;
-    }
-    if(saveError){setError("Couldn't save. Please try again.");setBusy(null);return;}
+          {onConflict:"user_id,week_start,post_key"});
+    if(result.error){setError("Couldn't save. Try again.");setBusy(false);return;}
     const {data,error:readError}=await supabase.from("signal_frew_stamps")
-      .select("post_key,reaction,note,updated_at").eq("week_start",weekStart).order("updated_at",{ascending:false});
-    if(readError)setError("Saved, but couldn't refresh the view.");
+      .select("post_key,reaction,note,updated_at")
+      .eq("week_start",weekStart);
+    if(readError)setError("Saved, but couldn't refresh.");
     else setStamps((data??[]) as Stamp[]);
-    setBusy(null);
-  };
-  const login=async(e:FormEvent)=>{
-    e.preventDefault();
+    setBusy(false);
+  }
+
+  async function login(event:FormEvent){
+    event.preventDefault();
     if(!supabase||!email.trim())return;
-    setError("");setBusy("login");
+    setBusy(true);setError("");
     const normalized=email.trim().toLowerCase();
     const redirect=window.location.origin+"/auth/callback?next="+encodeURIComponent("/frew?week="+weekStart);
-    const {error:loginError}=await supabase.auth.signInWithOtp({
+    const {error:signInError}=await supabase.auth.signInWithOtp({
       email:normalized,
       options:{emailRedirectTo:redirect,shouldCreateUser:normalized===FREW_EMAIL}
     });
-    setBusy(null);
-    if(loginError){setError("Couldn't send the sign-in link. Try again.");return;}
+    setBusy(false);
+    if(signInError){setError("Couldn't send the link.");return;}
     setSent(true);
-  };
-  const signOut=async()=>{
+  }
+  async function signOut(){
     if(!supabase)return;
     await supabase.auth.signOut();
-    setStamps([]);setUserId(null);setAccess("guest");setLoginOpen(false);
+    setStamps([]);setUserId(null);setAccess("guest");setOpen(false);
     setSessionEpoch(x=>x+1);
-  };
-  return <section className="stamp-wrap" aria-label="Frew's Stamp">
-    <div className="stamp-heading">
-      <div><span className="stamp-small">A LITTLE SOMETHING FROM FREW</span><h2>Frew's stamp <span aria-hidden="true">✳</span></h2></div>
-      {access==="frew"&&<span className="stamp-private"><LockKeyhole size={12}/> Only you and Amy <button type="button" className="stamp-account-link stamp-signout" onClick={()=>void signOut()}>Sign out</button></span>}
-      {access==="owner"&&<span className="stamp-private"><LockKeyhole size={12}/> Private feedback</span>}
-    </div>
-    {access==="loading"?<p className="stamp-soft"> </p>:
-     access==="frew"?<>
-       <div className="stamp-reactions" role="group" aria-label="Mark this week's report">
-         {reactions.map(x=><button type="button" key={x.id}
-           className={"stamp-choice"+(weekly?.reaction===x.id?" stamp-chosen":"")}
-           aria-pressed={weekly?.reaction===x.id}
-           disabled={busy!==null}
-           onClick={()=>void save("week",weekly?.reaction===x.id?null:x.id,draft)}>
-           <span className="stamp-emoji" aria-hidden="true">{x.icon}</span><span>{x.label}</span>
-           {weekly?.reaction===x.id&&<Check size={13} className="stamp-check"/>}
-         </button>)}
-       </div>
-       <div className="stamp-under">
-         <button className="stamp-note-toggle" type="button" onClick={()=>setNoteOpen(x=>!x)}>
-           <MessageCircle size={14}/>{weekly?.note?"Edit your note":"Add a thought (optional)"}
-         </button>
-         {weekly&&!busy&&<span className="stamp-saved"><Check size={13}/> Stamped</span>}
-       </div>
-       {noteOpen&&<div className="stamp-note-panel">
-         <textarea value={draft} onChange={e=>setDraft(e.target.value.slice(0,350))}
-           rows={2} maxLength={350} placeholder="One thought for the next shoot…" aria-label="Optional note for Amy"/>
-         <div className="stamp-note-actions">
-           <span>{draft.length}/350</span>
-           <button type="button" disabled={busy!==null||draft.trim()===(weekly?.note??"")}
-             onClick={()=>void save("week",weekly?.reaction??null,draft)}>
-             {busy==="week"?"Saving…":"Save note"}
-           </button>
-         </div>
-       </div>}
-       <details className="stamp-post-details" open={postOpen} onToggle={e=>setPostOpen(e.currentTarget.open)}>
-         <summary>Stamp a specific post <ChevronDown size={14}/></summary>
-         <div className="stamp-post-list">{featured.map(p=>{
-           const row=stamps.find(x=>x.post_key==="post:"+p.id);
-           return <div className="stamp-post-row" key={p.id}>
-             <span>{p.title}</span>
-             <button type="button" disabled={busy!==null}
-               className={row?.reaction==="more"?"stamp-mini-active":""}
-               aria-pressed={row?.reaction==="more"}
-               onClick={()=>void save("post:"+p.id,row?.reaction==="more"?null:"more","")}>
-               🔥 {row?.reaction==="more"?"Stamped":"More of this"}
-             </button>
-           </div>;
-         })}</div>
-       </details>
-     </>:
-     access==="owner"?<>
-       {loading?<p className="stamp-soft">Loading…</p>:
-        weekly?<div className="stamp-owner-view">
-          {weekly.reaction&&<span className="stamp-owner-symbol">{reactionIcon(weekly.reaction)} {reactionText(weekly.reaction)}</span>}
-          {weekly.note&&<p>“{weekly.note}”</p>}
-          <small>{conciseDate(weekly.updated_at)}</small>
-        </div>:
-        <p className="stamp-soft">No stamp yet.</p>}
-       {postStamps.length>0&&<div className="stamp-owner-posts">{postStamps.map(p=><span key={p.post_key}>
-         🔥 {featured.find(x=>"post:"+x.id===p.post_key)?.title??"Post"}
-       </span>)}</div>}
-       <button type="button" className="stamp-account-link" onClick={()=>void signOut()}>Sign out</button>
-     </>:
-     access==="unapproved"?<div className="stamp-auth"><p>This space is reserved for Dr. Frew.</p><button type="button" onClick={()=>void signOut()}>Sign out</button></div>:
-     access==="unavailable"?<p className="stamp-soft">Stamps are temporarily unavailable.</p>:
-     <div className="stamp-guest">
-       {!loginOpen?<div className="stamp-guest-row">
-         <div className="stamp-preview" aria-hidden="true">👀 <span>🔥</span> 💬</div>
-         <button type="button" onClick={()=>setLoginOpen(true)}>Leave a stamp</button>
-       </div>:sent?<div className="stamp-sent">
-         <Mail size={16}/><span>Check your inbox for the sign-in link.</span>
-         <button type="button" onClick={()=>setSent(false)}>Resend</button>
-       </div>:<form className="stamp-login" onSubmit={e=>void login(e)}>
-         <label htmlFor="stamp-email">Your email</label>
-         <div><input id="stamp-email" type="email" autoComplete="email" required value={email}
-           placeholder="Work email" onChange={e=>setEmail(e.target.value)}/>
-           <button type="submit" disabled={busy!==null}>{busy==="login"?"Sending…":"Email me a sign-in link"}</button>
-         </div>
-         <small>No password. Only Dr. Frew can leave a stamp.</small>
-       </form>}
-     </div>}
-    {error&&<p className="stamp-error" role="alert">{error}</p>}
-  </section>;
+  }
+
+  const mark=weekly?.reaction?reactionIcon(weekly.reaction):"✳";
+  const hasFeedback=Boolean(weekly||postStamps.length);
+  return <div className="stamp-inline" aria-label="Frew's feedback">
+    <button className="stamp-trigger" type="button" aria-expanded={open}
+      onClick={()=>setOpen(o=>!o)}>
+      <span aria-hidden="true">{access==="frew"&&weekly?.reaction?mark:"✳"}</span>
+      <span>{access==="owner"&&hasFeedback?"Frew left a mark":access==="frew"&&hasFeedback?"Your stamp":"Leave a stamp"}</span>
+      <ChevronDown size={12} className={open?"stamp-rotate":""}/>
+    </button>
+    {open&&<div className="stamp-popover" role="region" aria-label="Stamp this week's report">
+      <div className="stamp-popover-head"><strong>{access==="owner"?"Frew's take":"One little stamp"}</strong>
+        <button type="button" aria-label="Close stamps" onClick={()=>setOpen(false)}><X size={15}/></button>
+      </div>
+      {access==="loading"?<p className="stamp-muted">Opening…</p>:
+      access==="frew"?<>
+        <div className="stamp-choices">
+          {reactions.map(item=><button key={item.id} type="button" disabled={busy}
+            aria-pressed={weekly?.reaction===item.id}
+            className={weekly?.reaction===item.id?"is-selected":""}
+            onClick={()=>void save("week",weekly?.reaction===item.id?null:item.id,draft)}>
+            <span aria-hidden="true">{item.icon}</span><small>{item.label}</small>
+          </button>)}
+        </div>
+        <div className="stamp-inline-tools">
+          <button type="button" onClick={()=>setShowNote(v=>!v)}>{weekly?.note?"Edit note":"+ Add a note"}</button>
+          {weekly&&<span><Check size={12}/> Saved</span>}
+        </div>
+        {showNote&&<div className="stamp-note">
+          <textarea maxLength={350} rows={2} value={draft}
+            onChange={e=>setDraft(e.target.value)} aria-label="Note for Amy"
+            placeholder="A quick thought…"/>
+          <button type="button" disabled={busy||draft.trim()===(weekly?.note??"")}
+            onClick={()=>void save("week",weekly?.reaction??null,draft)}>Save note</button>
+        </div>}
+        {featured.length>0&&<div className="stamp-posts">
+          <button type="button" className="stamp-posts-toggle" onClick={()=>setShowPosts(v=>!v)}>
+            Stamp a post <ChevronDown size={12} className={showPosts?"stamp-rotate":""}/>
+          </button>
+          {showPosts&&featured.map(p=>{
+            const selected=postStamps.some(s=>s.post_key==="post:"+p.id&&s.reaction==="more");
+            return <div key={p.id} className="stamp-post-item">
+              <span>{p.title}</span>
+              <button type="button" disabled={busy} aria-pressed={selected}
+                onClick={()=>void save("post:"+p.id,selected?null:"more","")}>{selected?"🔥 Saved":"🔥"}</button>
+            </div>;
+          })}
+        </div>}
+        <button className="stamp-signout" type="button" onClick={()=>void signOut()}>Sign out</button>
+      </>:
+      access==="owner"?<>
+        {hasFeedback?<div className="stamp-owner">
+          {weekly?.reaction&&<strong>{reactionIcon(weekly.reaction)} {reactionText(weekly.reaction)}</strong>}
+          {weekly?.note&&<p>“{weekly.note}”</p>}
+          {postStamps.map(stamp=><small key={stamp.post_key}>
+            🔥 {featured.find(p=>"post:"+p.id===stamp.post_key)?.title??"Post"}
+          </small>)}
+        </div>:<p className="stamp-muted">Nothing yet.</p>}
+        <button className="stamp-signout" type="button" onClick={()=>void signOut()}>Sign out</button>
+      </>:
+      access==="guest"?sent?<p className="stamp-muted"><Mail size={14}/> Check your inbox.</p>:
+        <form onSubmit={e=>void login(e)} className="stamp-login-inline">
+          <label htmlFor="stamp-email">Sign in to stamp</label>
+          <input id="stamp-email" type="email" value={email} autoComplete="email"
+            placeholder="Work email" required onChange={e=>setEmail(e.target.value)}/>
+          <button type="submit" disabled={busy}>{busy?"Sending…":"Send link"}</button>
+        </form>:
+      access==="unapproved"?<p className="stamp-muted">For Dr. Frew only.</p>:
+        <p className="stamp-muted">Unavailable for now.</p>}
+      {error&&<p className="stamp-error" role="alert">{error}</p>}
+    </div>}
+  </div>;
 }
