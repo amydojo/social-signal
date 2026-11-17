@@ -1,7 +1,7 @@
 "use client";
 
 import {useEffect,useState} from "react";
-import {ArrowLeft,Download,FileText,ExternalLink,ChevronDown,CalendarDays,ImageIcon} from "lucide-react";
+import {Download,FileText,ExternalLink,ChevronDown,CalendarDays,ImageIcon} from "lucide-react";
 import {posts as metricoolPosts, stories as metricoolStories, snapshot} from "../report-data";
 import {historicalPosts} from "../history-data";
 import archiveIndex from "../../public/media/archive/index.json";
@@ -145,7 +145,7 @@ export default function FrewDashboard(){
   return <div className="executive-shell">
     <header className="executive-masthead">
       <div className="executive-brand"><span className="executive-logomark">O.</span><span>OPUS<span className="executive-word-divider">/</span> WEEKLY PULSE</span></div>
-      <a href="/" className="executive-back"><ArrowLeft size={16}/> SIGNAL studio</a>
+      <span className="executive-audience">PREPARED FOR DR. FREW</span>
     </header>
     <main className="executive-main">
       <section className="executive-intro">
