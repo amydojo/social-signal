@@ -201,7 +201,7 @@ export default function FrewDashboard(){
           <h2>By account</h2>
         </div>
         <div className="executive-platform-list">
-          {channels.map(c=><div className="executive-platform-row" key={c.platform+c.account}>
+          {channels.map(c=><div className={"executive-platform-row"+(extract(c).length?"":" executive-channel-empty")} key={c.platform+c.account}>
             <div className="executive-account-title"><b>{c.platform}</b><span>{c.account}</span><small>{c.period}</small></div>
             <div className="executive-account-numbers">
               {extract(c).length?extract(c).map(m=><div key={m.label}><strong>{fmt(m.value)}{m.unit?" "+m.unit:""}</strong><span>{m.label}</span></div>):<span className="executive-data-unavailable">{c.note||"No verified weekly figures"}</span>}
