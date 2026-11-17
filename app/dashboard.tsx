@@ -291,7 +291,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
           <h1>{tabs.find(t=>t.id===tab)?.name}</h1>
           <div className="header-sub">
             {tab==="archive"?"Sep–Nov 2026":date(selectedWeek)+"–"+date(endOfWeek(selectedWeek))+", 2026"}
-            <span>·</span> Updated Nov 16
+            <span>·</span> Updated Nov 17
           </div>
         </div>
         <div className="app-header-actions">
@@ -494,7 +494,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
 
       <MediaPreviewModal key={selectedPost?.id??selectedStory?.id??"none"} post={selectedPost} story={selectedStory} onClose={closeMedia}/>
       <footer className="app-footer">
-        <span>OPUS / SIGNAL · Updated Nov 16, 2026</span>
+        <span>OPUS / SIGNAL · Updated Nov 17, 2026</span>
         <span>Read-only public snapshot · Not live</span>
       </footer>
     </main>
