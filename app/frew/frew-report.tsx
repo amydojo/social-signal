@@ -44,16 +44,18 @@ const latestChannels:LeadershipChannel[]=[
     {label:"Story replies",value:snapshot.story_replies}
   ]},
   {platform:"Facebook",account:"OPUS Plastic Surgery",period:"Nov 9–15",source:"metricool",
-    metrics:[{label:"Posts",value:2},{label:"Reel views",value:17},{label:"Carousel impressions",value:1}]}
+    metrics:[{label:"Posts",value:2},{label:"Reel views",value:17},{label:"Carousel impressions",value:1}]},
+  {platform:"TikTok",account:"@opusplasticsurgery",period:"Nov 9–15",source:"metricool",
+    metrics:[],note:"Video stats not reporting"},
+  {platform:"Google Business Profile",account:"OPUS · Upland",period:"Nov 9–15",source:"metricool",
+    metrics:[],note:"Weekly totals unavailable"}
 ];
 // Keep accounts discoverable without silently reusing Nov 2–6 statistics.
 const otherAccounts=[
   {platform:"Instagram",account:"@dr.frew"},
   {platform:"Instagram",account:"@opusresults"},
-  {platform:"TikTok",account:"@opusplasticsurgery"},
   {platform:"TikTok",account:"@drtylerfrew"},
-  {platform:"YouTube",account:"OPUS channel"},
-  {platform:"Google Business",account:"OPUS · Upland"}
+  {platform:"YouTube",account:"OPUS channel"}
 ];
 function Cover({url,alt}:{url:string|null;alt:string}){
   const [broken,setBroken]=useState(false);
@@ -121,7 +123,7 @@ export default function FrewDashboard(){
   };
   const old=period==="2026-11-02";
   const rows=old?nov2Log:latestLog;
-  const channels=(old?nov2Channels:latestChannels).filter(c=>c.metrics.some(m=>m.value!=null));
+  const channels=old?nov2Channels:latestChannels;
   const posts=rows.filter(p=>p.format!=="Story");
   const stories=rows.filter(p=>p.format==="Story");
   const first=old?rows.find(p=>p.id==="n2-ig-tamara"):rows.find(p=>p.id==="ig-reel-scar");
@@ -202,12 +204,12 @@ export default function FrewDashboard(){
           {channels.map(c=><div className="executive-platform-row" key={c.platform+c.account}>
             <div className="executive-account-title"><b>{c.platform}</b><span>{c.account}</span><small>{c.period}</small></div>
             <div className="executive-account-numbers">
-              {extract(c).map(m=><div key={m.label}><strong>{fmt(m.value)}{m.unit?" "+m.unit:""}</strong><span>{m.label}</span></div>)}
+              {extract(c).length?extract(c).map(m=><div key={m.label}><strong>{fmt(m.value)}{m.unit?" "+m.unit:""}</strong><span>{m.label}</span></div>):<span className="executive-data-unavailable">{c.note||"No verified weekly figures"}</span>}
             </div>
           </div>)}
         </div>
         {!old&&<div className="executive-other-accounts">
-          <div className="executive-other-head"><b>Other accounts</b><span>No figures for Nov 9–15</span></div>
+          <div className="executive-other-head"><b>Other accounts</b><span>Not connected to reporting</span></div>
           <div className="executive-other-list">
             {otherAccounts.map(c=><span key={c.platform+c.account}>{c.platform} <b>{c.account}</b></span>)}
           </div>
@@ -249,7 +251,7 @@ export default function FrewDashboard(){
             weekStart={period}
             featured={[first,second].filter((p):p is LeadershipLog=>Boolean(p)).map(p=>({id:p.id,title:p.title}))}
           />
-          <span>Updated Nov 16, 2026</span>
+          <span>Updated Nov 17, 2026</span>
         </div>
       </footer>
     </main>
