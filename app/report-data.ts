@@ -19,7 +19,7 @@ export const snapshot: Snapshot = {
   story_impressions: 3254,
   story_replies: 6,
   account_data_through: "2026-11-13",
-  coverage_notes: "Instagram post metrics refreshed Nov 17. TikTok is linked but returned no video rows and zero-valued account reports for Nov 9–15; do not infer zero publishing. YouTube returned no published videos; GBP has no verified activity totals for this week. Dr. Frew and OPUS Results personal profiles are not linked to this source. Instagram account-wide views/reach are incomplete; Google Ads Nov 9–14 remain unverified."
+  coverage_notes: "Instagram post metrics refreshed Nov 17. TikTok is linked but returned no video rows and zero-valued account reports for Nov 9–15; do not infer zero publishing. The linked YouTube account is Amy Do, not confirmed as OPUS, and it returned no published videos; GBP has no verified activity totals this week. Dr. Frew, OPUS Results, and the separate TikTok are not linked. Instagram account-wide views/reach are incomplete; Google Ads Nov 9–14 remain unverified."
 };
 
 export const posts: Post[] = [
@@ -49,11 +49,11 @@ export const coverage: Coverage[] = [
   {channel:"Instagram",account:"@opusplasticsurgery",status:"Connected",data:"3 feed posts + 12 Stories",limitation:"Account views and reach not returned Nov 14–15"},
   {channel:"Facebook",account:"OPUS Facebook",status:"Connected",data:"1 Reel + 1 carousel",limitation:"Sparse metrics; Reel 17 views with reported reach 0"},
   {channel:"TikTok",account:"@opusplasticsurgery",status:"Connected",data:"No post-level rows returned",limitation:"Insufficient observations to infer posting or weekly performance"},
-  {channel:"YouTube",account:"OPUS YouTube",status:"Connected",data:"No new video rows returned",limitation:"Subscriber data only; broader analytics sparse"},
+  {channel:"YouTube",account:"Amy Do (connected)",status:"Connected",data:"No new video rows returned",limitation:"This is not the OPUS channel; its numbers must not be attributed to OPUS."},
   {channel:"Google Business Profile",account:"OPUS GBP",status:"Connected",data:"No media/post rows returned",limitation:"Only Nov 15 zero daily observation"},
   {channel:"Meta Ads",account:"OPUS Meta Ads",status:"Connected",data:"7 daily zero-spend, zero-click rows",limitation:"No campaign or ad rows were returned"},
   {channel:"Google Ads",account:"OPUS Google Ads",status:"Connected",data:"One zero row (Nov 15)",limitation:"Nov 9–14 absent: weekly spend unknown"},
-  {channel:"Separate OPUS accounts",account:"@dr.frew / results",status:"Not included",data:"Separate account data",limitation:"Independent account reporting required"}
+  {channel:"Separate OPUS accounts",account:"@dr.frew / @opusresults / @drtylerfrew / OPUS YouTube",status:"Not included",data:"Separate account data",limitation:"These profiles are not linked to the connected OPUS brand."}
 ];
 
 export const socialDaily: DailySocial[] = [
@@ -83,7 +83,7 @@ export const insights: Insight[] = [
   {id:"action-1",kind:"action",position:1,title:"Test another specific surgical observation",body:"Open a new Reel with a patient-relevant detail and measure three-second skips against comparable recent Reels."},
   {id:"action-2",kind:"action",position:2,title:"Sharpen the carousel takeaway",body:"The belly-bulge carousel has 852 views, 7 interactions and zero saves as of Nov 17. Give the next carousel one concrete question worth saving."},
   {id:"action-3",kind:"action",position:3,title:"Close the loop on consultations",body:"Connect comments, DMs and tracked consult requests to content where possible; do not equate social engagement with bookings."},
-  {id:"caveat-1",kind:"caveat",position:1,title:"Not all channels returned complete data",body:"TikTok returned no video data despite a connected profile; YouTube has no videos returned; GBP has no current week totals. Other named OPUS profiles are not linked."},
+  {id:"caveat-1",kind:"caveat",position:1,title:"Not all channels returned complete data",body:"TikTok returned no usable video data despite a connected profile; YouTube is linked to Amy Do instead of OPUS; GBP has no current week totals. Other OPUS profiles are not linked."},
   {id:"caveat-2",kind:"caveat",position:2,title:"Zero and missing are not interchangeable",body:"Meta Ads returned seven actual zero-spend days. Google Ads returned only a zero on Nov 15; the preceding six days are unknown."}
 ];
 
