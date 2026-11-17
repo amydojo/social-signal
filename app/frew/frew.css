@@ -6,8 +6,7 @@
 .executive-brand{display:flex;align-items:center;gap:15px;font-size:11px;font-weight:750;letter-spacing:.16em;white-space:nowrap}
 .executive-logomark{font:36px/.85 Georgia,serif;letter-spacing:-.07em;color:#995b47}
 .executive-word-divider{color:#a99789;margin:0 10px}
-.executive-back{display:inline-flex;align-items:center;gap:8px;color:#5f534b;text-decoration:none;font-size:12px;font-weight:600;white-space:nowrap}
-.executive-back:hover{color:#a1604d}
+.executive-audience{font-size:10px;letter-spacing:.13em;color:#987d70;font-weight:700;white-space:nowrap}
 .executive-main{max-width:1360px;padding:0 clamp(22px,4.5vw,65px) 42px;margin:auto}
 .executive-intro{margin-top:28px;background:#30231f;color:#f8f3ea;border-radius:5px;overflow:hidden;position:relative}
 .executive-intro:after{content:"";position:absolute;top:-180px;right:-150px;width:430px;height:430px;border-radius:50%;border:1px solid #ffffff10;pointer-events:none}
@@ -105,8 +104,7 @@
   .executive-brand{gap:8px;font-size:9px;letter-spacing:.09em}
   .executive-word-divider{margin:0 5px}
   .executive-logomark{font-size:29px}
-  .executive-back{font-size:10px;gap:4px}
-  .executive-back svg{width:13px}
+  .executive-audience{font-size:9px;letter-spacing:.08em}
   .executive-main{padding:0 13px 25px}
   .executive-intro{margin-top:13px}
   .executive-edition{padding:14px 16px}
@@ -143,7 +141,7 @@
 @media print{
   .executive-shell{background:white}
   .executive-masthead{border:0;height:42px}
-  .executive-back,.executive-week-control,.executive-detail-controls,.executive-bottom{display:none!important}
+  .executive-week-control,.executive-detail-controls,.executive-bottom{display:none!important}
   .executive-intro{margin-top:5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .executive-main{max-width:none;padding:0 8mm}
   .executive-hero-grid{padding:24px}
