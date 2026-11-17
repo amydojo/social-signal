@@ -20,12 +20,6 @@ export type LeadershipLog = {
   ctaChecked:boolean|null;complianceChecked:boolean|null;
 };
 
-export const reportingSources = {
-  sheet:"https://docs.google.com/spreadsheets/d/1eUafaf7l3GG1xJvVRsp9VrHdm2kXIQX1uELbTg-CYsw/edit",
-  nov2Evidence:"https://drive.google.com/drive/folders/1FoMEC0IA-E3fvDDWi2lXgdWV0wYuYyP-",
-  screenshotsRoot:"https://drive.google.com/drive/folders/1CEnh3ZU8RCDWMOt1Yh2Wn0Cks6qvoxQr"
-};
-
 export const nov2Channels:LeadershipChannel[]=[
  {platform:"Instagram",account:"@opusplasticsurgery",period:"Nov 2–6",source:"sheet",metrics:[{label:"Followers",value:280},{label:"Gained",value:12},{label:"Reach",value:1112},{label:"Engaged",value:85},{label:"Story views",value:911},{label:"Story replies",value:1}]},
  {platform:"Instagram",account:"@dr.frew",period:"Nov 2–6",source:"sheet",metrics:[{label:"Followers",value:2394},{label:"Gained",value:9},{label:"Reach",value:6978},{label:"Engaged",value:140},{label:"Story views",value:3300},{label:"Story replies",value:6}]},
