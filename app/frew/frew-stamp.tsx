@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState,type FormEvent} from "react";
 import {createBrowserClient} from "@supabase/ssr";
-import {Check,ChevronDown,LockKeyhole,Mail,MessageCircle,RotateCcw} from "lucide-react";
+import {Check,ChevronDown,LockKeyhole,Mail,MessageCircle} from "lucide-react";
 
 type Reaction="seen"|"more"|"discuss";
 type Access="loading"|"guest"|"frew"|"owner"|"unapproved"|"unavailable";
@@ -55,7 +55,7 @@ export default function FrewStamp({weekStart,featured}:{weekStart:string;feature
   useEffect(()=>{
     let active=true;
     if(!supabase||(access!=="owner"&&access!=="frew")){setStamps([]);return;}
-    setLoading(true);setError("");
+    setStamps([]);setLoading(true);setError("");
     void supabase.from("signal_frew_stamps")
       .select("post_key,reaction,note,updated_at")
       .eq("week_start",weekStart)
