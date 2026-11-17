@@ -277,8 +277,8 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
           onClick={()=>setView(t.id)} aria-pressed={tab===t.id} className={tab===t.id?"active":""}>
           <t.icon size={17}/><span className="nav-label">{t.name}</span>
         </button>)}
-        <a href="/frew" className="frew-nav-link" title="Dr. Frew report" aria-label="Open Dr. Frew performance report">
-          <ClipboardList size={17}/><span className="nav-label">Dr. Frew report</span>
+        <a href="/frew" className="frew-nav-link" title="Weekly Pulse" aria-label="Open OPUS Weekly Pulse leadership brief">
+          <ClipboardList size={17}/><span className="nav-label">Weekly Pulse</span>
         </a>
       </nav>
       <div className="sidebar-foot"><span className="status-dot"/><span className="sidebar-foot-label">Read-only snapshot</span></div>
