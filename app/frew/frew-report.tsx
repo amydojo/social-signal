@@ -194,11 +194,6 @@ export default function FrewDashboard(){
         </div>
       </section>
 
-      <FrewStamp
-        weekStart={period}
-        featured={[first,second].filter((p):p is LeadershipLog=>Boolean(p)).map(p=>({id:p.id,title:p.title}))}
-      />
-
       <section className="executive-platform-section">
         <div className="executive-section-heading">
           <h2>By account</h2>
@@ -247,7 +242,16 @@ export default function FrewDashboard(){
           </details>
         </div>
       </section>
-      <footer className="executive-footer"><span>OPUS / WEEKLY PULSE</span><span>Updated Nov 16, 2026</span></footer>
+      <footer className="executive-footer">
+        <span>OPUS / WEEKLY PULSE</span>
+        <div className="executive-footer-actions">
+          <FrewStamp
+            weekStart={period}
+            featured={[first,second].filter((p):p is LeadershipLog=>Boolean(p)).map(p=>({id:p.id,title:p.title}))}
+          />
+          <span>Updated Nov 16, 2026</span>
+        </div>
+      </footer>
     </main>
   </div>;
 }
