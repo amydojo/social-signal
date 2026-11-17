@@ -291,7 +291,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
           <h1>{tabs.find(t=>t.id===tab)?.name}</h1>
           <div className="header-sub">
             {tab==="archive"?"Sep–Nov 2026":date(selectedWeek)+"–"+date(endOfWeek(selectedWeek))+", 2026"}
-            <span>·</span> Metricool export, Nov 16
+            <span>·</span> Updated Nov 16
           </div>
         </div>
         <div className="app-header-actions">
@@ -415,7 +415,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
           <Stat label="Older Stories logged" value={num(historicalStories.length)} note="Original images expired for this period"/>
         </section>
         <section className="surface archive-controls">
-          <div className="section-head"><h2>Published content</h2><span>Images from Metricool</span></div>
+          <div className="section-head"><h2>Published content</h2><span>Saved post images</span></div>
           <div className="filter-line">
             <div className="segmented archive-months">
               {([["all","All"],["2026-09","Sep"],["2026-10","Oct"],["2026-11","Nov"]] as const).map(([v,label])=><button type="button" key={v} aria-pressed={archiveMonth===v} onClick={()=>setArchiveMonth(v)}>{label}</button>)}
@@ -459,7 +459,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
           </section>
         </div>
         <section className="surface coverage-surface">
-          <SectionHead title="Source coverage" meta="Metricool / @opusplasticsurgery"/>
+          <SectionHead title="Source coverage" meta="@opusplasticsurgery"/>
           <div className="coverage-list">
             {coverage.map(c=><details key={c.channel} className="coverage-row">
               <summary><span>{c.channel}</span><span className="coverage-summary">{c.data}</span><ChevronDown size={15}/></summary>
@@ -488,13 +488,13 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
         </details>
       </> : <section className="surface period-unavailable">
         <SectionHead title="Paid data" meta={date(selectedWeek)+" – "+date(endOfWeek(selectedWeek))}/>
-        <p>Metricool advertising data wasn't included in the earlier backfill. Choose Nov 9–15 to view the available ad records.</p>
+        <p>Earlier ad records aren't available here. Choose Nov 9–15 for the available data.</p>
         <button type="button" className="inline-action" onClick={()=>changeWeek(snapshot.week_start)}>View latest ad data <ArrowUpRight size={14}/></button>
       </section>)}
 
       <MediaPreviewModal key={selectedPost?.id??selectedStory?.id??"none"} post={selectedPost} story={selectedStory} onClose={closeMedia}/>
       <footer className="app-footer">
-        <span>Source: Metricool · Export Nov 16, 2026</span>
+        <span>OPUS / SIGNAL · Updated Nov 16, 2026</span>
         <span>Read-only public snapshot · Not live</span>
       </footer>
     </main>
