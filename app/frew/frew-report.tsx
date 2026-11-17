@@ -1,7 +1,7 @@
 "use client";
 
 import {useEffect,useState} from "react";
-import {ArrowLeft,ArrowUpRight,Download,FileText,ExternalLink,ChevronDown,CalendarDays,ImageIcon} from "lucide-react";
+import {ArrowLeft,Download,FileText,ExternalLink,ChevronDown,CalendarDays,ImageIcon} from "lucide-react";
 import {posts as metricoolPosts, stories as metricoolStories, snapshot} from "../report-data";
 import {historicalPosts} from "../history-data";
 import archiveIndex from "../../public/media/archive/index.json";
@@ -72,7 +72,7 @@ function extract(ch:LeadershipChannel){
   const chosen=priority.map(label=>ch.metrics.find(m=>m.label===label)).filter((m):m is NonNullable<typeof m>=>!!m&&m.value!=null);
   return chosen.length?chosen.slice(0,3):ch.metrics.filter(m=>m.value!=null).slice(0,3);
 }
-function Download({rows,period}:{rows:LeadershipLog[];period:Period}){
+function DownloadCsv({rows,period}:{rows:LeadershipLog[];period:Period}){
   return <button type="button" className="executive-export" onClick={()=>{
     const head=["Date","Platform","Account","Format","Post","Original URL","Views / story impressions","Likes","Comments","Shares","Saves"];
     const data=rows.map(p=>[p.date,p.platform,p.account,p.format,p.title,p.url,p.views,p.likes,p.comments,p.shares,p.saves]);
@@ -233,7 +233,7 @@ export default function FrewDashboard(){
             <div className="executive-source-body">
               <p>{report.context} These snapshots are not yet a verified live sync. Views, impressions, reach and clicks measure different things.</p>
               <div className="executive-source-actions">
-                <Download rows={rows} period={period}/>
+                <DownloadCsv rows={rows} period={period}/>
                 <button type="button" onClick={()=>window.print()} className="executive-export"><FileText size={15}/> Save PDF</button>
                 <a href={reportingSources.sheet} target="_blank" rel="noopener noreferrer">Original source <ExternalLink size={14}/></a>
               </div>
