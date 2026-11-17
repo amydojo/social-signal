@@ -9,7 +9,7 @@ export const snapshot: Snapshot = {
   week_start: "2026-11-09",
   week_end: "2026-11-15",
   captured_at: "2026-11-16",
-  source: "Metricool · November 16 export",
+  source: "OPUS analytics · November 16 snapshot",
   reel_views: 1803,
   reel_interactions: 40,
   feed_views: 2501,
