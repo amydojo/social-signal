@@ -33,6 +33,9 @@ const latestLog:LeadershipLog[]=[
   }))
 ].sort((a,b)=>b.date.localeCompare(a.date));
 
+// Keep every account visible, with its latest independently verified reporting period.
+// Metricool brand 7930515 currently covers @opusplasticsurgery, not @dr.frew or @opusresults.
+// The Nov 9–15 Metricool export does not provide reliable other-channel coverage.
 const latestChannels:LeadershipChannel[]=[
   {platform:"Instagram",account:"@opusplasticsurgery",period:"Nov 9–15",source:"metricool",metrics:[
     {label:"Feed posts",value:3},{label:"Feed views",value:snapshot.feed_views??null},
@@ -41,8 +44,11 @@ const latestChannels:LeadershipChannel[]=[
     {label:"Story impressions",value:snapshot.story_impressions??null},
     {label:"Story replies",value:snapshot.story_replies}
   ]},
+  ...nov2Channels.filter(ch=>ch.platform==="Instagram"&&ch.account!=="@opusplasticsurgery"),
+  ...nov2Channels.filter(ch=>ch.platform==="TikTok"),
   {platform:"Facebook",account:"OPUS Plastic Surgery",period:"Nov 9–15",source:"metricool",
-    metrics:[{label:"Posts",value:2},{label:"Reel views",value:17},{label:"Carousel impressions",value:1}]}
+    metrics:[{label:"Posts",value:2},{label:"Reel views",value:17},{label:"Carousel impressions",value:1}]},
+  ...nov2Channels.filter(ch=>ch.platform==="YouTube"||ch.platform==="Google Business Profile")
 ];
 
 function Cover({url,alt}:{url:string|null;alt:string}){
@@ -65,7 +71,7 @@ function coverFor(p:LeadershipLog){
 }
 function extract(ch:LeadershipChannel){
   const priority=ch.platform==="Google Business Profile"?["Website clicks","Calls","Directions"]:
-    ch.platform==="Instagram"?["Reach","Engaged","Followers","Feed views","Feed interactions","Story impressions"]:
+    ch.platform==="Instagram"?(ch.account==="@opusresults"?["Followers","Reach","Engaged"]:["Feed views","Feed interactions","Reach","Engaged","Followers","Story impressions"]):
     ch.platform==="TikTok"?["Video views","Profile views","Followers"]:
     ch.platform==="YouTube"?["Views","Subscribers","Watch time"]:
     ["Reel views","Carousel impressions","Posts"];
@@ -192,7 +198,7 @@ export default function FrewDashboard(){
         </div>
         <div className="executive-platform-list">
           {channels.map(c=><div className="executive-platform-row" key={c.platform+c.account}>
-            <div className="executive-account-title"><b>{c.platform}</b><span>{c.account}</span></div>
+            <div className="executive-account-title"><b>{c.platform}</b><span>{c.account}</span><small>{c.period}</small></div>
             <div className="executive-account-numbers">
               {extract(c).map(m=><div key={m.label}><strong>{fmt(m.value)}{m.unit?" "+m.unit:""}</strong><span>{m.label}</span></div>)}
             </div>
@@ -230,7 +236,7 @@ export default function FrewDashboard(){
           </details>
         </div>
       </section>
-      <footer className="executive-footer"><span>OPUS / WEEKLY PULSE</span><span>Metricool · Nov 16 snapshot</span></footer>
+      <footer className="executive-footer"><span>OPUS / WEEKLY PULSE</span><span>Metricool + OPUS reporting · Nov 16 snapshot</span></footer>
     </main>
   </div>;
 }
