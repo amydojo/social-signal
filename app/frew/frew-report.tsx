@@ -5,7 +5,7 @@ import {Download,FileText,ExternalLink,ChevronDown,CalendarDays,ImageIcon} from 
 import {posts as metricoolPosts, stories as metricoolStories, snapshot} from "../report-data";
 import {historicalPosts} from "../history-data";
 import archiveIndex from "../../public/media/archive/index.json";
-import {nov2Channels,nov2Log,reportingSources,type LeadershipLog,type LeadershipChannel} from "./frew-data";
+import {nov2Channels,nov2Log,type LeadershipLog,type LeadershipChannel} from "./frew-data";
 
 type Period="2026-11-09"|"2026-11-02";
 const savedCovers=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
@@ -33,24 +33,27 @@ const latestLog:LeadershipLog[]=[
   }))
 ].sort((a,b)=>b.date.localeCompare(a.date));
 
-// Keep every account visible, with its latest independently verified reporting period.
-// Metricool brand 7930515 currently covers @opusplasticsurgery, not @dr.frew or @opusresults.
-// The Nov 9–15 Metricool export does not provide reliable other-channel coverage.
+// Period scoped: never mix historical account metrics into a different week.
 const latestChannels:LeadershipChannel[]=[
   {platform:"Instagram",account:"@opusplasticsurgery",period:"Nov 9–15",source:"metricool",metrics:[
-    {label:"Feed posts",value:3},{label:"Feed views",value:snapshot.feed_views??null},
+    {label:"Feed views",value:snapshot.feed_views??null},
     {label:"Feed interactions",value:snapshot.feed_interactions??null},
     {label:"Stories",value:snapshot.story_count},
     {label:"Story impressions",value:snapshot.story_impressions??null},
     {label:"Story replies",value:snapshot.story_replies}
   ]},
-  ...nov2Channels.filter(ch=>ch.platform==="Instagram"&&ch.account!=="@opusplasticsurgery"),
-  ...nov2Channels.filter(ch=>ch.platform==="TikTok"),
   {platform:"Facebook",account:"OPUS Plastic Surgery",period:"Nov 9–15",source:"metricool",
-    metrics:[{label:"Posts",value:2},{label:"Reel views",value:17},{label:"Carousel impressions",value:1}]},
-  ...nov2Channels.filter(ch=>ch.platform==="YouTube"||ch.platform==="Google Business Profile")
+    metrics:[{label:"Posts",value:2},{label:"Reel views",value:17},{label:"Carousel impressions",value:1}]}
 ];
-
+// Keep accounts discoverable without silently reusing Nov 2–6 statistics.
+const otherAccounts=[
+  {platform:"Instagram",account:"@dr.frew"},
+  {platform:"Instagram",account:"@opusresults"},
+  {platform:"TikTok",account:"@opusplasticsurgery"},
+  {platform:"TikTok",account:"@drtylerfrew"},
+  {platform:"YouTube",account:"OPUS channel"},
+  {platform:"Google Business",account:"OPUS · Upland"}
+];
 function Cover({url,alt}:{url:string|null;alt:string}){
   const [broken,setBroken]=useState(false);
   useEffect(()=>setBroken(false),[url]);
@@ -80,7 +83,7 @@ function extract(ch:LeadershipChannel){
 }
 function DownloadCsv({rows,period}:{rows:LeadershipLog[];period:Period}){
   return <button type="button" className="executive-export" onClick={()=>{
-    const head=["Date","Platform","Account","Format","Post","Original URL","Views / story impressions","Likes","Comments","Shares","Saves"];
+    const head=["Date","Platform","Account","Format","Post","Post link","Views / story impressions","Likes","Comments","Shares","Saves"];
     const data=rows.map(p=>[p.date,p.platform,p.account,p.format,p.title,p.url,p.views,p.likes,p.comments,p.shares,p.saves]);
     const blob=new Blob([csv([head,...data])],{type:"text/csv;charset=utf-8"});
     const file=URL.createObjectURL(blob);
@@ -132,8 +135,7 @@ export default function FrewDashboard(){
       {label:"WEBSITE CLICKS",value:4,detail:"Google Business"},
       {label:"CALLS",value:1,detail:"Google Business"}
     ],
-    action:"Pair another team introduction with a simple procedure explainer.",
-    context:"Source: Weekly Social Insights · Nov 2–6 totals; the publication log also includes Nov 8 Stories."
+    action:"Pair another team introduction with a simple procedure explainer."
   }:{
     statement:"The scar Reel led in views.",
     summary:"The consultation Reel earned more interactions.",
@@ -143,8 +145,7 @@ export default function FrewDashboard(){
       {label:"STORY IMPRESSIONS",value:snapshot.story_impressions??null,detail:"12 Stories"},
       {label:"STORY REPLIES",value:snapshot.story_replies,detail:"12 Stories"}
     ],
-    action:"Open with a surgical detail. End with a patient question.",
-    context:"Source: Metricool · Nov 16 snapshot. Feed views are cumulative for the posts published that week."
+    action:"Open with a surgical detail. End with a patient question."
   };
   return <div className="executive-shell">
     <header className="executive-masthead">
@@ -204,6 +205,12 @@ export default function FrewDashboard(){
             </div>
           </div>)}
         </div>
+        {!old&&<div className="executive-other-accounts">
+          <div className="executive-other-head"><b>Other accounts</b><span>No figures for Nov 9–15</span></div>
+          <div className="executive-other-list">
+            {otherAccounts.map(c=><span key={c.platform+c.account}>{c.platform} <b>{c.account}</b></span>)}
+          </div>
+        </div>}
       </section>
 
       <section className="executive-bottom">
@@ -224,19 +231,17 @@ export default function FrewDashboard(){
             </div>)}</div>
           </details>
           <details className="executive-detail">
-            <summary>Export & sources <ChevronDown size={17}/></summary>
+            <summary>Download report <ChevronDown size={17}/></summary>
             <div className="executive-source-body">
-              <p>{report.context} Historical post counts are cumulative at capture, not views earned that week. Not live-synced yet.</p>
               <div className="executive-source-actions">
                 <DownloadCsv rows={rows} period={period}/>
                 <button type="button" onClick={()=>window.print()} className="executive-export"><FileText size={15}/> Save PDF</button>
-                <a href={reportingSources.sheet} target="_blank" rel="noopener noreferrer">Original source <ExternalLink size={14}/></a>
               </div>
             </div>
           </details>
         </div>
       </section>
-      <footer className="executive-footer"><span>OPUS / WEEKLY PULSE</span><span>Metricool + OPUS reporting · Nov 16 snapshot</span></footer>
+      <footer className="executive-footer"><span>OPUS / WEEKLY PULSE</span><span>Updated Nov 16, 2026</span></footer>
     </main>
   </div>;
 }
