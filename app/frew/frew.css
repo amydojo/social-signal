@@ -198,3 +198,13 @@
 .executive-account-title small{display:block;color:#9b8c82;font-size:10px;font-weight:500;letter-spacing:.015em;margin-top:2px}
 .executive-platform-row{min-height:98px;padding:19px 2px}
 @media(max-width:520px){.executive-platform-row{padding:17px 0}.executive-account-title small{font-size:10px}}
+
+/* Accounts without same-week verified metrics remain identifiable, not quantified. */
+.executive-other-accounts{padding:19px 2px 2px}
+.executive-other-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:13px}
+.executive-other-head b{font-size:12px;font-weight:640;color:#5b4c43}
+.executive-other-head span{font-size:10px;color:#978a81}
+.executive-other-list{display:flex;flex-wrap:wrap;gap:7px}
+.executive-other-list>span{display:inline-flex;gap:6px;align-items:baseline;border:1px solid #e0d5ca;background:#fffdf9;border-radius:5px;padding:9px 11px;font-size:10px;color:#8e7c70;line-height:1.2}
+.executive-other-list b{font-size:11px;color:#3f312b;font-weight:650}
+@media(max-width:520px){.executive-other-accounts{padding-top:15px}.executive-other-head span{font-size:9px;text-align:right}}
