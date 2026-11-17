@@ -249,3 +249,14 @@
  .stamp-post-popover{left:auto;right:-15px}
 }
 @media print{.stamp-inline{display:none!important}}
+
+/* Connected channels with no credible weekly results stay visible, not inflated. */
+.executive-channel-empty{min-height:66px;padding:13px 2px}
+.executive-channel-empty .executive-account-title{gap:4px}
+.executive-channel-empty .executive-account-numbers{display:block}
+.executive-data-unavailable{display:block;color:#a09388;font-size:11px;line-height:1.4;font-weight:450}
+@media(max-width:520px){
+ .executive-channel-empty{padding:13px 0}
+ .executive-channel-empty .executive-account-title{margin-bottom:8px}
+ .executive-data-unavailable{font-size:10px}
+}
