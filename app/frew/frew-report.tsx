@@ -6,6 +6,7 @@ import {posts as metricoolPosts, stories as metricoolStories, snapshot} from "..
 import {historicalPosts} from "../history-data";
 import archiveIndex from "../../public/media/archive/index.json";
 import {nov2Channels,nov2Log,type LeadershipLog,type LeadershipChannel} from "./frew-data";
+import FrewStamp from "./frew-stamp";
 
 type Period="2026-11-09"|"2026-11-02";
 const savedCovers=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
@@ -192,6 +193,11 @@ export default function FrewDashboard(){
           {second&&<Feature post={second} rank={old?"MOST VIEWED · NEXT":"MOST INTERACTIONS"} metricLabel={old?"views":"views · 23 interactions"}/>}
         </div>
       </section>
+
+      <FrewStamp
+        weekStart={period}
+        featured={[first,second].filter((p):p is LeadershipLog=>Boolean(p)).map(p=>({id:p.id,title:p.title}))}
+      />
 
       <section className="executive-platform-section">
         <div className="executive-section-heading">
