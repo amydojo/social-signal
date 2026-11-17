@@ -3,8 +3,8 @@ import FrewDashboard from "./frew-report";
 import "./frew.css";
 
 export const metadata:Metadata={
-  title:"Dr. Frew Report / SIGNAL",
-  description:"Read-only OPUS weekly performance and reporting status",
+  title:"Weekly Pulse / OPUS",
+  description:"OPUS Weekly Pulse: a concise, read-only performance brief for Dr. Frew",
   robots:{index:false,follow:false,nocache:true}
 };
 export default function FrewPage(){return <FrewDashboard/>;}
