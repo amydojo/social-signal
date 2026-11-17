@@ -1,222 +1,247 @@
 "use client";
 
 import {useEffect,useState} from "react";
-import {ArrowLeft,Download,FileText,ExternalLink,ChevronDown,CalendarDays,Eye,ImageIcon} from "lucide-react";
-import {posts as metricoolPosts, stories as metricoolStories, snapshot as metricoolSnapshot} from "../report-data";
+import {ArrowLeft,ArrowUpRight,Download,FileText,ExternalLink,ChevronDown,CalendarDays,ImageIcon} from "lucide-react";
+import {posts as metricoolPosts, stories as metricoolStories, snapshot} from "../report-data";
 import {historicalPosts} from "../history-data";
 import archiveIndex from "../../public/media/archive/index.json";
 import {nov2Channels,nov2Log,reportingSources,type LeadershipLog,type LeadershipChannel} from "./frew-data";
 
-type Period = "2026-11-09"|"2026-11-02";
-type PlatformFilter="all"|"Instagram"|"Facebook"|"Google Business Profile";
-const savedCovers=new Set(archiveIndex.assets.filter(x=>x.status==="saved").map(x=>x.file));
-const fmt=(value:number|null|undefined)=>value==null?"—":value.toLocaleString("en-US");
+type Period="2026-11-09"|"2026-11-02";
+const savedCovers=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
+const fmt=(n:number|null|undefined)=>n==null?"—":n.toLocaleString("en-US");
 const day=(d:string)=>new Date(d+"T12:00:00Z").toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
-const safeCsv=(rows:(number|string|null|undefined)[][])=>rows.map(r=>r.map(v=>'"'+String(v??"").replaceAll('"','""')+'"').join(",")).join("\r\n");
+const csv=(rows:(number|string|null|undefined)[][])=>rows.map(row=>row.map(v=>'"'+String(v??"").replaceAll('"','""')+'"').join(",")).join("\r\n");
 
-const week9Log:LeadershipLog[]=[
+const latestLog:LeadershipLog[]=[
   ...metricoolPosts.map(p=>({
-    id:p.id,date:p.published_on,platform:p.platform==="instagram"?"Instagram":"Facebook",
+    id:p.id,date:p.published_on,
+    platform:p.platform==="instagram"?"Instagram":"Facebook",
     account:p.platform==="instagram"?"@opusplasticsurgery":"OPUS Plastic Surgery",
     format:p.format??"Post",title:p.title,url:p.permalink,
     views:p.views??p.impressions??null,likes:p.likes,comments:p.comments,shares:p.shares,saves:p.saves,
-    status:null as LeadershipLog["status"],ctaChecked:null,complianceChecked:null
+    status:null,ctaChecked:null,complianceChecked:null
   })),
   ...metricoolStories.map(story=>({
-    id:story.id,date:story.published_at_raw.slice(0,4)+"-"+story.published_at_raw.slice(4,6)+"-"+story.published_at_raw.slice(6,8),
+    id:story.id,
+    date:story.published_at_raw.slice(0,4)+"-"+story.published_at_raw.slice(4,6)+"-"+story.published_at_raw.slice(6,8),
     platform:"Instagram",account:"@opusplasticsurgery",format:"Story",
     title:story.descriptor==="(no story text)"?"Instagram Story":story.descriptor,
-    url:story.permalink||null,views:story.impressions,likes:null,comments:null,shares:null,saves:null,
-    status:null as LeadershipLog["status"],ctaChecked:null,complianceChecked:null
-  })),
+    url:story.permalink||null,views:story.impressions,
+    likes:null,comments:null,shares:null,saves:null,
+    status:null,ctaChecked:null,complianceChecked:null
+  }))
 ].sort((a,b)=>b.date.localeCompare(a.date));
 
-const week9Channels:LeadershipChannel[]=[
-  {platform:"Instagram",account:"@opusplasticsurgery",period:"Nov 9–15",source:"metricool",
-    metrics:[
-      {label:"Feed posts",value:3},{label:"Feed views",value:metricoolSnapshot.feed_views??null},
-      {label:"Feed interactions",value:metricoolSnapshot.feed_interactions??null},
-      {label:"Stories",value:metricoolSnapshot.story_count},{label:"Story impressions",value:metricoolSnapshot.story_impressions??null},{label:"Story replies",value:metricoolSnapshot.story_replies},
-    ]},
+const latestChannels:LeadershipChannel[]=[
+  {platform:"Instagram",account:"@opusplasticsurgery",period:"Nov 9–15",source:"metricool",metrics:[
+    {label:"Feed posts",value:3},{label:"Feed views",value:snapshot.feed_views??null},
+    {label:"Feed interactions",value:snapshot.feed_interactions??null},
+    {label:"Stories",value:snapshot.story_count},
+    {label:"Story impressions",value:snapshot.story_impressions??null},
+    {label:"Story replies",value:snapshot.story_replies}
+  ]},
   {platform:"Facebook",account:"OPUS Plastic Surgery",period:"Nov 9–15",source:"metricool",
-    metrics:[{label:"Posts",value:2},{label:"Reel views",value:17},{label:"Carousel impressions",value:1}],
-    note:"Facebook Reel views and carousel impressions are different metrics, so they aren't added together."},
-  {platform:"TikTok",account:"@opusplasticsurgery / @drtylerfrew",period:"Nov 9–15",source:"metricool",
-    metrics:[],note:"Post-level coverage unavailable in this export; not evidence of zero activity."},
-  {platform:"YouTube",account:"OPUS channel",period:"Nov 9–15",source:"metricool",
-    metrics:[],note:"Video-level coverage unavailable in this export."},
-  {platform:"Google Business Profile",account:"OPUS Upland",period:"Nov 9–15",source:"metricool",
-    metrics:[],note:"Weekly GBP Performance figures not available in this export."},
+    metrics:[{label:"Posts",value:2},{label:"Reel views",value:17},{label:"Carousel impressions",value:1}]}
 ];
 
-function MiniMetric({name,value,detail}:{name:string;value:number|null;detail:string}){
-  return <div className="frew-kpi"><span>{name}</span><strong>{fmt(value)}</strong><small>{detail}</small></div>;
+function Cover({url,alt}:{url:string|null;alt:string}){
+  const [broken,setBroken]=useState(false);
+  useEffect(()=>setBroken(false),[url]);
+  return url&&!broken?<img src={url} alt={alt} loading="lazy" onError={()=>setBroken(true)}/>:<span className="frew-cover-empty"><ImageIcon size={30}/></span>;
 }
-function ImageCover({url,alt}:{url:string|null;alt:string}){
-  const [failed,setFailed]=useState(false);
-  useEffect(()=>setFailed(false),[url]);
-  if(!url||failed)return <span className="frew-thumb-fallback"><ImageIcon size={23}/></span>;
-  return <img src={url} alt={alt} loading="lazy" onError={()=>setFailed(true)}/>;
-}
-function getCover(log:LeadershipLog){
-  if(!log.url)return null;
-  const hist=historicalPosts.find(p=>p.permalink===log.url);
-  if(hist?.thumbnail_path&&savedCovers.has(hist.thumbnail_path))return hist.thumbnail_path;
-  const code=log.url.match(/instagram\.com\/(?:reel|p)\/([^/]+)/)?.[1];
+function coverFor(p:LeadershipLog){
+  if(!p.url)return null;
+  const existing=historicalPosts.find(x=>x.permalink===p.url);
+  if(existing?.thumbnail_path&&savedCovers.has(existing.thumbnail_path))return existing.thumbnail_path;
+  const code=p.url.match(/instagram\.com\/(?:reel|p)\/([^/]+)/)?.[1];
   if(code&&savedCovers.has("/media/archive/ig-"+code+".jpg"))return "/media/archive/ig-"+code+".jpg";
-  if(log.platform==="Facebook"){
-    const counterpart=log.title.toLowerCase().includes("scar")?"DfqeQMZMKqR":log.title.toLowerCase().includes("bulging")?"DftDagtkR6i":null;
-    if(counterpart&&savedCovers.has("/media/archive/ig-"+counterpart+".jpg"))return "/media/archive/ig-"+counterpart+".jpg";
+  if(p.platform==="Facebook"){
+    const key=p.title.toLowerCase().includes("scar")?"DfqeQMZMKqR":
+      p.title.toLowerCase().includes("bulging")?"DftDagtkR6i":null;
+    if(key&&savedCovers.has("/media/archive/ig-"+key+".jpg"))return "/media/archive/ig-"+key+".jpg";
   }
   return null;
 }
-function DownloadButton({rows,period}:{rows:LeadershipLog[];period:Period}){
-  return <button type="button" className="frew-action" onClick={()=>{
-    const head=["Date","Platform","Account","Format","Title","URL","Views / Story Impressions","Likes","Comments","Shares","Saves"];
-    const body=rows.map(r=>[r.date,r.platform,r.account,r.format,r.title,r.url,r.views,r.likes,r.comments,r.shares,r.saves]);
-    const blob=new Blob([safeCsv([head,...body])],{type:"text/csv;charset=utf-8"});
-    const obj=URL.createObjectURL(blob);
-    const a=document.createElement("a");a.href=obj;a.download="SIGNAL_Frew_PostLog_"+period+".csv";a.click();URL.revokeObjectURL(obj);
-  }}><Download size={15}/> CSV</button>;
+function extract(ch:LeadershipChannel){
+  const priority=ch.platform==="Google Business Profile"?["Website clicks","Calls","Directions"]:
+    ch.platform==="Instagram"?["Reach","Engaged","Followers","Feed views","Feed interactions","Story impressions"]:
+    ch.platform==="TikTok"?["Video views","Profile views","Followers"]:
+    ch.platform==="YouTube"?["Views","Subscribers","Watch time"]:
+    ["Reel views","Carousel impressions","Posts"];
+  const chosen=priority.map(label=>ch.metrics.find(m=>m.label===label)).filter((m):m is NonNullable<typeof m>=>!!m&&m.value!=null);
+  return chosen.length?chosen.slice(0,3):ch.metrics.filter(m=>m.value!=null).slice(0,3);
+}
+function Download({rows,period}:{rows:LeadershipLog[];period:Period}){
+  return <button type="button" className="executive-export" onClick={()=>{
+    const head=["Date","Platform","Account","Format","Post","Original URL","Views / story impressions","Likes","Comments","Shares","Saves"];
+    const data=rows.map(p=>[p.date,p.platform,p.account,p.format,p.title,p.url,p.views,p.likes,p.comments,p.shares,p.saves]);
+    const blob=new Blob([csv([head,...data])],{type:"text/csv;charset=utf-8"});
+    const file=URL.createObjectURL(blob);
+    const link=document.createElement("a");link.href=file;link.download="OPUS_Weekly_Results_"+period+".csv";link.click();URL.revokeObjectURL(file);
+  }}><Download size={15}/> Export CSV</button>;
+}
+function Feature({post,rank,metricLabel}:{post:LeadershipLog;rank:string;metricLabel:string}){
+  const media=coverFor(post);
+  return <article className="executive-feature">
+    <a className="executive-feature-media" href={post.url||undefined} target="_blank" rel="noopener noreferrer" aria-label={"View original "+post.title}>
+      <Cover url={media} alt={post.title}/>
+      <span className="executive-media-link"><ExternalLink size={17}/></span>
+    </a>
+    <div className="executive-feature-body">
+      <span className="executive-rank">{rank}</span>
+      <h3>{post.title}</h3>
+      <p>{post.format} · {day(post.date)}</p>
+      <div className="executive-feature-number">{fmt(post.views)}<small>{metricLabel}</small></div>
+    </div>
+  </article>;
 }
 
 export default function FrewDashboard(){
   const [period,setPeriod]=useState<Period>("2026-11-09");
-  const [filter,setFilter]=useState<PlatformFilter>("all");
-  const [showAllPosts,setShowAllPosts]=useState(false);
-  useEffect(()=>{const q=new URLSearchParams(window.location.search).get("week");if(q==="2026-11-02"||q==="2026-11-09")setPeriod(q)},[]);
+  useEffect(()=>{
+    const q=new URLSearchParams(window.location.search).get("week");
+    if(q==="2026-11-02"||q==="2026-11-09")setPeriod(q);
+  },[]);
   const changePeriod=(p:Period)=>{
-    setPeriod(p);setShowAllPosts(false);
-    const u=new URL(window.location.href);u.searchParams.set("week",p);window.history.replaceState(null,"",u.pathname+u.search);
+    setPeriod(p);
+    const u=new URL(window.location.href);
+    u.searchParams.set("week",p);
+    window.history.replaceState(null,"",u.pathname+u.search);
   };
-  const sheetWeek=period==="2026-11-02";
-  const rows=sheetWeek?nov2Log:week9Log;
-  const channels=sheetWeek?nov2Channels:week9Channels;
-  const feedRows=rows.filter(r=>r.format!=="Story");
-  const storyRows=rows.filter(r=>r.format==="Story");
-  const platforms:PlatformFilter[]=["all",...new Set(feedRows.map(r=>r.platform as PlatformFilter))];
-  const filtered=feedRows.filter(r=>filter==="all"||r.platform===filter);
-  const visible=showAllPosts?filtered:filtered.slice(0,7);
-  const sourceLabel=sheetWeek?"Original Google Sheet · values entered by Nov 10":"Metricool export · compiled Nov 16";
-  const headline=sheetWeek?
-    [{name:"OPUS Instagram reach",value:1112,detail:"Nov 2–6 · account-level"},{name:"Accounts engaged",value:85,detail:"@opusplasticsurgery"},{name:"GBP website clicks",value:4,detail:"Nov 2–6"},{name:"GBP calls",value:1,detail:"Nov 2–6"}]:
-    [{name:"Instagram feed views",value:2501,detail:"3 posts · cumulative at export"},{name:"Instagram interactions",value:47,detail:"3 feed posts"},{name:"Story impressions",value:3254,detail:"12 Stories · repeat exposures included"},{name:"Story replies",value:6,detail:"Across 12 Stories"}];
-  const lead=sheetWeek?nov2Log.find(r=>r.id==="n2-ig-tamara")!:week9Log.find(r=>r.id==="ig-reel-scar")!;
-  const other=sheetWeek?nov2Log.find(r=>r.id==="n2-ig-lipo")!:week9Log.find(r=>r.id==="ig-reel-keep")!;
-  const weekLabel=sheetWeek?"Nov 2–8, 2026":"Nov 9–15, 2026";
-  return <div className="frew-shell">
-    <div className="frew-topbar">
-      <div className="frew-brand"><span>S<span className="frew-brand-dot">.</span></span><b>SIGNAL</b><em>/</em><small>LEADERSHIP</small></div>
-      <a className="frew-back" href="/"><ArrowLeft size={15}/> Creative dashboard</a>
-    </div>
-    <main className="frew-main">
-      <header className="frew-header">
-        <div>
-          <div className="frew-eyebrow">OPUS PLASTIC SURGERY / WEEKLY REVIEW</div>
-          <h1>Performance overview</h1>
-          <p>For Dr. Frew <span>·</span> {sourceLabel}</p>
-        </div>
-        <div className="frew-toolbar">
-          <label className="frew-period"><CalendarDays size={16}/><span className="sr-only">Reporting week</span>
-            <select value={period} onChange={e=>changePeriod(e.target.value as Period)}>
-              <option value="2026-11-09">Week of Nov 9</option>
-              <option value="2026-11-02">Week of Nov 2</option>
+  const old=period==="2026-11-02";
+  const rows=old?nov2Log:latestLog;
+  const channels=(old?nov2Channels:latestChannels).filter(c=>c.metrics.some(m=>m.value!=null));
+  const posts=rows.filter(p=>p.format!=="Story");
+  const stories=rows.filter(p=>p.format==="Story");
+  const first=old?rows.find(p=>p.id==="n2-ig-tamara"):rows.find(p=>p.id==="ig-reel-scar");
+  const second=old?rows.find(p=>p.id==="n2-ig-lipo"):rows.find(p=>p.id==="ig-reel-keep");
+  const periodLabel=old?"NOV 2–8, 2026":"NOV 9–15, 2026";
+  const report=old?{
+    statement:"The people behind OPUS got attention. Clear explanations did too.",
+    summary:"Meet Tamara recorded the highest views in the original Posts Log. Lipo + tummy tuck followed. These are useful creative directions, not proof of what caused the results.",
+    indicators:[
+      {label:"OPUS INSTAGRAM REACH",value:1112,detail:"Nov 2–6 · account-level"},
+      {label:"ACCOUNTS ENGAGED",value:85,detail:"@opusplasticsurgery"},
+      {label:"GBP WEBSITE CLICKS",value:4,detail:"Nov 2–6"},
+      {label:"GBP CALLS",value:1,detail:"Nov 2–6"}
+    ],
+    action:"Compare another staff introduction with a straightforward procedure explainer.",
+    actionDetail:"Use similarly sized posting windows before drawing a conclusion about which format performs better.",
+    context:"Source: Weekly Social Insights · Nov 2–6 totals; the publication log also includes Nov 8 Stories."
+  }:{
+    statement:"One Reel drew more attention. Another drew more interaction.",
+    summary:"What a scar can't show led the week's Instagram posts in views. What you want to keep generated more interactions despite fewer views. Different exposures mean this is directional, not a controlled comparison.",
+    indicators:[
+      {label:"FEED VIEWS",value:snapshot.feed_views??null,detail:"3 Instagram posts · at export"},
+      {label:"FEED INTERACTIONS",value:snapshot.feed_interactions??null,detail:"3 Instagram posts"},
+      {label:"STORY IMPRESSIONS",value:snapshot.story_impressions??null,detail:"12 Stories · repeated views possible"},
+      {label:"STORY REPLIES",value:snapshot.story_replies,detail:"12 Instagram Stories"}
+    ],
+    action:"Test a surgical-detail opening followed by a specific patient question.",
+    actionDetail:"Track 3-second skips and interactions per view on the next comparable Reels. Hypothesis, not a guaranteed winner.",
+    context:"Source: Metricool · Nov 16 snapshot. Feed views are cumulative for the posts published that week."
+  };
+  return <div className="executive-shell">
+    <header className="executive-masthead">
+      <div className="executive-brand"><span className="executive-logomark">O.</span><span>OPUS<span className="executive-word-divider">/</span> WEEKLY PULSE</span></div>
+      <a href="/" className="executive-back"><ArrowLeft size={16}/> SIGNAL studio</a>
+    </header>
+    <main className="executive-main">
+      <section className="executive-intro">
+        <div className="executive-edition">
+          <span>REPORT / {periodLabel}</span>
+          <label className="executive-week-control"><CalendarDays size={15}/><span className="sr-only">Choose reporting week</span>
+            <select value={period} onChange={e=>changePeriod(e.target.value)}>
+              <option value="2026-11-09">Nov 9–15</option>
+              <option value="2026-11-02">Nov 2–8</option>
             </select>
           </label>
-          <DownloadButton rows={rows} period={period}/>
-          <button type="button" className="frew-action" onClick={()=>window.print()}><FileText size={15}/> PDF</button>
         </div>
-      </header>
-
-      <div className="frew-period-caption">
-        <span className="frew-status-light"/><b>{weekLabel}</b>
-        <span>{sheetWeek?"Weekly totals cover Nov 2–6; Posts Log also includes Nov 8 Stories":"Published-content snapshot captured Nov 16 · not live"}</span>
-      </div>
-      <section className="frew-kpis" aria-label="Weekly performance">
-        {headline.map(x=><MiniMetric key={x.name} {...x}/>)}
-      </section>
-
-      <div className="frew-two">
-        <section className="frew-panel frew-highlights">
-          <div className="frew-panel-head"><h2>Posts worth reviewing</h2><span>Actual content</span></div>
-          <div className="frew-featured">
-            {[lead,other].map(p=><article key={p.id} className="frew-feature">
-              <a className="frew-feature-img" href={p.url??"#"} target="_blank" rel="noopener noreferrer" aria-label={"Open "+p.title}>
-                <ImageCover url={getCover(p)} alt={p.title}/><span className="frew-play-link"><ExternalLink size={15}/></span>
-              </a>
-              <div><span className="frew-item-label">{p.format} · {day(p.date)}</span>
-                <h3>{p.title}</h3><strong>{fmt(p.views)}</strong><small>Views in {sheetWeek?"Posts Log":"Metricool snapshot"}</small>
-              </div>
-            </article>)}
+        <div className="executive-hero-grid">
+          <div className="executive-hero-copy">
+            <div className="executive-kicker">THE WEEK IN ONE MINUTE</div>
+            <h1>{report.statement}</h1>
+            <p>{report.summary}</p>
           </div>
-        </section>
-        <section className="frew-panel frew-readout">
-          <div className="frew-panel-head"><h2>Weekly read</h2></div>
-          {sheetWeek?<>
-            <p>Team and educational posts led the source notes. <b>Meet Tamara</b> recorded 1,422 views in Posts Log; <b>Lipo + tummy tuck</b> recorded 1,052.</p>
-            <p className="frew-neutral">The weekly notes highlighted team introductions and straightforward surgical explanations.</p>
-          </>:<>
-            <p><b>What a scar can’t show</b> had the most feed-post views (1,309). <b>What you want to keep</b> had more interactions (23 vs. 17).</p>
-            <p className="frew-neutral">The most-viewed Reel was not the most-interacted-with Reel.</p>
-          </>}
-          <div className="frew-readout-footer"><Eye size={15}/> Saved source metrics, not a live feed</div>
-        </section>
-      </div>
-
-      <section className="frew-panel frew-channels">
-        <div className="frew-panel-head"><h2>Performance by account</h2><span>Each account shown separately</span></div>
-        <div className="frew-channel-grid">{channels.filter(ch=>ch.metrics.some(m=>m.value!=null)).map(ch=><article className="frew-channel" key={ch.platform+ch.account}>
-          <div className="frew-channel-top"><b>{ch.platform}</b><span>{ch.account}</span></div>
-          <div className="frew-channel-metrics">{ch.metrics.filter(m=>m.value!=null).map(m=><div key={m.label}><span>{m.label}</span><strong>{fmt(m.value)}{m.unit?" "+m.unit:""}</strong></div>)}</div>
-          {ch.note&&<p className="frew-channel-note">{ch.note}</p>}
-        </article>)}</div>
+          <div className="executive-hero-aside">
+            <div className="executive-aside-label">NEXT CREATIVE TEST</div>
+            <strong>{report.action}</strong>
+            <p>{report.actionDetail}</p>
+            <span>Recommendation · not a proven result</span>
+          </div>
+        </div>
       </section>
 
-      <section className="frew-panel frew-postlog">
-        <div className="frew-panel-head"><h2>Published content</h2><span>{feedRows.length} posts · {storyRows.length} Stories</span></div>
-        <div className="frew-log-tools">
-          <div className="frew-segments">{platforms.map(x=><button key={x} type="button"
-            aria-pressed={filter===x} onClick={()=>{setFilter(x);setShowAllPosts(false)}}>
-            {x==="all"?"All":x==="Google Business Profile"?"GBP":x}
-          </button>)}</div>
-        </div>
-        <div className="frew-table-scroll"><table className="frew-table">
-          <thead><tr><th>Date</th><th>Post</th><th>Platform</th><th>Views / impressions</th><th>Likes</th><th>Shares</th></tr></thead>
-          <tbody>{visible.map(p=><tr key={p.id}>
-            <td>{day(p.date)}</td>
-            <td><div className="frew-postcell">{p.url?
-              <a href={p.url} target="_blank" rel="noopener noreferrer">{p.title}<ExternalLink size={12}/></a>:
-              <span>{p.title}</span>}<small>{p.format}</small></div></td>
-            <td><span className="frew-platform-label">{p.platform}</span></td>
-            <td className="frew-num">{fmt(p.views)}</td>
-            <td className="frew-num">{fmt(p.likes)}</td>
-            <td className="frew-num">{fmt(p.shares)}</td>
-          </tr>)}</tbody>
-        </table></div>
-        {filtered.length===0&&<p className="frew-empty">No published posts for this platform in this reporting period.</p>}
-        {filtered.length>7&&<button type="button" className="frew-show" onClick={()=>setShowAllPosts(v=>!v)}>
-          {showAllPosts?"Show fewer":"Show all "+filtered.length+" posts"}<ChevronDown size={14}/>
-        </button>}
-        {storyRows.length>0&&<details className="frew-stories-details">
-          <summary>Instagram Stories <span>{storyRows.length} recorded</span><ChevronDown size={15}/></summary>
-          <div className="frew-stories-list">{storyRows.map(story=><div key={story.id}>
-            <span>{day(story.date)}</span>
-            <div>{story.url?<a href={story.url} target="_blank" rel="noopener noreferrer">{story.title}<ExternalLink size={12}/></a>:<span>{story.title}</span>}</div>
-            <b>{fmt(story.views)} <small>impressions</small></b>
-          </div>)}</div>
-        </details>}
+      <section className="executive-indicators" aria-label="Key weekly metrics">
+        {report.indicators.map(m=><div key={m.label} className="executive-indicator">
+          <div className="executive-indicator-label">{m.label}</div>
+          <strong>{fmt(m.value)}</strong>
+          <small>{m.detail}</small>
+        </div>)}
       </section>
 
-      <details className="frew-source-details">
-        <summary>Sources & report details <ChevronDown size={15}/></summary>
-        <p>Read-only snapshots, not live analytics. Views and impressions measure different things; individual post counts can reflect cumulative performance.</p>
-        {sheetWeek&&<p>Original sheet values for some posts differ from its notes because they were captured at different points. This report uses Posts Log values.</p>}
-        <div className="frew-evidence-links">
-          <a target="_blank" rel="noopener noreferrer" href={reportingSources.sheet}>Original data source <ExternalLink size={14}/></a>
-          <a target="_blank" rel="noopener noreferrer" href={sheetWeek?reportingSources.nov2Evidence:reportingSources.screenshotsRoot}>Screenshot archive <ExternalLink size={14}/></a>
+      <section className="executive-creative-section">
+        <div className="executive-section-heading">
+          <div><span className="executive-section-no">01 / CONTENT</span><h2>What earned attention</h2></div>
+          <p>Two posts worth discussing</p>
         </div>
-      </details>
-      <footer className="frew-footer"><span>SIGNAL / OPUS · Read-only leadership report</span><span>Public link · No patient data · Not live synced</span></footer>
+        <div className="executive-creative-grid">
+          {first&&<Feature post={first} rank="01 · MOST VIEWED" metricLabel="views at source capture"/>}
+          {second&&<Feature post={second} rank={old?"02 · NEXT HIGHEST VIEWS":"02 · MOST INTERACTIONS"} metricLabel={old?"views at source capture":"views · 23 interactions"}/>}
+        </div>
+      </section>
+
+      <section className="executive-platform-section">
+        <div className="executive-section-heading">
+          <div><span className="executive-section-no">02 / DISTRIBUTION</span><h2>Across the accounts</h2></div>
+          <p>Verified source data only</p>
+        </div>
+        <div className="executive-platform-list">
+          {channels.map(c=><div className="executive-platform-row" key={c.platform+c.account}>
+            <div className="executive-account-title"><b>{c.platform}</b><span>{c.account}</span></div>
+            <div className="executive-account-numbers">
+              {extract(c).map(m=><div key={m.label}><strong>{fmt(m.value)}{m.unit?" "+m.unit:""}</strong><span>{m.label}</span></div>)}
+            </div>
+          </div>)}
+        </div>
+      </section>
+
+      <section className="executive-bottom">
+        <div className="executive-bottom-copy">
+          <span className="executive-section-no">03 / RECORD</span>
+          <h2>See the details only when you need them.</h2>
+          <p>The post-by-post log and original sources are kept here, not in the main briefing.</p>
+        </div>
+        <div className="executive-detail-controls">
+          <details className="executive-detail">
+            <summary>All published posts <span>{posts.length} posts</span><ChevronDown size={17}/></summary>
+            <div className="executive-detail-list">{posts.map(p=><div key={p.id}>
+              <span>{day(p.date)}</span>
+              <div>{p.url?<a href={p.url} target="_blank" rel="noopener noreferrer">{p.title}<ExternalLink size={12}/></a>:p.title}<small>{p.platform} · {p.format}</small></div>
+              <strong>{fmt(p.views)}</strong>
+            </div>)}</div>
+          </details>
+          <details className="executive-detail">
+            <summary>Instagram Stories <span>{stories.length} recorded</span><ChevronDown size={17}/></summary>
+            <div className="executive-detail-list">{stories.map(p=><div key={p.id}>
+              <span>{day(p.date)}</span><div>{p.title}<small>Instagram Story</small></div><strong>{fmt(p.views)}</strong>
+            </div>)}</div>
+          </details>
+          <details className="executive-detail">
+            <summary>Sources & downloads <span>Read-only</span><ChevronDown size={17}/></summary>
+            <div className="executive-source-body">
+              <p>{report.context} These snapshots are not yet a verified live sync. Views, impressions, reach and clicks measure different things.</p>
+              <div className="executive-source-actions">
+                <Download rows={rows} period={period}/>
+                <button type="button" onClick={()=>window.print()} className="executive-export"><FileText size={15}/> Save PDF</button>
+                <a href={reportingSources.sheet} target="_blank" rel="noopener noreferrer">Original source <ExternalLink size={14}/></a>
+              </div>
+            </div>
+          </details>
+        </div>
+      </section>
+      <footer className="executive-footer"><span>OPUS / WEEKLY PULSE</span><span>Public, read-only snapshot · no patient data</span></footer>
     </main>
   </div>;
 }
