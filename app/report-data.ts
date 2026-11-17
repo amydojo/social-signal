@@ -8,24 +8,24 @@ export const snapshot: Snapshot = {
   id: "opus-2026-11-09-15",
   week_start: "2026-11-09",
   week_end: "2026-11-15",
-  captured_at: "2026-11-16",
-  source: "OPUS analytics · November 16 snapshot",
-  reel_views: 1803,
-  reel_interactions: 40,
-  feed_views: 2501,
-  feed_interactions: 47,
+  captured_at: "2026-11-17",
+  source: "OPUS analytics · November 17 snapshot",
+  reel_views: 1945,
+  reel_interactions: 45,
+  feed_views: 2797,
+  feed_interactions: 52,
   feed_pieces: 3,
   story_count: 12,
   story_impressions: 3254,
   story_replies: 6,
   account_data_through: "2026-11-13",
-  coverage_notes: "Data for the Nov 9–15 reporting window. Instagram account-wide views/reach are missing Nov 14–15. TikTok, YouTube and GBP returned no post rows; that does not establish zero publishing. Google Ads daily data is missing Nov 9–14. Original post timestamps are not timezone-converted."
+  coverage_notes: "Instagram post metrics refreshed Nov 17. TikTok is linked but returned no video rows and zero-valued account reports for Nov 9–15; do not infer zero publishing. YouTube returned no published videos; GBP has no verified activity totals for this week. Dr. Frew and OPUS Results personal profiles are not linked to this source. Instagram account-wide views/reach are incomplete; Google Ads Nov 9–14 remain unverified."
 };
 
 export const posts: Post[] = [
-  {id:"ig-reel-keep",published_on:"2026-11-10",title:"What you want to keep",permalink:"https://www.instagram.com/reel/Dfiwcicsux9/",platform:"instagram",format:"Reel",views:494,reach:335,likes:22,comments:0,shares:1,saves:0,interactions:23,skip_3s_pct:47.0,avg_watch_seconds:8.015,raw_timestamp:"20261110014504"},
-  {id:"ig-reel-scar",published_on:"2026-11-13",title:"What a scar can't show",permalink:"https://www.instagram.com/reel/DfqeQMZMKqR/",platform:"instagram",format:"Reel",views:1309,reach:1046,likes:15,comments:0,shares:1,saves:1,interactions:17,skip_3s_pct:36.5,avg_watch_seconds:8.571,raw_timestamp:"20261113014004"},
-  {id:"ig-carousel-bulge",published_on:"2026-11-14",title:"Why is my belly still bulging?",permalink:"https://www.instagram.com/p/DftDagtkR6i/",platform:"instagram",format:"Carousel",views:698,reach:302,likes:6,comments:0,shares:1,saves:0,interactions:7,skip_3s_pct:null,avg_watch_seconds:null,raw_timestamp:"20261114014334"},
+  {id:"ig-reel-keep",published_on:"2026-11-10",title:"What you want to keep",permalink:"https://www.instagram.com/reel/Dfiwcicsux9/",platform:"instagram",format:"Reel",views:530,reach:346,likes:23,comments:0,shares:1,saves:0,interactions:24,skip_3s_pct:47.0,avg_watch_seconds:8.015,raw_timestamp:"20261110014504"},
+  {id:"ig-reel-scar",published_on:"2026-11-13",title:"What a scar can't show",permalink:"https://www.instagram.com/reel/DfqeQMZMKqR/",platform:"instagram",format:"Reel",views:1415,reach:1110,likes:17,comments:0,shares:3,saves:1,interactions:21,skip_3s_pct:36.5,avg_watch_seconds:8.571,raw_timestamp:"20261113014004"},
+  {id:"ig-carousel-bulge",published_on:"2026-11-14",title:"Why is my belly still bulging?",permalink:"https://www.instagram.com/p/DftDagtkR6i/",platform:"instagram",format:"Carousel",views:852,reach:340,likes:6,comments:0,shares:1,saves:0,interactions:7,skip_3s_pct:null,avg_watch_seconds:null,raw_timestamp:"20261114014334"},
   {id:"fb-reel-scar",published_on:"2026-11-13",title:"What a scar can't show",permalink:"https://www.facebook.com/reel/997338790110767/",platform:"facebook",format:"Reel",views:17,reach:0,likes:0,comments:0,shares:0,saves:null,interactions:0,skip_3s_pct:null,avg_watch_seconds:null,raw_timestamp:"20261113014010"},
   {id:"fb-carousel-bulge",published_on:"2026-11-14",title:"Why is my belly still bulging?",permalink:"https://facebook.com/122123175627459507/posts/122124459129459507",platform:"facebook",format:"Carousel",views:null,impressions:1,reach:1,likes:0,comments:0,shares:0,saves:null,interactions:0,skip_3s_pct:null,avg_watch_seconds:null,raw_timestamp:"20261114014347"},
 ];
@@ -77,13 +77,13 @@ export const adsDaily: AdsDay[] = [
 ];
 
 export const insights: Insight[] = [
-  {id:"find-1",kind:"finding",position:1,title:"The scar Reel draws attention—but fewer interactions per view",body:"Scar: 1,309 views and 17 interactions. Consultation: 494 views and 23 interactions. These are different posts with different exposure periods."},
+  {id:"find-1",kind:"finding",position:1,title:"The scar Reel draws attention—but fewer interactions per view",body:"Scar: 1,415 views and 21 interactions. Consultation: 530 views and 24 interactions. These are different posts with different exposure periods."},
   {id:"find-2",kind:"finding",position:2,title:"Early retention favors the scar hook",body:"Three-second skip was 36.5% for the scar Reel versus 47.0% for the consultation Reel. One comparison does not establish causation."},
   {id:"find-3",kind:"finding",position:3,title:"Story replies are a small but real engagement signal",body:"12 stories generated 3,254 impressions and 6 replies. The birthday story generated 603 impressions and 2 replies."},
   {id:"action-1",kind:"action",position:1,title:"Test another specific surgical observation",body:"Open a new Reel with a patient-relevant detail and measure three-second skips against comparable recent Reels."},
-  {id:"action-2",kind:"action",position:2,title:"Sharpen the carousel takeaway",body:"The belly-bulge carousel has 698 views, 7 interactions and zero saves in this export. Give the next carousel one concrete question worth saving."},
+  {id:"action-2",kind:"action",position:2,title:"Sharpen the carousel takeaway",body:"The belly-bulge carousel has 852 views, 7 interactions and zero saves as of Nov 17. Give the next carousel one concrete question worth saving."},
   {id:"action-3",kind:"action",position:3,title:"Close the loop on consultations",body:"Connect comments, DMs and tracked consult requests to content where possible; do not equate social engagement with bookings."},
-  {id:"caveat-1",kind:"caveat",position:1,title:"Not all channels returned complete data",body:"The export lacks IG account-wide daily views/reach for Nov 14–15, TikTok/YouTube/GBP post rows and complete Google Ads delivery."},
+  {id:"caveat-1",kind:"caveat",position:1,title:"Not all channels returned complete data",body:"TikTok returned no video data despite a connected profile; YouTube has no videos returned; GBP has no current week totals. Other named OPUS profiles are not linked."},
   {id:"caveat-2",kind:"caveat",position:2,title:"Zero and missing are not interchangeable",body:"Meta Ads returned seven actual zero-spend days. Google Ads returned only a zero on Nov 15; the preceding six days are unknown."}
 ];
 
