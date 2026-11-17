@@ -153,3 +153,42 @@
   .executive-feature-media{min-height:200px}
   .executive-platform-row{break-inside:avoid}
 }
+
+
+/* Lean weekly brief */
+.executive-masthead{height:64px}
+.executive-edition{padding:12px clamp(20px,2.8vw,35px)}
+.executive-hero-grid{grid-template-columns:minmax(0,1.45fr) minmax(240px,.8fr);gap:clamp(18px,3vw,45px);padding:clamp(25px,3.5vw,44px)}
+.executive-hero-copy h1{font-size:clamp(35px,4.1vw,57px);margin:0 0 14px;max-width:680px}
+.executive-hero-copy>p{font-size:13px;line-height:1.6}
+.executive-hero-aside{padding-top:4px}
+.executive-hero-aside strong{font-size:clamp(17px,1.9vw,24px);margin-top:13px}
+.executive-indicators{padding:28px 0}
+.executive-indicator-label{min-height:20px}
+.executive-indicator strong{margin:7px 0}
+.executive-creative-section,.executive-platform-section{padding-top:45px}
+.executive-section-heading{margin-bottom:18px}
+.executive-section-heading h2{margin:0}
+.executive-feature,.executive-feature-media{min-height:235px}
+.executive-feature-body h3{margin:14px 0 8px}
+.executive-bottom{margin-top:47px;padding-top:27px;display:block}
+.executive-bottom-title{font-size:22px;letter-spacing:-.035em;font-weight:600;margin:0 0 17px}
+.executive-detail-controls{max-width:850px}
+.executive-detail>summary{padding:16px 1px}
+.executive-footer{margin-top:38px}
+@media(max-width:800px){
+  .executive-hero-grid{display:block}
+  .executive-hero-aside{margin-top:23px;padding:17px 0 0}
+  .executive-bottom{display:block}
+}
+@media(max-width:520px){
+  .executive-masthead{height:54px}
+  .executive-hero-grid{padding:24px 19px}
+  .executive-hero-copy h1{font-size:clamp(33px,9vw,43px);margin:0 0 11px}
+  .executive-hero-copy>p{font-size:12px}
+  .executive-hero-aside strong{font-size:18px}
+  .executive-indicators{padding:22px 0}
+  .executive-creative-section,.executive-platform-section{padding-top:35px}
+  .executive-bottom{margin-top:36px}
+  .executive-feature,.executive-feature-media{min-height:206px}
+}
