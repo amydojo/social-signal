@@ -211,55 +211,41 @@
 
 
 
-/* Frew's Stamp is a quiet footer gesture until deliberately opened. */
-.executive-footer-actions{display:flex;align-items:center;gap:19px;min-width:0}
-.stamp-inline{position:relative;flex:0 0 auto;letter-spacing:normal}
-.stamp-trigger{appearance:none;border:0;background:transparent;color:#9d7a68;font-size:11px;font-weight:580;letter-spacing:0;display:inline-flex;align-items:center;gap:5px;padding:5px 0;cursor:pointer;line-height:1.3}
-.stamp-trigger:hover{color:#6f4835}
-.stamp-trigger>span:first-child{font-size:14px;line-height:1}
-.stamp-trigger svg{opacity:.55;transition:transform .16s}
+/* A few native-feeling stickers, always available without an account. */
+.executive-footer-actions{display:flex;align-items:center;justify-content:flex-end;gap:22px;min-width:0}
+.stamp-inline{position:relative;display:flex;align-items:center;gap:8px;letter-spacing:normal;flex-wrap:wrap}
+.stamp-caption{font-size:9px;letter-spacing:.11em;color:#a38c7d;font-weight:700;white-space:nowrap}
+.stamp-buttons{display:inline-flex;align-items:center;gap:3px}
+.stamp-emoji-btn{appearance:none;display:inline-flex;align-items:center;gap:3px;background:none;border:1px solid transparent;border-radius:999px;padding:4px 5px;color:#8a6b59;min-height:29px;line-height:1;cursor:pointer;transition:background .15s,border-color .15s,transform .15s}
+.stamp-emoji-btn:hover:not(:disabled){background:#eee4da;transform:rotate(-7deg)}
+.stamp-emoji-btn.is-selected{background:#f0e0d3;border-color:#c5a693}
+.stamp-emoji-btn:disabled{opacity:.47;cursor:default}
+.stamp-emoji-btn span{font-size:18px;line-height:1.1}
+.stamp-emoji-btn small{font-size:10px;color:#896c5e;font-weight:650;line-height:1}
+.stamp-posts{position:relative}
+.stamp-posts-toggle{appearance:none;border:0;background:transparent;color:#967c6c;display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:5px 2px;cursor:pointer}
+.stamp-posts-toggle:hover{text-decoration:underline}
+.stamp-posts-toggle svg{transition:transform .15s}
 .stamp-rotate{transform:rotate(180deg)}
-.stamp-popover{position:absolute;bottom:calc(100% + 8px);right:0;z-index:15;width:min(295px,calc(100vw - 30px));padding:15px;border:1px solid #ded0c5;border-radius:8px;background:#fffaf5;color:#3e312b;box-shadow:0 14px 32px #31221820,0 2px 6px #3122180a;text-align:left}
-.stamp-popover-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-.stamp-popover-head strong{font-size:12px;font-weight:650;letter-spacing:0}
-.stamp-popover-head>button{display:grid;place-items:center;flex-shrink:0;color:#998276;background:none;border:0;padding:3px;cursor:pointer}
-.stamp-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.stamp-choices>button{min-width:0;border:1px solid #e6dacf;border-radius:6px;background:#fffdf9;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 3px 8px;cursor:pointer;color:#635044;transition:background .15s,border-color .15s}
-.stamp-choices>button:hover{background:#f5ece3;border-color:#b49480}
-.stamp-choices>button.is-selected{border-color:#8d6550;background:#ede0d6}
-.stamp-choices>button:disabled,.stamp-post-item button:disabled{opacity:.55;cursor:default}
-.stamp-choices>button>span{font-size:20px;line-height:1.3}
-.stamp-choices>button small{font-size:9px;line-height:1.3;font-weight:590}
-.stamp-inline-tools{display:flex;justify-content:space-between;align-items:center;gap:7px;margin-top:10px}
-.stamp-inline-tools>button,.stamp-posts-toggle,.stamp-signout{background:none;border:0;color:#806457;font-size:10px;line-height:1.3;cursor:pointer;padding:5px 0}
-.stamp-inline-tools>button:hover,.stamp-posts-toggle:hover,.stamp-signout:hover{text-decoration:underline}
-.stamp-inline-tools>span{display:flex;align-items:center;gap:4px;font-size:10px;color:#6c795f}
-.stamp-note{margin-top:8px}
-.stamp-note textarea{display:block;width:100%;min-height:65px;border:1px solid #e1d3c6;border-radius:5px;background:#fffdf9;padding:9px;font:12px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#43352d;resize:vertical}
-.stamp-note>button,.stamp-login-inline>button{margin-top:8px;background:#49332b;color:#fffaf5;border:0;border-radius:4px;cursor:pointer;padding:8px 12px;font-size:10px;font-weight:650}
-.stamp-note>button:disabled,.stamp-login-inline>button:disabled{opacity:.45;cursor:default}
-.stamp-posts{border-top:1px solid #eaded4;margin-top:9px;padding-top:7px}
-.stamp-posts-toggle{display:flex;align-items:center;gap:4px}
-.stamp-post-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #f0e7df}
-.stamp-post-item>span{font-size:10px;line-height:1.4;font-weight:540;min-width:0}
-.stamp-post-item button{background:#f5eae2;border:1px solid #eadbd0;border-radius:4px;font-size:10px;padding:6px;cursor:pointer;white-space:nowrap}
-.stamp-signout{display:block;margin-top:10px;color:#a08e83;font-size:9px}
-.stamp-muted{font-size:11px;line-height:1.5;color:#89776d;margin:8px 0;display:flex;align-items:center;gap:6px}
-.stamp-owner{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
-.stamp-owner strong{font-size:13px;font-weight:650}
-.stamp-owner p{font-size:12px;line-height:1.5;margin:0;color:#564137}
-.stamp-owner small{font-size:10px;color:#876e60}
-.stamp-login-inline{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
-.stamp-login-inline label{font-size:11px;color:#786254;font-weight:560}
-.stamp-login-inline input{width:100%;background:#fffdf9;border:1px solid #dccabe;border-radius:5px;padding:10px;font:12px Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#392b27}
-.stamp-login-inline>button{margin-top:0}
-.stamp-error{color:#a74e42;font-size:10px;line-height:1.45;margin:7px 0 0}
-.executive-footer .stamp-trigger span,.executive-footer .stamp-popover span{margin:0}
-@media(max-width:520px){
-  .executive-footer-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
-  .executive-footer-actions>span{font-size:9px;margin:0;white-space:nowrap}
-  .stamp-trigger{font-size:10px}
-  .stamp-popover{right:auto;left:0;bottom:calc(100% + 9px)}
-  .executive-footer .stamp-trigger span,.executive-footer .stamp-popover span{display:inline;margin:0}
+.stamp-post-popover{position:absolute;bottom:calc(100% + 9px);right:0;z-index:20;width:min(280px,calc(100vw - 30px));padding:14px;background:#fffaf5;border:1px solid #dccbc0;border-radius:7px;box-shadow:0 12px 26px #39271e19;text-align:left;letter-spacing:normal;color:#43362e}
+.stamp-post-popover>strong{display:block;font-size:11px;font-weight:660;margin-bottom:10px}
+.stamp-post-item{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid #e9dcd1;padding:9px 0}
+.stamp-post-item>span{font-size:10px;color:#5e4a3f;line-height:1.4;min-width:0}
+.stamp-post-item button{white-space:nowrap;border:1px solid #e2d1c5;background:#f8efe7;border-radius:5px;color:#644d41;display:inline-flex;align-items:center;gap:2px;font-size:10px;min-width:36px;justify-content:center;padding:6px;cursor:pointer}
+.stamp-post-item button[aria-pressed="true"]{background:#eacfbf;border-color:#c7a58e}
+.stamp-post-popover>p{font-size:10px;color:#a18c7d;margin:9px 0 0}
+.stamp-error{font-size:10px;color:#9f574c;line-height:1.2}
+.executive-footer .stamp-inline span{margin:0}
+@media(max-width:700px){
+ .executive-footer-actions{justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:8px}
+ .stamp-inline{gap:5px}
+ .stamp-caption{font-size:8px}
+ .stamp-emoji-btn{padding:4px 3px}
+ .stamp-emoji-btn span{font-size:17px}
+ .stamp-post-popover{right:auto;left:0}
+}
+@media(max-width:400px){
+ .executive-footer-actions>span{font-size:9px}
+ .stamp-post-popover{left:auto;right:-15px}
 }
 @media print{.stamp-inline{display:none!important}}
