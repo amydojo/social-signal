@@ -120,7 +120,7 @@ export default function FrewStamp({weekStart,featured}:{weekStart:string;feature
   return <section className="stamp-wrap" aria-label="Frew's Stamp">
     <div className="stamp-heading">
       <div><span className="stamp-small">A LITTLE SOMETHING FROM FREW</span><h2>Frew's stamp <span aria-hidden="true">✳</span></h2></div>
-      {access==="frew"&&<span className="stamp-private"><LockKeyhole size={12}/> Only you and Amy</span>}
+      {access==="frew"&&<span className="stamp-private"><LockKeyhole size={12}/> Only you and Amy <button type="button" className="stamp-account-link stamp-signout" onClick={()=>void signOut()}>Sign out</button></span>}
       {access==="owner"&&<span className="stamp-private"><LockKeyhole size={12}/> Private feedback</span>}
     </div>
     {access==="loading"?<p className="stamp-soft"> </p>:
