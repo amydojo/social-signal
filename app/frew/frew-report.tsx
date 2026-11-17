@@ -118,39 +118,37 @@ export default function FrewDashboard(){
   const second=old?rows.find(p=>p.id==="n2-ig-lipo"):rows.find(p=>p.id==="ig-reel-keep");
   const periodLabel=old?"NOV 2–8, 2026":"NOV 9–15, 2026";
   const report=old?{
-    statement:"The people behind OPUS got attention. Clear explanations did too.",
-    summary:"Meet Tamara recorded the highest views in the original Posts Log. Lipo + tummy tuck followed. These are useful creative directions, not proof of what caused the results.",
+    statement:"People and practical advice led the week.",
+    summary:"Meet Tamara and the lipo + tummy tuck Reel drew the most views.",
     indicators:[
-      {label:"OPUS INSTAGRAM REACH",value:1112,detail:"Nov 2–6 · account-level"},
-      {label:"ACCOUNTS ENGAGED",value:85,detail:"@opusplasticsurgery"},
-      {label:"GBP WEBSITE CLICKS",value:4,detail:"Nov 2–6"},
-      {label:"GBP CALLS",value:1,detail:"Nov 2–6"}
+      {label:"INSTAGRAM REACH",value:1112,detail:"OPUS account"},
+      {label:"ENGAGED",value:85,detail:"OPUS Instagram"},
+      {label:"WEBSITE CLICKS",value:4,detail:"Google Business"},
+      {label:"CALLS",value:1,detail:"Google Business"}
     ],
-    action:"Compare another staff introduction with a straightforward procedure explainer.",
-    actionDetail:"Use similarly sized posting windows before drawing a conclusion about which format performs better.",
+    action:"Pair another team introduction with a simple procedure explainer.",
     context:"Source: Weekly Social Insights · Nov 2–6 totals; the publication log also includes Nov 8 Stories."
   }:{
-    statement:"One Reel drew more attention. Another drew more interaction.",
-    summary:"What a scar can't show led the week's Instagram posts in views. What you want to keep generated more interactions despite fewer views. Different exposures mean this is directional, not a controlled comparison.",
+    statement:"The scar Reel led in views.",
+    summary:"The consultation Reel earned more interactions.",
     indicators:[
-      {label:"FEED VIEWS",value:snapshot.feed_views??null,detail:"3 Instagram posts · at export"},
-      {label:"FEED INTERACTIONS",value:snapshot.feed_interactions??null,detail:"3 Instagram posts"},
-      {label:"STORY IMPRESSIONS",value:snapshot.story_impressions??null,detail:"12 Stories · repeated views possible"},
-      {label:"STORY REPLIES",value:snapshot.story_replies,detail:"12 Instagram Stories"}
+      {label:"FEED VIEWS",value:snapshot.feed_views??null,detail:"3 posts · at export"},
+      {label:"INTERACTIONS",value:snapshot.feed_interactions??null,detail:"Instagram feed"},
+      {label:"STORY IMPRESSIONS",value:snapshot.story_impressions??null,detail:"12 Stories"},
+      {label:"STORY REPLIES",value:snapshot.story_replies,detail:"12 Stories"}
     ],
-    action:"Test a surgical-detail opening followed by a specific patient question.",
-    actionDetail:"Track 3-second skips and interactions per view on the next comparable Reels. Hypothesis, not a guaranteed winner.",
+    action:"Open with a surgical detail. End with a patient question.",
     context:"Source: Metricool · Nov 16 snapshot. Feed views are cumulative for the posts published that week."
   };
   return <div className="executive-shell">
     <header className="executive-masthead">
       <div className="executive-brand"><span className="executive-logomark">O.</span><span>OPUS<span className="executive-word-divider">/</span> WEEKLY PULSE</span></div>
-      <span className="executive-audience">PREPARED FOR DR. FREW</span>
+ 
     </header>
     <main className="executive-main">
       <section className="executive-intro">
         <div className="executive-edition">
-          <span>REPORT / {periodLabel}</span>
+          <span>{periodLabel}</span>
           <label className="executive-week-control"><CalendarDays size={15}/><span className="sr-only">Choose reporting week</span>
             <select value={period} onChange={e=>changePeriod(e.target.value as Period)}>
               <option value="2026-11-09">Nov 9–15</option>
@@ -160,15 +158,12 @@ export default function FrewDashboard(){
         </div>
         <div className="executive-hero-grid">
           <div className="executive-hero-copy">
-            <div className="executive-kicker">THE WEEK IN ONE MINUTE</div>
             <h1>{report.statement}</h1>
             <p>{report.summary}</p>
           </div>
           <div className="executive-hero-aside">
-            <div className="executive-aside-label">NEXT CREATIVE TEST</div>
+            <div className="executive-aside-label">TRY NEXT</div>
             <strong>{report.action}</strong>
-            <p>{report.actionDetail}</p>
-            <span>Recommendation · not a proven result</span>
           </div>
         </div>
       </section>
@@ -183,19 +178,17 @@ export default function FrewDashboard(){
 
       <section className="executive-creative-section">
         <div className="executive-section-heading">
-          <div><span className="executive-section-no">01 / CONTENT</span><h2>What earned attention</h2></div>
-          <p>Two posts worth discussing</p>
+          <h2>Top posts</h2>
         </div>
         <div className="executive-creative-grid">
-          {first&&<Feature post={first} rank="01 · MOST VIEWED" metricLabel="views at source capture"/>}
-          {second&&<Feature post={second} rank={old?"02 · NEXT HIGHEST VIEWS":"02 · MOST INTERACTIONS"} metricLabel={old?"views at source capture":"views · 23 interactions"}/>}
+          {first&&<Feature post={first} rank="MOST VIEWED" metricLabel="views"/>}
+          {second&&<Feature post={second} rank={old?"MOST VIEWED · NEXT":"MOST INTERACTIONS"} metricLabel={old?"views":"views · 23 interactions"}/>}
         </div>
       </section>
 
       <section className="executive-platform-section">
         <div className="executive-section-heading">
-          <div><span className="executive-section-no">02 / DISTRIBUTION</span><h2>Across the accounts</h2></div>
-          <p>Verified source data only</p>
+          <h2>By account</h2>
         </div>
         <div className="executive-platform-list">
           {channels.map(c=><div className="executive-platform-row" key={c.platform+c.account}>
@@ -208,11 +201,7 @@ export default function FrewDashboard(){
       </section>
 
       <section className="executive-bottom">
-        <div className="executive-bottom-copy">
-          <span className="executive-section-no">03 / RECORD</span>
-          <h2>See the details only when you need them.</h2>
-          <p>The post-by-post log and original sources are kept here, not in the main briefing.</p>
-        </div>
+        <h2 className="executive-bottom-title">More details</h2>
         <div className="executive-detail-controls">
           <details className="executive-detail">
             <summary>All published posts <span>{posts.length} posts</span><ChevronDown size={17}/></summary>
@@ -229,9 +218,9 @@ export default function FrewDashboard(){
             </div>)}</div>
           </details>
           <details className="executive-detail">
-            <summary>Sources & downloads <span>Read-only</span><ChevronDown size={17}/></summary>
+            <summary>Export & sources <ChevronDown size={17}/></summary>
             <div className="executive-source-body">
-              <p>{report.context} These snapshots are not yet a verified live sync. Views, impressions, reach and clicks measure different things.</p>
+              <p>{report.context} Historical post counts are cumulative at capture, not views earned that week. Not live-synced yet.</p>
               <div className="executive-source-actions">
                 <DownloadCsv rows={rows} period={period}/>
                 <button type="button" onClick={()=>window.print()} className="executive-export"><FileText size={15}/> Save PDF</button>
@@ -241,7 +230,7 @@ export default function FrewDashboard(){
           </details>
         </div>
       </section>
-      <footer className="executive-footer"><span>OPUS / WEEKLY PULSE</span><span>Public, read-only snapshot · no patient data</span></footer>
+      <footer className="executive-footer"><span>OPUS / WEEKLY PULSE</span><span>Metricool · Nov 16 snapshot</span></footer>
     </main>
   </div>;
 }
