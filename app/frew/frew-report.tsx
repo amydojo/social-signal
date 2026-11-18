@@ -180,6 +180,7 @@ export default function FrewDashboard(){
           <span>{periodLabel}</span>
           <label className="executive-week-control"><CalendarDays size={15}/><span className="sr-only">Choose reporting week</span>
             <select value={period} onChange={e=>changePeriod(e.target.value as Period)}>
+              <option value="2026-11-16">Nov 16–22</option>
               <option value="2026-11-09">Nov 9–15</option>
               <option value="2026-11-02">Nov 2–8</option>
             </select>
