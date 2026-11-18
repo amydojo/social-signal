@@ -35,8 +35,8 @@ export const posts: Post[] = [
 export const stories: Story[] = [
   {id:"story-4031843715077515167",published_at_raw:"20261116000000",descriptor:"Flooring and paint",impressions:116,reach:114,replies:0,exits:null,back_taps:2,forward_taps:90,permalink:"https://www.instagram.com/stories/opusplasticsurgery/4031843715077515167"},
   {id:"story-4031966853240316232",published_at_raw:"20261116000000",descriptor:"Instagram Story",impressions:108,reach:107,replies:0,exits:null,back_taps:3,forward_taps:86,permalink:"https://www.instagram.com/stories/opusplasticsurgery/4031966853240316232"},
-  {id:"story-4032656203814612731",published_at_raw:"20261117000000",descriptor:"Instagram Story",impressions:0,reach:0,replies:0,exits:null,back_taps:1,forward_taps:7,permalink:"https://www.instagram.com/stories/opusplasticsurgery/4032656203814612731"},
-  {id:"story-4032656717993249114",published_at_raw:"20261117000000",descriptor:"Instagram Story",impressions:0,reach:0,replies:0,exits:null,back_taps:1,forward_taps:3,permalink:"https://www.instagram.com/stories/opusplasticsurgery/4032656717993249114"},
+  {id:"story-4032656203814612731",published_at_raw:"20261117000000",descriptor:"Instagram Story",impressions:null,reach:null,replies:null,exits:null,back_taps:1,forward_taps:7,permalink:"https://www.instagram.com/stories/opusplasticsurgery/4032656203814612731"},
+  {id:"story-4032656717993249114",published_at_raw:"20261117000000",descriptor:"Instagram Story",impressions:null,reach:null,replies:null,exits:null,back_taps:1,forward_taps:3,permalink:"https://www.instagram.com/stories/opusplasticsurgery/4032656717993249114"},
 
   {id:"story-01",published_at_raw:"20261109232951",descriptor:"WHEN YOU WANT OPUS TO OPEN ALREADY",impressions:385,reach:309,replies:0,exits:17,back_taps:3,forward_taps:56,permalink:"https://www.instagram.com/stories/opusplasticsurgery/4026925872507317076"},
   {id:"story-02",published_at_raw:"20261110041853",descriptor:"Lights on ✨",impressions:244,reach:239,replies:1,exits:12,back_taps:8,forward_taps:77,permalink:"https://www.instagram.com/stories/opusplasticsurgery/4027071335893938056"},
