@@ -8,13 +8,13 @@ import archiveIndex from "../../public/media/archive/index.json";
 import {nov2Channels,nov2Log,type LeadershipLog,type LeadershipChannel} from "./frew-data";
 import FrewStamp from "./frew-stamp";
 
-type Period="2026-11-09"|"2026-11-02";
+type Period="2026-11-16"|"2026-11-09"|"2026-11-02";
 const savedCovers=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
 const fmt=(n:number|null|undefined)=>n==null?"—":n.toLocaleString("en-US");
 const day=(d:string)=>new Date(d+"T12:00:00Z").toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
 const csv=(rows:(number|string|null|undefined)[][])=>rows.map(row=>row.map(v=>'"'+String(v??"").replaceAll('"','""')+'"').join(",")).join("\r\n");
 
-const latestLog:LeadershipLog[]=[
+const allRecentLog:LeadershipLog[]=[
   ...metricoolPosts.map(p=>({
     id:p.id,date:p.published_on,
     platform:p.platform==="instagram"?"Instagram":"Facebook",
@@ -34,6 +34,8 @@ const latestLog:LeadershipLog[]=[
   }))
 ].sort((a,b)=>b.date.localeCompare(a.date));
 
+const latestLog=allRecentLog.filter(p=>p.date>="2026-11-09"&&p.date<="2026-11-15");
+const currentLog=allRecentLog.filter(p=>p.date>="2026-11-16"&&p.date<="2026-11-22");
 // Period scoped: never mix historical account metrics into a different week.
 const latestChannels:LeadershipChannel[]=[
   {platform:"Instagram",account:"@opusplasticsurgery",period:"Nov 9–15",source:"metricool",metrics:[
@@ -51,6 +53,12 @@ const latestChannels:LeadershipChannel[]=[
     metrics:[],note:"Weekly totals unavailable"}
 ];
 // Keep accounts discoverable without silently reusing Nov 2–6 statistics.
+const currentChannels:LeadershipChannel[]=[
+  {platform:"Instagram",account:"@opusplasticsurgery",period:"Nov 16–22",source:"metricool",metrics:[],note:"Account totals unavailable"},
+  {platform:"Facebook",account:"OPUS Plastic Surgery",period:"Nov 16–22",source:"metricool",metrics:[],note:"Weekly totals unavailable"},
+  {platform:"TikTok",account:"@opusplasticsurgery",period:"Nov 16–22",source:"metricool",metrics:[],note:"Video stats unavailable"},
+  {platform:"Google Business Profile",account:"OPUS · Upland",period:"Nov 16–22",source:"metricool",metrics:[],note:"Weekly totals unavailable"}
+];
 const otherAccounts=[
   {platform:"Instagram",account:"@dr.frew"},
   {platform:"Instagram",account:"@opusresults"},
@@ -110,10 +118,10 @@ function Feature({post,rank,metricLabel}:{post:LeadershipLog;rank:string;metricL
 }
 
 export default function FrewDashboard(){
-  const [period,setPeriod]=useState<Period>("2026-11-09");
+  const [period,setPeriod]=useState<Period>("2026-11-16");
   useEffect(()=>{
     const q=new URLSearchParams(window.location.search).get("week");
-    if(q==="2026-11-02"||q==="2026-11-09")setPeriod(q);
+    if(q==="2026-11-02"||q==="2026-11-09"||q==="2026-11-16")setPeriod(q);
   },[]);
   const changePeriod=(p:Period)=>{
     setPeriod(p);
@@ -122,13 +130,14 @@ export default function FrewDashboard(){
     window.history.replaceState(null,"",u.pathname+u.search);
   };
   const old=period==="2026-11-02";
-  const rows=old?nov2Log:latestLog;
-  const channels=old?nov2Channels:latestChannels;
+  const current=period==="2026-11-16";
+  const rows=old?nov2Log:current?currentLog:latestLog;
+  const channels=old?nov2Channels:current?currentChannels:latestChannels;
   const posts=rows.filter(p=>p.format!=="Story");
   const stories=rows.filter(p=>p.format==="Story");
-  const first=old?rows.find(p=>p.id==="n2-ig-tamara"):rows.find(p=>p.id==="ig-reel-scar");
-  const second=old?rows.find(p=>p.id==="n2-ig-lipo"):rows.find(p=>p.id==="ig-reel-keep");
-  const periodLabel=old?"NOV 2–8, 2026":"NOV 9–15, 2026";
+  const first=old?rows.find(p=>p.id==="n2-ig-tamara"):current?rows.find(p=>p.id==="ig-reel-implants-fit"):rows.find(p=>p.id==="ig-reel-scar");
+  const second=old?rows.find(p=>p.id==="n2-ig-lipo"):current?undefined:rows.find(p=>p.id==="ig-reel-keep");
+  const periodLabel=old?"NOV 2–8, 2026":current?"NOV 16–22, 2026":"NOV 9–15, 2026";
   const report=old?{
     statement:"People and practical advice led the week.",
     summary:"Meet Tamara and the lipo + tummy tuck Reel drew the most views.",
@@ -139,6 +148,16 @@ export default function FrewDashboard(){
       {label:"CALLS",value:1,detail:"Google Business"}
     ],
     action:"Pair another team introduction with a simple procedure explainer."
+  }:current?{
+    statement:"A new surgical explainer is live.",
+    summary:"The implant-fit Reel has 846 cumulative views at the November 18 capture. Account-wide weekly totals are not yet verified.",
+    indicators:[
+      {label:"REEL VIEWS",value:846,detail:"Nov 17 Reel · cumulative at capture"},
+      {label:"REEL INTERACTIONS",value:24,detail:"Nov 17 Reel"},
+      {label:"STORY IMPRESSIONS",value:224,detail:"Nov 16 Stories · not unique viewers"},
+      {label:"ACCOUNT REACH",value:null,detail:"Period total unavailable"}
+    ],
+    action:"Keep the next surgical explanation specific and patient-centered."
   }:{
     statement:"The scar Reel led in views.",
     summary:"The consultation Reel earned more interactions.",
