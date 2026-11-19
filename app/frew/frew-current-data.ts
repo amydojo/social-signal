@@ -79,6 +79,8 @@ export const currentStats={
   googleAdsTopKeyword:"tummy tuck",
   facebookReelViews:197,
   facebookReelInteractions:1,
+  facebookMediaViews:219, // Facebook Page media views Nov 16–18; not additive with Reel views
+  facebookFollowers:4, // Nov 17 Page follower snapshot
   tiktokFollowers:8, // Nov 18 account snapshot
   tiktokAccountLikes:189 // Nov 18 account-level likes; NOT weekly video likes
 };
@@ -105,8 +107,10 @@ export const currentChannels:LeadershipChannel[]=[
     metrics:[
       {label:"Posts",value:3},
       {label:"Reel views",value:currentStats.facebookReelViews},
+      {label:"Page media views",value:currentStats.facebookMediaViews},
+      {label:"Followers",value:currentStats.facebookFollowers},
       {label:"Carousel impressions",value:2}
-    ],note:"Other newly published Reel metrics pending"},
+    ],note:"Page media views include other content; not additive to Reel views"},
   {platform:"TikTok",account:ig,period:"Nov 18 snapshot",source:"metricool",
     metrics:[
       {label:"Followers",value:currentStats.tiktokFollowers},
