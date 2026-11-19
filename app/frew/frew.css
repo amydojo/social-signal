@@ -260,3 +260,17 @@
  .executive-channel-empty .executive-account-title{margin-bottom:8px}
  .executive-data-unavailable{font-size:10px}
 }
+
+
+/* Source-complete local discovery and paid-search readout, without extra cards. */
+.executive-account-data{min-width:0}
+.executive-account-numbers.executive-metrics-wide{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:18px;row-gap:18px}
+.executive-account-numbers.executive-metrics-wide>div{gap:3px}
+.executive-account-numbers.executive-metrics-wide strong{font-size:21px}
+.executive-account-numbers.executive-metrics-wide strong:has(+span){min-height:25px}
+.executive-account-footnote{display:block;margin-top:12px;color:#96887e;font-size:10px;line-height:1.45}
+@media(max-width:620px){
+ .executive-account-numbers.executive-metrics-wide{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}
+ .executive-account-numbers.executive-metrics-wide strong{font-size:22px}
+ .executive-account-footnote{margin-top:10px;font-size:10px}
+}
