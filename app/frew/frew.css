@@ -309,3 +309,99 @@
  .executive-signal-row strong{font-size:9px}
 }
 @media print{.executive-detail .executive-signal-details{break-inside:avoid}}
+
+
+/* Mobile-first account explorer: one clear scan, details on demand. */
+.pulse-accounts-heading{align-items:center}
+.pulse-view-switch{display:inline-flex;align-items:center;gap:2px;padding:3px;background:#ebe4dc;border:1px solid #e2d8cf;border-radius:8px;flex-shrink:0}
+.pulse-view-switch button{border:0;background:transparent;color:#8f8075;border-radius:5px;min-width:67px;min-height:35px;padding:7px 13px;font-size:11px;font-weight:640;cursor:pointer}
+.pulse-view-switch button[aria-pressed="true"]{color:#40312a;background:#fffaf4;box-shadow:0 1px 3px #55433812}
+.pulse-view-switch button:focus-visible,.pulse-account-tools button:focus-visible,.pulse-account-trigger:focus-visible,.pulse-extra-accounts summary:focus-visible{outline:2px solid #935c45;outline-offset:3px}
+.pulse-account-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px;color:#9b8d81;font-size:10px}
+.pulse-account-tools button{border:0;background:transparent;color:#805f4c;font-size:11px;font-weight:610;padding:8px 2px;min-height:39px;cursor:pointer}
+.pulse-account-tools button:hover{text-decoration:underline}
+.pulse-account-list{border-top:1px solid #cec3b9}
+.pulse-account-row{border-bottom:1px solid #e0d7ce;transition:background .16s}
+.pulse-account-row.is-open{background:#fffcf7}
+.pulse-account-trigger{appearance:none;display:grid;grid-template-columns:minmax(165px,1.03fr) minmax(0,1.65fr) 20px;align-items:center;gap:19px;width:100%;min-height:87px;padding:14px 9px 14px 2px;border:0;color:inherit;background:transparent;text-align:left;cursor:pointer}
+.pulse-account-trigger:hover{background:#fffdf9}
+.pulse-account-identity{display:flex;flex-direction:column;gap:3px;min-width:0}
+.pulse-account-identity strong{font-size:14px;line-height:1.3;letter-spacing:-.025em;font-weight:665;color:#40322b}
+.pulse-account-identity>span{font-size:11px;color:#8b7b6f;overflow-wrap:anywhere;line-height:1.35}
+.pulse-account-identity small{font-size:10px;color:#a09285;line-height:1.35;margin-top:2px}
+.pulse-account-preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;min-width:0}
+.pulse-preview-item{display:flex;flex-direction:column;min-width:0;gap:3px}
+.pulse-preview-item b{font-size:21px;line-height:1.15;font-weight:620;letter-spacing:-.045em;color:#40312b;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pulse-preview-item small{font-size:10px;line-height:1.3;color:#8b7e74;white-space:normal;overflow-wrap:normal}
+.pulse-preview-item .pulse-missing,.pulse-account-metric .pulse-missing{color:#b5a79d}
+.pulse-preview-unavailable{font-size:11px;color:#9b8a7d;grid-column:1/-1;line-height:1.4}
+.pulse-account-chevron{color:#9a7d6a;transition:transform .17s}
+.pulse-account-row.is-open .pulse-account-chevron{transform:rotate(180deg)}
+.pulse-account-detail{padding:3px 26px 24px 16px;border-top:1px solid #ece4dc}
+.pulse-account-detail[hidden]{display:none!important}
+.pulse-account-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 20px;padding-top:15px}
+.pulse-account-metric{display:flex;flex-direction:column;gap:6px;min-width:0}
+.pulse-account-metric strong{font-size:23px;line-height:1.15;letter-spacing:-.04em;font-weight:620;color:#40312b;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.pulse-account-metric span{font-size:10px;line-height:1.4;color:#89796d}
+.pulse-account-note{font-size:10px;line-height:1.6;color:#98877b;max-width:600px;margin:18px 0 0}
+.pulse-no-data{grid-column:1/-1;font-size:11px;color:#9b8a7d;margin:0}
+.pulse-extra-accounts{border-bottom:1px solid #e0d7ce;margin-top:4px}
+.pulse-extra-accounts summary{list-style:none;display:flex;gap:11px;align-items:center;min-height:49px;padding:11px 3px;color:#5f4c41;font-weight:625;font-size:11px;cursor:pointer}
+.pulse-extra-accounts summary::-webkit-details-marker{display:none}
+.pulse-extra-accounts summary span{color:#9b8c80;font-size:10px;margin-left:auto;font-weight:440}
+.pulse-extra-accounts summary svg{color:#a18475;transition:transform .17s}
+.pulse-extra-accounts[open] summary svg{transform:rotate(180deg)}
+.pulse-extra-list{padding:0 2px 17px;display:flex;flex-wrap:wrap;gap:8px}
+.pulse-extra-list>span{display:flex;flex-direction:column;gap:4px;border:1px solid #e5dbd1;background:#fffaf5;border-radius:5px;padding:10px 12px;max-width:100%}
+.pulse-extra-list small{font-size:9px;color:#9b8d80}
+.pulse-extra-list strong{font-size:11px;font-weight:580;color:#554239;overflow-wrap:anywhere}
+.pulse-compare-hint{margin:-2px 0 14px;font-size:10px;line-height:1.5;color:#96867a}
+.pulse-compare-scroll{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;outline-offset:4px}
+.pulse-compare-card{min-width:0;min-height:230px;border:1px solid #e2d7cb;background:#fffcf7;border-radius:6px;padding:18px 17px;display:flex;flex-direction:column}
+.pulse-compare-card-heading{display:flex;flex-direction:column;gap:5px;min-width:0;padding-bottom:14px;border-bottom:1px solid #e6dcd2}
+.pulse-compare-card-heading strong{font-size:15px;line-height:1.3;font-weight:650;color:#44352c}
+.pulse-compare-card-heading span{font-size:11px;color:#8c796c;overflow-wrap:anywhere}
+.pulse-compare-card-heading small{font-size:10px;color:#a09184}
+.pulse-compare-card .pulse-account-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:21px 12px;padding-top:19px}
+.pulse-compare-card .pulse-account-metric strong{font-size:22px}
+.pulse-compare-card .pulse-account-note{margin-top:auto;padding-top:18px}
+@media(max-width:1050px){
+ .pulse-compare-scroll{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:650px){
+ .pulse-accounts-heading{margin-bottom:12px}
+ .pulse-view-switch button{min-height:40px;min-width:62px;padding:9px 10px;font-size:11px}
+ .pulse-account-tools{margin-bottom:4px}
+ .pulse-account-trigger{grid-template-columns:minmax(0,1.05fr) minmax(0,1.2fr) 17px;gap:8px;min-height:85px;padding:12px 1px}
+ .pulse-account-identity strong{font-size:13px}
+ .pulse-account-identity>span{font-size:10px}
+ .pulse-account-identity small{font-size:9px}
+ .pulse-account-preview{gap:7px}
+ .pulse-preview-item b{font-size:19px}
+ .pulse-preview-item small{font-size:9px;line-height:1.25}
+ .pulse-account-detail{padding:5px 11px 21px}
+ .pulse-account-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:19px 12px}
+ .pulse-account-metric strong{font-size:23px}
+ .pulse-account-metric span{font-size:11px}
+ .pulse-compare-scroll{display:flex;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x mandatory;gap:11px;padding:1px 12px 15px 1px;margin-right:-13px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#cfbaa8 transparent}
+ .pulse-compare-card{flex:0 0 min(275px,calc(100vw - 65px));scroll-snap-align:start;min-height:300px;padding:18px}
+ .pulse-compare-hint{font-size:10px}
+ .pulse-compare-card .pulse-account-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px}
+}
+@media(max-width:355px){
+ .pulse-account-trigger{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr) 15px;gap:6px}
+ .pulse-preview-item b{font-size:17px}
+ .pulse-preview-item small{font-size:8.5px}
+ .pulse-account-identity strong{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+ .pulse-account-chevron,.pulse-account-row,.pulse-compare-card,.pulse-extra-accounts summary svg{transition:none!important}
+ .pulse-compare-scroll{scroll-behavior:auto}
+}
+@media print{
+ .pulse-view-switch,.pulse-account-tools,.pulse-compare-hint{display:none!important}
+ .pulse-account-detail[hidden]{display:block!important}
+ .pulse-account-trigger{min-height:50px}
+ .pulse-account-row,.pulse-compare-card{break-inside:avoid}
+ .pulse-compare-scroll{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
+}
