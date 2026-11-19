@@ -68,8 +68,15 @@ export const currentStats={
   storyImpressions:1605, // all nine documented stories, through Nov 18
   storyReplies:2,
   googleAdsConversions:5,
+  googleAdsImpressions:268,
   googleAdsClicks:27,
   googleAdsSpend:76.28,
+  googleAdsCostPerConversion:15.26,
+  googleAdsCtr:10.07,
+  googleAdsCpc:2.83,
+  // All five platform-reported conversion actions map to the "tummy tuck" keyword.
+  // This is not proof of qualified leads or confirmed consult bookings.
+  googleAdsTopKeyword:"tummy tuck",
   facebookReelViews:197,
   facebookReelInteractions:1,
   tiktokFollowers:8, // Nov 18 account snapshot
@@ -85,12 +92,15 @@ export const currentChannels:LeadershipChannel[]=[
       {label:"Story impressions",value:currentStats.storyImpressions},
       {label:"Story replies",value:currentStats.storyReplies}
     ]},
-  {platform:"Google Ads",account:"OPUS Search · Upland",period:"Nov 16–18",source:"metricool",
+  {platform:"Google Ads",account:"OPUS Search · Upland",period:"Nov 16–18 · complete days",source:"metricool",
     metrics:[
       {label:"Conversions",value:currentStats.googleAdsConversions},
+      {label:"Impressions",value:currentStats.googleAdsImpressions},
       {label:"Clicks",value:currentStats.googleAdsClicks},
-      {label:"Spend",value:currentStats.googleAdsSpend,unit:"USD"}
-    ],note:"Platform conversions; bookings not independently confirmed"},
+      {label:"Spend",value:currentStats.googleAdsSpend,unit:"USD"},
+      {label:"Cost / conversion",value:currentStats.googleAdsCostPerConversion,unit:"USD"},
+      {label:"CTR",value:currentStats.googleAdsCtr,unit:"%"}
+    ],note:'All 5 attributed to "tummy tuck" keyword · bookings not verified'},
   {platform:"Facebook",account:fb,period:"Nov 16–19 · WTD",source:"metricool",
     metrics:[
       {label:"Posts",value:3},
@@ -102,8 +112,14 @@ export const currentChannels:LeadershipChannel[]=[
       {label:"Followers",value:currentStats.tiktokFollowers},
       {label:"Account likes",value:currentStats.tiktokAccountLikes}
     ],note:"No new video rows Nov 16–19"},
-  {platform:"Google Business Profile",account:"OPUS · Upland",period:"Nov 16–18",source:"metricool",
-    metrics:[],note:"Weekly totals unavailable"},
+  {platform:"Google Business Profile",account:"OPUS · Upland",period:"Nov 16–19 · partial reporting",source:"metricool",
+    metrics:[
+      {label:"Maps views",value:1},
+      {label:"Search views",value:null},
+      {label:"Directions",value:null},
+      {label:"Call clicks",value:null},
+      {label:"Website clicks",value:null}
+    ],note:"Only Nov 16 Maps activity returned; remaining days incomplete"},
   {platform:"Meta Ads",account:"OPUS",period:"Nov 16–18",source:"metricool",
     metrics:[{label:"Spend",value:0,unit:"USD"},{label:"Clicks",value:0},{label:"Impressions",value:0}],
     note:"No delivery reported on these three days"}
