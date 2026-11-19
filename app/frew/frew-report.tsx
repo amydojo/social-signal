@@ -1,7 +1,7 @@
 "use client";
 
-import {useEffect,useState} from "react";
-import {Download,FileText,ExternalLink,ChevronDown,CalendarDays,ImageIcon} from "lucide-react";
+import {useEffect,useRef,useState} from "react";
+import {Download,FileText,ExternalLink,ChevronDown,CalendarDays,ImageIcon,Images,X} from "lucide-react";
 import {posts as metricoolPosts, stories as metricoolStories, snapshot} from "../report-data";
 import {historicalPosts} from "../history-data";
 import archiveIndex from "../../public/media/archive/index.json";
@@ -10,6 +10,7 @@ import {currentLog,currentChannels,currentStats,currentCoverFallbacks} from "./f
 import FrewStamp from "./frew-stamp";
 import FrewAccounts from "./frew-accounts";
 import {performanceByWeek,type ReelSignal} from "./frew-performance";
+import {frewStoryCovers,frewCarouselCovers} from "./frew-media";
 
 type Period="2026-11-16"|"2026-11-09"|"2026-11-02";
 const savedCovers=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
@@ -92,7 +93,7 @@ const otherAccounts=[
 function Cover({url,alt}:{url:string|null;alt:string}){
   const [broken,setBroken]=useState(false);
   useEffect(()=>setBroken(false),[url]);
-  return url&&!broken?<img src={url} alt={alt} loading="lazy" onError={()=>setBroken(true)}/>:<span className="frew-cover-empty"><ImageIcon size={30}/></span>;
+  return url&&!broken?<img src={url} alt={alt} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={()=>setBroken(true)}/>:<span className="frew-cover-empty"><ImageIcon size={23}/><span className="frew-cover-label">No preview</span></span>;
 }
 function coverFor(p:LeadershipLog){
   if(!p.url)return null;
@@ -105,7 +106,110 @@ function coverFor(p:LeadershipLog){
       p.title.toLowerCase().includes("bulging")?"DftDagtkR6i":null;
     if(key&&savedCovers.has("/media/archive/ig-"+key+".jpg"))return "/media/archive/ig-"+key+".jpg";
   }
-  return currentCoverFallbacks[p.url]??null;
+  return frewCarouselCovers[p.url]??currentCoverFallbacks[p.url]??null;
+}
+function storyCoverFor(story:LeadershipLog){
+  // Prefer immutable saved files. Source thumbnails can expire and must never
+  // be replaced with another story's creative.
+  const storyId=story.url?.match(/\/stories\/[^/]+\/(\d+)/)?.[1]??"";
+  if(!storyId)return null;
+  const archived="/media/archive/story-"+storyId+".jpg";
+  if(savedCovers.has(archived))return archived;
+  return frewStoryCovers[storyId]??null;
+}
+function CarouselShowcase({posts}:{posts:LeadershipLog[]}){
+  const groups:{key:string;cover:LeadershipLog;versions:LeadershipLog[]}[]=[];
+  posts.filter(p=>p.format.toLowerCase()==="carousel").forEach(p=>{
+    const key=p.date+"|"+p.title.trim().toLowerCase().replace(/\s+/g," ");
+    const existing=groups.find(g=>g.key===key);
+    if(existing){existing.versions.push(p);if(p.platform==="Instagram")existing.cover=p;}
+    else groups.push({key,cover:p,versions:[p]});
+  });
+  if(!groups.length)return null;
+  return <section className="pulse-carousels" aria-label="Carousels published this week">
+    <div className="pulse-carousels-heading">
+      <h2>Carousels</h2>
+      <span>{groups.length} {groups.length===1?"creative":"creatives"}</span>
+    </div>
+    <div className="pulse-carousels-list">
+      {groups.map(group=><article className="pulse-carousel-entry" key={group.key}>
+        {group.cover.url?<a className="pulse-carousel-cover" href={group.cover.url} target="_blank" rel="noopener noreferrer"
+          aria-label={"Open carousel: "+group.cover.title}>
+          <Cover url={coverFor(group.cover)} alt={"First slide of "+group.cover.title}/>
+          <span className="pulse-carousel-corner"><Images size={13}/></span>
+        </a>:<div className="pulse-carousel-cover"><Cover url={coverFor(group.cover)} alt={group.cover.title}/></div>}
+        <div className="pulse-carousel-info">
+          <small>CAROUSEL · {day(group.cover.date)}</small>
+          <h3>{group.cover.title}</h3>
+          <div className="pulse-carousel-platforms">
+            {group.versions.map(p=><div key={p.id}>
+              <span>{p.platform}</span>
+              <strong>{fmt(p.views)}</strong>
+              <small>{p.platform==="Facebook"?"impressions / views":"views"}</small>
+            </div>)}
+          </div>
+          {group.versions.length>1&&<span className="pulse-crosspost-note">Shared creative · separate account results</span>}
+        </div>
+      </article>)}
+    </div>
+  </section>;
+}
+function StoryGallery({stories,period}:{stories:LeadershipLog[];period:Period}){
+  const [selected,setSelected]=useState<LeadershipLog|null>(null);
+  const closeRef=useRef<HTMLButtonElement>(null);
+  useEffect(()=>setSelected(null),[period]);
+  useEffect(()=>{
+    if(!selected)return;
+    const prev=document.body.style.overflow;
+    document.body.style.overflow="hidden";
+    closeRef.current?.focus();
+    const onKey=(e:KeyboardEvent)=>{if(e.key==="Escape")setSelected(null);};
+    window.addEventListener("keydown",onKey);
+    return ()=>{document.body.style.overflow=prev;window.removeEventListener("keydown",onKey);};
+  },[selected]);
+  if(!stories.length)return null;
+  const preview=stories.filter(p=>!!storyCoverFor(p)).slice(0,3);
+  return <>
+    <details className="executive-detail pulse-story-detail">
+      <summary>
+        <span className="pulse-story-summary-title">Instagram Stories</span>
+        <span className="pulse-story-summary-right">
+          <span className="pulse-story-peek" aria-hidden="true">
+            {preview.map(p=><span key={p.id}><Cover url={storyCoverFor(p)} alt=""/></span>)}
+          </span>
+          <span>{stories.length} recorded</span>
+        </span>
+        <ChevronDown size={17}/>
+      </summary>
+      <div className="pulse-story-gallery">
+        <p className="pulse-story-gallery-hint">Tap a frame to preview · swipe for more</p>
+        <div className="pulse-story-filmstrip" role="list" aria-label="Story thumbnails">
+          {stories.map(p=><div className="pulse-story-item" key={p.id} role="listitem">
+            <button className="pulse-story-frame" type="button" onClick={()=>setSelected(p)} aria-label={"Preview Story from "+day(p.date)+": "+p.title}>
+              <Cover url={storyCoverFor(p)} alt={p.title==="Instagram Story"?"Story from "+day(p.date):p.title}/>
+            </button>
+            <span className="pulse-story-caption-date">{day(p.date)}</span>
+            <span className="pulse-story-caption-title" title={p.title}>{p.title==="Instagram Story"?"Untitled Story":p.title}</span>
+            <span className="pulse-story-caption-views">{fmt(p.views)} <small>impressions</small></span>
+          </div>)}
+        </div>
+        <p className="pulse-story-availability">Original Stories may have expired. Frames without a saved preview are shown as unavailable.</p>
+      </div>
+    </details>
+    {selected&&<div className="pulse-media-shade" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setSelected(null);}}>
+      <div className="pulse-story-dialog" role="dialog" aria-modal="true" aria-label={"Story preview: "+selected.title}>
+        <button ref={closeRef} className="pulse-story-close" type="button" aria-label="Close preview" onClick={()=>setSelected(null)}><X size={19}/></button>
+        <div className="pulse-story-dialog-media">
+          <Cover url={storyCoverFor(selected)} alt={selected.title}/>
+        </div>
+        <div className="pulse-story-dialog-copy">
+          <span>{day(selected.date)} · {fmt(selected.views)} impressions</span>
+          <strong>{selected.title==="Instagram Story"?"Instagram Story":selected.title}</strong>
+          {selected.url&&<a href={selected.url} target="_blank" rel="noopener noreferrer">Original Story <ExternalLink size={12}/></a>}
+        </div>
+      </div>
+    </div>}
+  </>;
 }
 function DownloadCsv({rows,period}:{rows:LeadershipLog[];period:Period}){
   return <button type="button" className="executive-export" onClick={()=>{
@@ -237,6 +341,8 @@ export default function FrewDashboard(){
         </div>
       </section>
 
+      <CarouselShowcase posts={posts}/>
+
       <FrewAccounts
         period={period}
         channels={channels}
@@ -303,12 +409,7 @@ export default function FrewDashboard(){
               <strong>{fmt(p.views)}</strong>
             </div>)}</div>
           </details>
-          <details className="executive-detail">
-            <summary>Instagram Stories <span>{stories.length} recorded</span><ChevronDown size={17}/></summary>
-            <div className="executive-detail-list">{stories.map(p=><div key={p.id}>
-              <span>{day(p.date)}</span><div>{p.title}<small>Instagram Story</small></div><strong>{fmt(p.views)}</strong>
-            </div>)}</div>
-          </details>
+          <StoryGallery period={period} stories={stories}/>
           <details className="executive-detail">
             <summary>Download report <ChevronDown size={17}/></summary>
             <div className="executive-source-body">
