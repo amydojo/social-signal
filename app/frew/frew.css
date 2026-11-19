@@ -512,3 +512,142 @@
  .pulse-carousels-list{grid-template-columns:1fr}
  .pulse-media-shade{display:none!important}
 }
+
+
+/* Responsive parity pass · Nov 19, 2026
+   Mobile gets legible editing-free reading; desktop keeps editorial rhythm.
+   Keep one source of metrics and media for all breakpoints. */
+.executive-main>section,.executive-main>footer{min-width:0}
+.pulse-accounts-section,.executive-creative-section,.pulse-carousels,.executive-bottom{min-width:0}
+.pulse-story-gallery-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}
+.pulse-story-gallery-head .pulse-story-gallery-hint{margin:0;max-width:360px;line-height:1.55}
+.pulse-story-gallery-controls,.pulse-compare-controls{display:inline-flex;align-items:center;gap:5px;flex-shrink:0}
+.pulse-story-gallery-controls button,.pulse-compare-controls button{
+  appearance:none;display:grid;place-items:center;width:38px;height:38px;
+  padding:0;border:1px solid #d7c7ba;background:#fffaf5;color:#765746;
+  border-radius:5px;cursor:pointer;transition:background .14s
+}
+.pulse-story-gallery-controls button:hover,.pulse-compare-controls button:hover{background:#efe4da}
+.pulse-story-gallery-controls button:focus-visible,.pulse-compare-controls button:focus-visible,
+.pulse-story-dialog-nav button:focus-visible{outline:2px solid #975b43;outline-offset:2px}
+.pulse-compare-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
+.pulse-compare-head .pulse-compare-hint{margin:0;line-height:1.55}
+.pulse-compare-controls{display:none}
+.pulse-story-detail>summary{gap:10px}
+.pulse-story-detail>summary .pulse-story-summary-title{flex-shrink:0}
+.pulse-story-detail>summary .pulse-story-summary-right{min-width:0}
+.pulse-story-dialog{overscroll-behavior:contain}
+.pulse-story-dialog-media{touch-action:pan-y;flex-shrink:1}
+.pulse-story-dialog-nav{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:0 8px;min-height:46px;flex:0 0 46px;background:#f6eee7;
+  border-top:1px solid #e7dacf;border-bottom:1px solid #e7dacf
+}
+.pulse-story-dialog-nav button{
+  appearance:none;border:0;background:transparent;display:grid;place-items:center;
+  width:42px;height:42px;color:#704e3c;border-radius:4px;cursor:pointer
+}
+.pulse-story-dialog-nav button:hover{background:#e9ddd2}
+.pulse-story-dialog-nav>span{font-size:11px;letter-spacing:.09em;font-variant-numeric:tabular-nums;color:#755c4c;font-weight:640}
+.pulse-story-dialog-nav>span span{color:#b09c8e;padding:0 5px}
+.pulse-story-caption-date,.pulse-story-caption-views,.pulse-carousel-info>small{font-variant-numeric:tabular-nums}
+.pulse-story-availability,.pulse-story-gallery-hint,.pulse-compare-hint,.pulse-crosspost-note,
+.pulse-account-note,.executive-signal-section>small{color:#796b60}
+.pulse-story-caption-title,.pulse-preview-item small,.pulse-account-identity small,
+.pulse-compare-card-heading small,.pulse-account-metric span{color:#796b60}
+.pulse-story-caption-views small,.pulse-carousel-platforms small{color:#75675c}
+.pulse-story-dialog-copy strong,.pulse-account-preview b{overflow-wrap:anywhere}
+@media(max-width:1080px){
+  /* Two compressed half-width feature cards were harder to read than a single rich column. */
+  .executive-creative-grid{grid-template-columns:1fr}
+  .executive-feature{grid-template-columns:minmax(185px,.62fr) minmax(0,1.38fr);min-height:250px}
+  .executive-feature-media{min-height:250px}
+  .executive-feature-body h3{font-size:clamp(21px,2.4vw,27px)}
+  .executive-feature-body{padding:clamp(18px,2.5vw,28px)}
+}
+@media(min-width:801px) and (max-width:1080px){
+  .executive-hero-grid{gap:25px}
+  .executive-hero-copy h1{font-size:clamp(38px,4.1vw,48px)}
+  .executive-indicator{padding:0 16px}
+  .pulse-carousel-entry{grid-template-columns:105px minmax(0,1fr);gap:12px}
+  .pulse-carousel-cover{min-height:134px}
+  .pulse-carousel-info h3{font-size:17px}
+}
+@media(max-width:650px){
+  .pulse-compare-controls{display:inline-flex}
+  .pulse-compare-controls button,.pulse-story-gallery-controls button{min-width:42px;min-height:42px}
+  .pulse-story-gallery-head{gap:8px}
+  .pulse-story-peek{flex-shrink:0}
+  .pulse-story-gallery-hint{font-size:11px}
+  .pulse-story-frame{border-color:#c8b7a9}
+  .pulse-story-caption-title{font-size:11px}
+  .pulse-story-availability{font-size:11px}
+  .pulse-account-preview{min-width:0}
+  .pulse-preview-item small{font-size:10px}
+  .pulse-compare-head .pulse-compare-hint{font-size:11px}
+  .pulse-compare-card-heading span{font-size:12px}
+  .pulse-compare-card-heading small{font-size:11px}
+  .pulse-account-identity small{font-size:10px}
+  .pulse-account-metric span{font-size:11px}
+  .pulse-compare-card .pulse-account-metric span{font-size:11px}
+  .pulse-story-dialog{max-height:calc(100dvh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+  .pulse-story-dialog-media{max-height:min(58dvh,530px)}
+  .pulse-media-shade{padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+  .pulse-story-dialog-copy{padding:13px 15px}
+  .pulse-story-dialog-copy>span,.pulse-story-dialog-copy a{font-size:11px}
+}
+@media(max-width:520px){
+  /* The period badge and selector must wrap instead of clipping at 320–430px. */
+  .executive-edition{flex-wrap:wrap;row-gap:9px}
+  .executive-edition>span{min-width:0;line-height:1.5;font-size:10px;overflow-wrap:break-word}
+  .executive-week-control{margin-left:auto;flex-shrink:0}
+  .executive-week-control select{min-width:128px;min-height:42px;font-size:12px}
+  .executive-hero-grid{padding:24px 17px 27px}
+  .executive-hero-copy h1{font-size:clamp(32px,8.3vw,43px);letter-spacing:-.052em;line-height:1.09}
+  .executive-hero-copy>p{font-size:13px;line-height:1.65}
+  .executive-hero-aside strong{font-size:18px;line-height:1.38}
+  .executive-indicator-label{font-size:10px;letter-spacing:.07em}
+  .executive-indicator small{font-size:11px}
+  .executive-feature{grid-template-columns:minmax(105px,.72fr) minmax(0,1.28fr);min-height:226px}
+  .executive-feature-media{min-height:226px}
+  .executive-feature-body{padding:13px 12px}
+  .executive-feature-body h3{font-size:clamp(17px,4.4vw,20px);margin:11px 0 6px;line-height:1.22}
+  .executive-feature-number{font-size:29px;padding-top:15px}
+  .executive-feature-signals{gap:8px 10px;margin-top:11px}
+  .executive-feature-signals>span{font-size:10px;white-space:normal}
+  .executive-feature-signals strong{font-size:12px}
+  .executive-rank{font-size:9px}
+  .executive-detail>summary{font-size:13px}
+  .pulse-story-detail>summary .pulse-story-summary-right{gap:6px}
+  .pulse-story-detail>summary .pulse-story-summary-title{font-size:13px}
+  .pulse-story-detail>summary{min-height:59px}
+  .pulse-story-peek>span{width:22px;height:34px}
+  .pulse-story-gallery-head .pulse-story-gallery-hint{max-width:185px}
+  .pulse-carousel-info h3{overflow-wrap:anywhere}
+  .pulse-account-trigger{min-height:92px}
+}
+@media(max-width:375px){
+  .executive-main{padding-left:12px;padding-right:12px}
+  .executive-masthead{padding-left:13px;padding-right:13px}
+  .executive-brand{font-size:9px;letter-spacing:.07em}
+  .executive-week-control select{min-width:119px}
+  .executive-feature{grid-template-columns:minmax(100px,.77fr) minmax(0,1.23fr)}
+  .executive-feature-body{padding:12px 10px}
+  .executive-feature-body h3{font-size:17px}
+  .executive-feature-number{font-size:27px}
+  .pulse-story-peek>span:nth-child(n+3){display:none}
+  .pulse-story-dialog-nav{min-height:44px;flex-basis:44px}
+  .pulse-story-gallery-head .pulse-story-gallery-hint{font-size:10px}
+}
+@media(orientation:landscape) and (max-height:540px){
+  .pulse-story-dialog{max-height:calc(100dvh - 24px)}
+  .pulse-story-dialog-media{max-height:43dvh;aspect-ratio:auto}
+  .pulse-story-dialog-copy{padding:8px 14px;gap:3px}
+  .pulse-story-dialog-copy strong{font-size:12px}
+  .pulse-story-dialog-nav{flex-basis:38px;min-height:38px}
+  .pulse-story-dialog-nav button{height:38px}
+}
+@media(prefers-reduced-motion:reduce){
+ .pulse-story-gallery-controls button,.pulse-compare-controls button{transition:none}
+ .pulse-story-filmstrip,.pulse-compare-scroll{scroll-behavior:auto}
+}
