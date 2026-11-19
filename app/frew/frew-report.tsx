@@ -8,6 +8,7 @@ import archiveIndex from "../../public/media/archive/index.json";
 import {nov2Channels,nov2Log,type LeadershipLog,type LeadershipChannel} from "./frew-data";
 import {currentLog,currentChannels,currentStats,currentCoverFallbacks} from "./frew-current-data";
 import FrewStamp from "./frew-stamp";
+import FrewAccounts from "./frew-accounts";
 import {performanceByWeek,type ReelSignal} from "./frew-performance";
 
 type Period="2026-11-16"|"2026-11-09"|"2026-11-02";
@@ -105,20 +106,6 @@ function coverFor(p:LeadershipLog){
     if(key&&savedCovers.has("/media/archive/ig-"+key+".jpg"))return "/media/archive/ig-"+key+".jpg";
   }
   return currentCoverFallbacks[p.url]??null;
-}
-function extract(ch:LeadershipChannel){
-  const paid=ch.platform==="Google Ads";
-  const business=ch.platform==="Google Business Profile";
-  const priority=business?["Maps views","Search views","Directions","Call clicks","Website clicks"]:
-    paid?["Conversions","Impressions","Clicks","Spend","Cost / conversion","CTR"]:
-    ch.platform==="Instagram"?(ch.account==="@opusresults"?["Followers","Reach","Engaged"]:["Feed views","Feed interactions","Reach","Engaged","Followers","Story impressions"]):
-    ch.platform==="TikTok"?["Video views","Interactions","Followers","Account likes"]:
-    ch.platform==="YouTube"?["Views","Subscribers","Watch time"]:
-    ch.platform==="Facebook"?["Reel views","Page media views","Posts","Followers"]:
-    ["Reel views","Carousel impressions","Posts"];
-  const chosen=priority.map(label=>ch.metrics.find(m=>m.label===label))
-    .filter((m):m is NonNullable<typeof m>=>!!m&&(paid||business||m.value!=null));
-  return chosen.length?chosen.slice(0,business?5:paid?6:3):ch.metrics.filter(m=>m.value!=null).slice(0,3);
 }
 function DownloadCsv({rows,period}:{rows:LeadershipLog[];period:Period}){
   return <button type="button" className="executive-export" onClick={()=>{
@@ -250,28 +237,11 @@ export default function FrewDashboard(){
         </div>
       </section>
 
-      <section className="executive-platform-section">
-        <div className="executive-section-heading">
-          <h2>By account</h2>
-        </div>
-        <div className="executive-platform-list">
-          {channels.map(c=><div className={"executive-platform-row"+(extract(c).length?"":" executive-channel-empty")} key={c.platform+c.account}>
-            <div className="executive-account-title"><b>{c.platform}</b><span>{c.account}</span><small>{c.period}</small></div>
-            <div className="executive-account-data">
-              <div className={"executive-account-numbers"+(["Google Ads","Google Business Profile"].includes(c.platform)?" executive-metrics-wide":"")}>
-                {extract(c).length?extract(c).map(m=><div key={m.label}><strong>{fmt(m.value)}{m.unit?" "+m.unit:""}</strong><span>{m.label}</span></div>):<span className="executive-data-unavailable">{c.note||"No verified weekly figures"}</span>}
-              </div>
-              {c.note&&["Google Ads","Google Business Profile"].includes(c.platform)&&<small className="executive-account-footnote">{c.note}</small>}
-            </div>
-          </div>)}
-        </div>
-        {!old&&<div className="executive-other-accounts">
-          <div className="executive-other-head"><b>Other accounts</b><span>Not connected to reporting</span></div>
-          <div className="executive-other-list">
-            {otherAccounts.map(c=><span key={c.platform+c.account}>{c.platform} <b>{c.account}</b></span>)}
-          </div>
-        </div>}
-      </section>
+      <FrewAccounts
+        period={period}
+        channels={channels}
+        otherAccounts={old?[]:otherAccounts}
+      />
 
       <section className="executive-bottom">
         <h2 className="executive-bottom-title">More details</h2>
