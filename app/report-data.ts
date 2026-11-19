@@ -86,11 +86,11 @@ export const adsDaily: AdsDay[] = [
 ];
 
 export const insights: Insight[] = [
-  {id:"find-1",kind:"finding",position:1,title:"The scar Reel draws attention—but fewer interactions per view",body:"Scar: 1,415 views and 21 interactions. Consultation: 530 views and 24 interactions. These are different posts with different exposure periods."},
-  {id:"find-2",kind:"finding",position:2,title:"Early retention favors the scar hook",body:"Three-second skip was 36.5% for the scar Reel versus 47.0% for the consultation Reel. One comparison does not establish causation."},
+  {id:"find-1",kind:"finding",position:1,title:"The scar Reel draws attention—but fewer interactions per view",body:"Scar: 1,459 views and 22 interactions. Consultation: 555 views and 26 interactions. These are different posts with different exposure periods."},
+  {id:"find-2",kind:"finding",position:2,title:"Early retention favors the scar hook",body:"Three-second skip was 36.7% for the scar Reel versus 46.8% for the consultation Reel. One comparison does not establish causation."},
   {id:"find-3",kind:"finding",position:3,title:"Story replies are a small but real engagement signal",body:"12 stories generated 3,254 impressions and 6 replies. The birthday story generated 603 impressions and 2 replies."},
   {id:"action-1",kind:"action",position:1,title:"Test another specific surgical observation",body:"Open a new Reel with a patient-relevant detail and measure three-second skips against comparable recent Reels."},
-  {id:"action-2",kind:"action",position:2,title:"Sharpen the carousel takeaway",body:"The belly-bulge carousel has 852 views, 7 interactions and zero saves as of Nov 17. Give the next carousel one concrete question worth saving."},
+  {id:"action-2",kind:"action",position:2,title:"Sharpen the carousel takeaway",body:"The belly-bulge carousel has 937 views, 7 interactions and zero saves as of Nov 19. Give the next carousel one concrete question worth saving."},
   {id:"action-3",kind:"action",position:3,title:"Close the loop on consultations",body:"Connect comments, DMs and tracked consult requests to content where possible; do not equate social engagement with bookings."},
   {id:"caveat-1",kind:"caveat",position:1,title:"Not all channels returned complete data",body:"TikTok returned no usable video data despite a connected profile; YouTube is linked to Amy Do instead of OPUS; GBP has no current week totals. Other OPUS profiles are not linked."},
   {id:"caveat-2",kind:"caveat",position:2,title:"Zero and missing are not interchangeable",body:"Meta Ads returned seven actual zero-spend days. Google Ads returned only a zero on Nov 15; the preceding six days are unknown."}
