@@ -54,6 +54,12 @@ export const currentLog:LeadershipLog[]=[
     "https://www.instagram.com/stories/opusplasticsurgery/4031843715077515167",116)
 ].sort((a,b)=>b.date.localeCompare(a.date));
 
+/** Original Instagram cover URLs; temporary source fallback until permanent archival. */
+export const currentCoverFallbacks:Record<string,string> = {
+  "https://www.instagram.com/reel/Df3UbiPBzO8/": "https://scontent-lhr6-1.cdninstagram.com/v/t51.82787-15/902954551_1078740181788006_2139143540724689383_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=102&_nc_map=urlgen_bucketless&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=PpySCLfdJ_8Q7kNvwFVpk7B&_nc_oc=AdqK9w7MJoJPZCSZDwaLAHRDMBzgOjJs5ApjFrWvvqH2eNFq9NhplItc5BvN3cvF_44&_nc_zt=23&_nc_ht=scontent-lhr6-1.cdninstagram.com&edm=AFF3FJ0EAAAA&_nc_gid=lM7DjoiUaMnEV--2LCkfNw&_nc_tpa=Q5bMBQKpNF5XfA5yLe1KKryJ20reWeLEizMig86eh_lvmd9R8g-dVB0ittJIX8dfmbsVpDgGMxRtJTc_&_nc_ct=RQosPBUKFQwAAAA&oh=00_AQTcWbBh4AGxN8ZS4n6i_deruX3Qe7meezXcpbpUJ-lXZg&oe=6B04F469",
+  "https://www.instagram.com/reel/Df0yAMmsZ2p/": "https://scontent-lhr11-1.cdninstagram.com/v/t51.71878-15/914356611_29018176371138336_4814719437669342271_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=108&_nc_map=urlgen_bucketless&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=_rqEhc65Ni4Q7kNvwHbAGYN&_nc_oc=Adr4d0CP92w4Lek7xE5x7Flrkb8xXNolhytdecXXlHdPEJp-Kh3limEXmOKHuXLcREM&_nc_zt=23&_nc_ht=scontent-lhr11-1.cdninstagram.com&edm=AFF3FJ0EAAAA&_nc_gid=lM7DjoiUaMnEV--2LCkfNw&_nc_tpa=Q5bMBQIQ1Azle-sb5HAqiXwshIP9B5ZUsRNWkgD5u2dy_TaEqQAatXI-zVpUadOuDAnyLJn2rGsG3Alh&_nc_ct=RQosPBUKFQ4AAAA&oh=00_AQQt9gf4VLuRApY6EkXlyDoP8uwHCJTxXKjPlT1rOyuBrw&oe=6B04EF47"
+};
+
 export const currentStats={
   instagramFeedViews:2840, // 1458 + 1039 + 343; 3 posts, as of Nov 19
   instagramFeedInteractions:76, // 40 + 33 + 3
