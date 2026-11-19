@@ -8,6 +8,7 @@ import archiveIndex from "../../public/media/archive/index.json";
 import {nov2Channels,nov2Log,type LeadershipLog,type LeadershipChannel} from "./frew-data";
 import {currentLog,currentChannels,currentStats,currentCoverFallbacks} from "./frew-current-data";
 import FrewStamp from "./frew-stamp";
+import {performanceByWeek,type ReelSignal} from "./frew-performance";
 
 type Period="2026-11-16"|"2026-11-09"|"2026-11-02";
 const savedCovers=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
@@ -127,7 +128,7 @@ function DownloadCsv({rows,period}:{rows:LeadershipLog[];period:Period}){
     const link=document.createElement("a");link.href=file;link.download="OPUS_Weekly_Results_"+period+".csv";link.click();URL.revokeObjectURL(file);
   }}><Download size={15}/> Export CSV</button>;
 }
-function Feature({post,rank,metricLabel}:{post:LeadershipLog;rank:string;metricLabel:string}){
+function Feature({post,rank,metricLabel,signal}:{post:LeadershipLog;rank:string;metricLabel:string;signal?:ReelSignal}){
   const media=coverFor(post);
   return <article className="executive-feature">
     <a className="executive-feature-media" href={post.url||undefined} target="_blank" rel="noopener noreferrer" aria-label={"View original "+post.title}>
@@ -139,6 +140,10 @@ function Feature({post,rank,metricLabel}:{post:LeadershipLog;rank:string;metricL
       <h3>{post.title}</h3>
       <p>{post.format} · {day(post.date)}</p>
       <div className="executive-feature-number">{fmt(post.views)}<small>{metricLabel}</small></div>
+      {signal&&<div className="executive-feature-signals">
+        <span><strong>{signal.avgWatchSeconds.toFixed(1)}s</strong> avg watch</span>
+        <span><strong>{signal.past3SecondsPct.toFixed(1)}%</strong> past 3s</span>
+      </div>}
     </div>
   </article>;
 }
@@ -161,6 +166,8 @@ export default function FrewDashboard(){
   const channels=old?nov2Channels:current?currentChannels:latestChannels;
   const posts=rows.filter(p=>p.format!=="Story");
   const stories=rows.filter(p=>p.format==="Story");
+  const detail=old?null:performanceByWeek[current?"2026-11-16":"2026-11-09"];
+  const diagnosticsFor=(post:LeadershipLog|undefined)=>detail?.reels.find(x=>x.id===post?.id);
   const first=old?rows.find(p=>p.id==="n2-ig-tamara"):current?rows.find(p=>p.id==="ig-reel-team-qa"):rows.find(p=>p.id==="ig-reel-scar");
   const second=old?rows.find(p=>p.id==="n2-ig-lipo"):current?rows.find(p=>p.id==="ig-reel-implants-fit"):rows.find(p=>p.id==="ig-reel-keep");
   const periodLabel=old?"NOV 2–8, 2026":current?"NOV 16–22, 2026 · WEEK TO DATE":"NOV 9–15, 2026";
@@ -237,8 +244,8 @@ export default function FrewDashboard(){
           <h2>Top posts</h2>
         </div>
         <div className="executive-creative-grid">
-          {first&&<Feature post={first} rank="MOST VIEWED" metricLabel="views"/>}
-          {second&&<Feature post={second} rank={current?"PATIENT QUESTION":old?"MOST VIEWED · NEXT":"MOST INTERACTIONS"} metricLabel={current?"views":old?"views":"views · 24 interactions"}/>}
+          {first&&<Feature post={first} rank="MOST VIEWED" metricLabel="views" signal={diagnosticsFor(first)}/>}
+          {second&&<Feature post={second} rank={current?"PATIENT QUESTION":old?"MOST VIEWED · NEXT":"MOST INTERACTIONS"} metricLabel={current?"views":old?"views":"views · 26 interactions"} signal={diagnosticsFor(second)}/>}
         </div>
       </section>
 
@@ -268,6 +275,55 @@ export default function FrewDashboard(){
       <section className="executive-bottom">
         <h2 className="executive-bottom-title">More details</h2>
         <div className="executive-detail-controls">
+          {detail&&<details className="executive-detail">
+            <summary>Performance signals <span>Video · Stories{detail.keyword?" · Search":""}</span><ChevronDown size={17}/></summary>
+            <div className="executive-signal-details">
+              <div className="executive-signal-section">
+                <h3>Reel attention</h3>
+                <div className="executive-signal-table">
+                  <div className="executive-signal-row executive-signal-labels">
+                    <span>Reel</span><span>Avg watch</span><span>Past 3s</span><span>Shares / saves</span>
+                  </div>
+                  {detail.reels.map(r=><div key={r.id} className="executive-signal-row">
+                    <strong>{r.title}</strong>
+                    <span>{r.avgWatchSeconds.toFixed(1)}s</span>
+                    <span>{r.past3SecondsPct.toFixed(1)}%</span>
+                    <span>{r.shares} / {r.saves}</span>
+                  </div>)}
+                </div>
+                <small>Per-Reel metrics at capture, not weekly watch time. Video lengths differ.</small>
+              </div>
+              <div className="executive-signal-section">
+                <h3>Story behavior</h3>
+                <div className="executive-signal-stats">
+                  <div><strong>{fmt(detail.stories.impressions)}</strong><span>Impressions</span></div>
+                  <div><strong>{detail.stories.replies}</strong><span>Replies</span></div>
+                  <div><strong>{detail.stories.backTaps}</strong><span>Back taps</span></div>
+                  <div><strong>{detail.stories.forwardTaps}</strong><span>Forward taps</span></div>
+                  <div><strong>{detail.stories.exits}</strong><span>Exits</span></div>
+                </div>
+                <small>{detail.stories.count} Stories · taps and exits are navigation events, not sentiment or unique people.</small>
+              </div>
+              {detail.keyword&&<div className="executive-signal-section">
+                <h3>What drove search conversions</h3>
+                <p className="executive-signal-keyword">
+                  <strong>{detail.keyword.term}</strong>
+                  <span>{detail.keyword.conversions} reported conversions</span>
+                  <span>{detail.keyword.clicks} clicks</span>
+                  <span>${detail.keyword.spend.toFixed(2)} spent</span>
+                </p>
+                <small>Keyword attribution in Google Ads · Nov 16–18. Consult bookings not confirmed.</small>
+              </div>}
+              {detail.audience&&<div className="executive-signal-section">
+                <h3>Audience snapshot</h3>
+                <p className="executive-signal-keyword">
+                  <strong>{fmt(detail.audience.instagramFollowers)} Instagram followers</strong>
+                  <span>{detail.audience.asOf}</span>
+                </p>
+                <small>Accounts engaged: {detail.audience.engagedByDay.map(x=>x.accounts+" on "+x.date).join(" · ")}. Daily unique counts cannot be added to obtain a weekly unique audience.</small>
+              </div>}
+            </div>
+          </details>}
           <details className="executive-detail">
             <summary>All published posts <span>{posts.length} posts</span><ChevronDown size={17}/></summary>
             <div className="executive-detail-list">{posts.map(p=><div key={p.id}>
