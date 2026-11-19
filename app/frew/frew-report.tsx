@@ -35,7 +35,18 @@ const allRecentLog:LeadershipLog[]=[
   }))
 ].sort((a,b)=>b.date.localeCompare(a.date));
 
-const latestLog=allRecentLog.filter(p=>p.date>="2026-11-09"&&p.date<="2026-11-15");
+const latestLog:LeadershipLog[]=[
+  ...allRecentLog.filter(p=>p.date>="2026-11-09"&&p.date<="2026-11-15"),
+  {
+    id:"tt-opus-team-humor-1113",
+    date:"2026-11-13",
+    platform:"TikTok",account:"@opusplasticsurgery",format:"Video",
+    title:"Tamara disagrees with this interpretation",
+    url:"https://www.tiktok.com/@opusplasticsurgery/video/7707778082836385046",
+    views:829,likes:60,comments:0,shares:2,saves:null,
+    status:null,ctaChecked:null,complianceChecked:null
+  }
+].sort((a,b)=>b.date.localeCompare(a.date));
 // Period scoped: never mix historical account metrics into a different week.
 const latestChannels:LeadershipChannel[]=[
   {platform:"Instagram",account:"@opusplasticsurgery",period:"Nov 9–15",source:"metricool",metrics:[
@@ -47,8 +58,11 @@ const latestChannels:LeadershipChannel[]=[
   ]},
   {platform:"Facebook",account:"OPUS Plastic Surgery",period:"Nov 9–15",source:"metricool",
     metrics:[{label:"Posts",value:2},{label:"Reel views",value:17},{label:"Carousel impressions",value:1}]},
-  {platform:"TikTok",account:"@opusplasticsurgery",period:"Nov 9–15",source:"metricool",
-    metrics:[],note:"Video stats not reporting"},
+  {platform:"TikTok",account:"@opusplasticsurgery",period:"Nov 13 video · at capture",source:"metricool",
+    metrics:[
+      {label:"Video views",value:829},
+      {label:"Interactions",value:62}
+    ]},
   {platform:"Google Business Profile",account:"OPUS · Upland",period:"Nov 9–15",source:"metricool",
     metrics:[],note:"Weekly totals unavailable"}
 ];
@@ -80,7 +94,7 @@ function coverFor(p:LeadershipLog){
 function extract(ch:LeadershipChannel){
   const priority=ch.platform==="Google Business Profile"?["Website clicks","Calls","Directions"]:
     ch.platform==="Instagram"?(ch.account==="@opusresults"?["Followers","Reach","Engaged"]:["Feed views","Feed interactions","Reach","Engaged","Followers","Story impressions"]):
-    ch.platform==="TikTok"?["Video views","Profile views","Followers"]:
+    ch.platform==="TikTok"?["Video views","Interactions","Followers","Account likes"]:
     ch.platform==="YouTube"?["Views","Subscribers","Watch time"]:
     ["Reel views","Carousel impressions","Posts"];
   const chosen=priority.map(label=>ch.metrics.find(m=>m.label===label)).filter((m):m is NonNullable<typeof m>=>!!m&&m.value!=null);
