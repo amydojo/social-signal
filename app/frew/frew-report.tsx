@@ -336,6 +336,14 @@ export default function FrewDashboard(){
   const second=featured[1]?.post;
   const periodLabel=labelWeek(period).toUpperCase()+", "+period.slice(0,4)+(current?" · WEEK TO DATE":"");
   const instagramPosts=posts.filter(p=>p.platform==="Instagram");
+  const instagramReels=instagramPosts.filter(p=>p.format.trim().toLowerCase()==="reel");
+  const reelViews=instagramReels.length&&instagramReels.every(p=>p.views!=null)
+    ?instagramReels.reduce((sum,p)=>sum+(p.views??0),0):null;
+  const reelInteractions=instagramReels.map(interactionCount);
+  const reelInteractionTotal=reelInteractions.length&&reelInteractions.every(v=>v!=null)
+    ?reelInteractions.reduce<number>((sum,v)=>sum+(v??0),0):null;
+  const capturedStoryImpressions=stories.length&&stories.every(p=>p.views!=null)
+    ?stories.reduce((sum,p)=>sum+(p.views??0),0):null;
   const knownViews=instagramPosts.length&&instagramPosts.every(p=>p.views!=null)
     ?instagramPosts.reduce((sum,p)=>sum+(p.views??0),0):null;
   const knownInteractions=instagramPosts.map(interactionCount);
@@ -352,18 +360,20 @@ export default function FrewDashboard(){
     ],
     action:"Pair another team introduction with a simple procedure explainer."
   }:current?{
-    statement:"Five search conversions. A standout team Reel.",
-    summary:"The Frew + Tamara Q&A has 1,458 views; the implant-fit explainer has 1,039. Paid search reported five conversions through Wednesday, not confirmed bookings.",
+    statement:`${fmt(currentStats.googleAdsConversions)} reported search conversions. Content people watched.`,
+    summary:first?
+      `${first.title} leads tracked posts with ${fmt(first.views)} cumulative views.${second?" "+second.title+" follows with "+fmt(second.views)+".":""} Search conversions are not confirmed bookings.`:
+      "Publishing and advertising results are still arriving.",
     indicators:[
       {label:"SEARCH CONVERSIONS",value:currentStats.googleAdsConversions,detail:"Google Ads · Nov 16–18"},
-      {label:"REEL VIEWS",value:currentStats.instagramReelViews,detail:"2 Reels · cumulative at capture"},
-      {label:"REEL INTERACTIONS",value:currentStats.instagramReelInteractions,detail:"2 Instagram Reels"},
-      {label:"STORY IMPRESSIONS",value:currentStats.storyImpressions,detail:"9 Stories · through Nov 18"}
+      {label:"REEL VIEWS",value:reelViews,detail:instagramReels.length+" Reels · cumulative at capture"},
+      {label:"REEL INTERACTIONS",value:reelInteractionTotal,detail:instagramReels.length+" Instagram Reels"},
+      {label:"STORY IMPRESSIONS",value:capturedStoryImpressions,detail:stories.length+" Stories · at capture"}
     ],
     action:"Try another specific patient-question Reel with a clear consult invitation."
   }:previous?{
-    statement:"The scar Reel led in views.",
-    summary:"The consultation Reel earned more interactions.",
+    statement:first?`${first.title} led views.`:"Posts are still being collected.",
+    summary:second?`${second.title} stood out on interactions per view.`:"See which creative earned the most attention.",
     indicators:[
       {label:"FEED VIEWS",value:snapshot.feed_views??null,detail:"3 posts · at export"},
       {label:"INTERACTIONS",value:snapshot.feed_interactions??null,detail:"Instagram feed"},
@@ -379,8 +389,7 @@ export default function FrewDashboard(){
       {label:"CAPTURED POSTS",value:instagramPosts.length,detail:"Instagram · posts with records"},
       {label:"POST VIEWS",value:knownViews,detail:"Cumulative · captured posts only"},
       {label:"INTERACTIONS",value:interactionTotal,detail:"Captured Instagram posts"},
-      {label:"STORY IMPRESSIONS",value:stories.length&&stories.every(p=>p.views!=null)?
-        stories.reduce((sum,p)=>sum+(p.views??0),0):null,detail:"Captured Stories · not unique viewers"}
+      {label:"STORY IMPRESSIONS",value:capturedStoryImpressions,detail:"Captured Stories · not unique viewers"}
     ],
     action:"Review the strongest creative and update next week's content."
   };
