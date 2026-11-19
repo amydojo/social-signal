@@ -15,6 +15,10 @@ export type LeadershipChannel = {
 export type LeadershipLog = {
   id:string;date:string;platform:string;account:string;format:string;
   title:string;url:string|null;views:number|null;likes:number|null;
+  /** When ingestion saves an asset, this immutable local path is preferred. */
+  thumbnailPath?:string|null;
+  /** Source-provided image, only used if no local archived thumbnail exists. */
+  coverUrl?:string|null;
   comments:number|null;shares:number|null;saves:number|null;
   status:"On time"|"Late"|"Skipped"|null;
   ctaChecked:boolean|null;complianceChecked:boolean|null;
