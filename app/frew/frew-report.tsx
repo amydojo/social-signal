@@ -63,8 +63,22 @@ const latestChannels:LeadershipChannel[]=[
       {label:"Video views",value:829},
       {label:"Interactions",value:62}
     ]},
-  {platform:"Google Business Profile",account:"OPUS · Upland",period:"Nov 9–15",source:"metricool",
-    metrics:[],note:"Weekly totals unavailable"}
+  {platform:"Google Business Profile",account:"OPUS · Upland",period:"Nov 9–15 · recorded days",source:"metricool",
+    metrics:[
+      {label:"Maps views",value:13},
+      {label:"Search views",value:15},
+      {label:"Directions",value:15},
+      {label:"Call clicks",value:2},
+      {label:"Website clicks",value:11}
+    ],note:"Sum of reported daily values; not all dates returned all measures"},
+  {platform:"Google Ads",account:"OPUS Search · Upland",period:"Nov 10–15 · partial",source:"metricool",
+    metrics:[
+      {label:"Conversions",value:2},
+      {label:"Impressions",value:1428},
+      {label:"Clicks",value:66},
+      {label:"Spend",value:87.41,unit:"USD"},
+      {label:"Cost / conversion",value:43.71,unit:"USD"}
+    ],note:"Nov 9 missing; do not compare as a complete prior week"}
 ];
 // Keep accounts discoverable without silently reusing Nov 2–6 statistics.
 const otherAccounts=[
@@ -92,13 +106,17 @@ function coverFor(p:LeadershipLog){
   return currentCoverFallbacks[p.url]??null;
 }
 function extract(ch:LeadershipChannel){
-  const priority=ch.platform==="Google Business Profile"?["Website clicks","Calls","Directions"]:
+  const paid=ch.platform==="Google Ads";
+  const business=ch.platform==="Google Business Profile";
+  const priority=business?["Maps views","Search views","Directions","Call clicks","Website clicks"]:
+    paid?["Conversions","Impressions","Clicks","Spend","Cost / conversion","CTR"]:
     ch.platform==="Instagram"?(ch.account==="@opusresults"?["Followers","Reach","Engaged"]:["Feed views","Feed interactions","Reach","Engaged","Followers","Story impressions"]):
     ch.platform==="TikTok"?["Video views","Interactions","Followers","Account likes"]:
     ch.platform==="YouTube"?["Views","Subscribers","Watch time"]:
     ["Reel views","Carousel impressions","Posts"];
-  const chosen=priority.map(label=>ch.metrics.find(m=>m.label===label)).filter((m):m is NonNullable<typeof m>=>!!m&&m.value!=null);
-  return chosen.length?chosen.slice(0,3):ch.metrics.filter(m=>m.value!=null).slice(0,3);
+  const chosen=priority.map(label=>ch.metrics.find(m=>m.label===label))
+    .filter((m):m is NonNullable<typeof m>=>!!m&&(paid||business||m.value!=null));
+  return chosen.length?chosen.slice(0,business?5:paid?6:3):ch.metrics.filter(m=>m.value!=null).slice(0,3);
 }
 function DownloadCsv({rows,period}:{rows:LeadershipLog[];period:Period}){
   return <button type="button" className="executive-export" onClick={()=>{
@@ -231,8 +249,11 @@ export default function FrewDashboard(){
         <div className="executive-platform-list">
           {channels.map(c=><div className={"executive-platform-row"+(extract(c).length?"":" executive-channel-empty")} key={c.platform+c.account}>
             <div className="executive-account-title"><b>{c.platform}</b><span>{c.account}</span><small>{c.period}</small></div>
-            <div className="executive-account-numbers">
-              {extract(c).length?extract(c).map(m=><div key={m.label}><strong>{fmt(m.value)}{m.unit?" "+m.unit:""}</strong><span>{m.label}</span></div>):<span className="executive-data-unavailable">{c.note||"No verified weekly figures"}</span>}
+            <div className="executive-account-data">
+              <div className={"executive-account-numbers"+(["Google Ads","Google Business Profile"].includes(c.platform)?" executive-metrics-wide":"")}>
+                {extract(c).length?extract(c).map(m=><div key={m.label}><strong>{fmt(m.value)}{m.unit?" "+m.unit:""}</strong><span>{m.label}</span></div>):<span className="executive-data-unavailable">{c.note||"No verified weekly figures"}</span>}
+              </div>
+              {c.note&&["Google Ads","Google Business Profile"].includes(c.platform)&&<small className="executive-account-footnote">{c.note}</small>}
             </div>
           </div>)}
         </div>
