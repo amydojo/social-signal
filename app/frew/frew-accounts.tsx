@@ -1,7 +1,7 @@
 "use client";
 
-import {useEffect,useState} from "react";
-import {ChevronDown} from "lucide-react";
+import {useEffect,useRef,useState} from "react";
+import {ChevronDown,ChevronLeft,ChevronRight} from "lucide-react";
 import type {LeadershipChannel,LeadershipMetric} from "./frew-data";
 
 type Account={platform:string;account:string};
@@ -54,9 +54,17 @@ export default function FrewAccounts({
 }){
   const [view,setView]=useState<View>("list");
   const [expanded,setExpanded]=useState<string[]>([]);
+  const compareRef=useRef<HTMLDivElement>(null);
   useEffect(()=>{setExpanded([]);},[period]);
+  useEffect(()=>{compareRef.current?.scrollTo({left:0,behavior:"auto"});},[period,view]);
   const allOpen=channels.length>0&&channels.every(c=>expanded.includes(keyOf(c)));
   const toggle=(key:string)=>setExpanded(prev=>prev.includes(key)?prev.filter(v=>v!==key):[...prev,key]);
+  const scrollCompare=(direction:-1|1)=>{
+    const node=compareRef.current;
+    if(!node)return;
+    const card=node.querySelector<HTMLElement>(".pulse-compare-card");
+    node.scrollBy({left:direction*((card?.getBoundingClientRect().width??node.clientWidth)+11),behavior:"smooth"});
+  };
 
   return <section className="executive-platform-section pulse-accounts-section">
     <div className="executive-section-heading pulse-accounts-heading">
@@ -105,8 +113,14 @@ export default function FrewAccounts({
         })}
       </div>
     </>:<>
-      <p className="pulse-compare-hint">Swipe to compare. Metrics and reporting dates vary by account.</p>
-      <div className="pulse-compare-scroll" tabIndex={0} role="region" aria-label="Account comparison cards">
+      <div className="pulse-compare-head">
+        <p className="pulse-compare-hint">Different platforms, different metrics. Swipe on mobile.</p>
+        <div className="pulse-compare-controls" aria-label="Browse comparison cards">
+          <button type="button" aria-label="Previous account" onClick={()=>scrollCompare(-1)}><ChevronLeft size={17}/></button>
+          <button type="button" aria-label="Next account" onClick={()=>scrollCompare(1)}><ChevronRight size={17}/></button>
+        </div>
+      </div>
+      <div ref={compareRef} className="pulse-compare-scroll" tabIndex={0} role="region" aria-label="Account comparison cards">
         {channels.map(c=><article key={keyOf(c)} className="pulse-compare-card">
           <div className="pulse-compare-card-heading">
             <strong>{c.platform}</strong>
