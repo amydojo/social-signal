@@ -2,10 +2,10 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SIGNAL / OPUS",
-  description: "Read-only social intelligence for OPUS Plastic Surgery",
+  title: "SIGNAL · OPUS",
+  description: "OPUS SIGNAL — creative and growth intelligence.",
   robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
-  applicationName: "SIGNAL",
+  applicationName: "OPUS SIGNAL",
   appleWebApp: {
     capable: true,
     title: "SIGNAL",
