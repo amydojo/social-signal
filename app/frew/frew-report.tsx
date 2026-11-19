@@ -114,6 +114,7 @@ function extract(ch:LeadershipChannel){
     ch.platform==="Instagram"?(ch.account==="@opusresults"?["Followers","Reach","Engaged"]:["Feed views","Feed interactions","Reach","Engaged","Followers","Story impressions"]):
     ch.platform==="TikTok"?["Video views","Interactions","Followers","Account likes"]:
     ch.platform==="YouTube"?["Views","Subscribers","Watch time"]:
+    ch.platform==="Facebook"?["Reel views","Page media views","Posts","Followers"]:
     ["Reel views","Carousel impressions","Posts"];
   const chosen=priority.map(label=>ch.metrics.find(m=>m.label===label))
     .filter((m):m is NonNullable<typeof m>=>!!m&&(paid||business||m.value!=null));
