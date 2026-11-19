@@ -8,26 +8,26 @@ export const snapshot: Snapshot = {
   id: "opus-2026-11-09-15",
   week_start: "2026-11-09",
   week_end: "2026-11-15",
-  captured_at: "2026-11-18",
-  source: "OPUS analytics · November 18 capture; Nov 9–15 snapshot",
-  reel_views: 1945,
-  reel_interactions: 45,
-  feed_views: 2797,
-  feed_interactions: 52,
+  captured_at: "2026-11-19",
+  source: "OPUS analytics · November 19 capture; Nov 9–15 snapshot",
+  reel_views: 2014,
+  reel_interactions: 48,
+  feed_views: 2951,
+  feed_interactions: 55,
   feed_pieces: 3,
   story_count: 12,
   story_impressions: 3254,
   story_replies: 6,
   account_data_through: "2026-11-13",
-  coverage_notes: "Instagram post metrics refreshed Nov 17. TikTok is linked but returned no video rows and zero-valued account reports for Nov 9–15; do not infer zero publishing. The linked YouTube account is Amy Do, not confirmed as OPUS, and it returned no published videos; GBP has no verified activity totals this week. Dr. Frew, OPUS Results, and the separate TikTok are not linked. Instagram account-wide views/reach are incomplete; Google Ads Nov 9–14 remain unverified."
+  coverage_notes: "Instagram post metrics refreshed Nov 19. TikTok Nov 13 video verified at 829 views / 62 interactions. GBP Nov 9–15: 15 Search views, 13 Maps views, 11 website clicks, 2 call clicks, 15 direction clicks across available daily observations; some days missing. Google Ads Nov 10–15 incomplete: 1,428 impressions, 66 clicks, two reported conversions, $87.41. Linked YouTube channel Amy Do is not the OPUS account. Other OPUS profiles not connected. Instagram account-wide views/reach incomplete."
 };
 
 export const posts: Post[] = [
-  {id:"ig-reel-implants-fit",published_on:"2026-11-17",title:"How do breast implants fit?",permalink:"https://www.instagram.com/reel/Df0yAMmsZ2p/",platform:"instagram",format:"Reel",views:846,reach:604,likes:21,comments:0,shares:3,saves:0,interactions:24,skip_3s_pct:40.7,avg_watch_seconds:9.031,raw_timestamp:"20261117"},
+  {id:"ig-reel-implants-fit",published_on:"2026-11-17",title:"How do breast implants fit?",permalink:"https://www.instagram.com/reel/Df0yAMmsZ2p/",platform:"instagram",format:"Reel",views:1039,reach:737,likes:28,comments:0,shares:4,saves:1,interactions:33,skip_3s_pct:40.2,avg_watch_seconds:8.968,raw_timestamp:"20261117"},
 
-  {id:"ig-reel-keep",published_on:"2026-11-10",title:"What you want to keep",permalink:"https://www.instagram.com/reel/Dfiwcicsux9/",platform:"instagram",format:"Reel",views:530,reach:346,likes:23,comments:0,shares:1,saves:0,interactions:24,skip_3s_pct:47.0,avg_watch_seconds:8.015,raw_timestamp:"20261110014504"},
-  {id:"ig-reel-scar",published_on:"2026-11-13",title:"What a scar can't show",permalink:"https://www.instagram.com/reel/DfqeQMZMKqR/",platform:"instagram",format:"Reel",views:1415,reach:1110,likes:17,comments:0,shares:3,saves:1,interactions:21,skip_3s_pct:36.5,avg_watch_seconds:8.571,raw_timestamp:"20261113014004"},
-  {id:"ig-carousel-bulge",published_on:"2026-11-14",title:"Why is my belly still bulging?",permalink:"https://www.instagram.com/p/DftDagtkR6i/",platform:"instagram",format:"Carousel",views:852,reach:340,likes:6,comments:0,shares:1,saves:0,interactions:7,skip_3s_pct:null,avg_watch_seconds:null,raw_timestamp:"20261114014334"},
+  {id:"ig-reel-keep",published_on:"2026-11-10",title:"What you want to keep",permalink:"https://www.instagram.com/reel/Dfiwcicsux9/",platform:"instagram",format:"Reel",views:555,reach:362,likes:25,comments:0,shares:1,saves:0,interactions:26,skip_3s_pct:46.8,avg_watch_seconds:8.069,raw_timestamp:"20261110014504"},
+  {id:"ig-reel-scar",published_on:"2026-11-13",title:"What a scar can't show",permalink:"https://www.instagram.com/reel/DfqeQMZMKqR/",platform:"instagram",format:"Reel",views:1459,reach:1134,likes:18,comments:0,shares:3,saves:1,interactions:22,skip_3s_pct:36.7,avg_watch_seconds:8.567,raw_timestamp:"20261113014004"},
+  {id:"ig-carousel-bulge",published_on:"2026-11-14",title:"Why is my belly still bulging?",permalink:"https://www.instagram.com/p/DftDagtkR6i/",platform:"instagram",format:"Carousel",views:937,reach:368,likes:6,comments:0,shares:1,saves:0,interactions:7,skip_3s_pct:null,avg_watch_seconds:null,raw_timestamp:"20261114014334"},
   {id:"fb-reel-scar",published_on:"2026-11-13",title:"What a scar can't show",permalink:"https://www.facebook.com/reel/997338790110767/",platform:"facebook",format:"Reel",views:17,reach:0,likes:0,comments:0,shares:0,saves:null,interactions:0,skip_3s_pct:null,avg_watch_seconds:null,raw_timestamp:"20261113014010"},
   {id:"fb-carousel-bulge",published_on:"2026-11-14",title:"Why is my belly still bulging?",permalink:"https://facebook.com/122123175627459507/posts/122124459129459507",platform:"facebook",format:"Carousel",views:null,impressions:1,reach:1,likes:0,comments:0,shares:0,saves:null,interactions:0,skip_3s_pct:null,avg_watch_seconds:null,raw_timestamp:"20261114014347"},
 ];
