@@ -651,3 +651,19 @@
  .pulse-story-gallery-controls button,.pulse-compare-controls button{transition:none}
  .pulse-story-filmstrip,.pulse-compare-scroll{scroll-behavior:auto}
 }
+
+
+/* Touch parity and legible navigation for compact iPhone screens. */
+@media(max-width:650px){
+ .pulse-view-switch button{min-height:44px}
+ .pulse-account-tools button{min-height:44px}
+ .pulse-story-gallery-controls button,.pulse-compare-controls button{min-width:44px;min-height:44px}
+ .pulse-story-close{width:44px;height:44px}
+ .pulse-story-dialog-nav button{width:44px;height:44px}
+ .executive-export,.executive-source-actions>a{min-height:44px}
+ .executive-footer{color:#75665b}
+}
+@media(max-width:520px){
+ .stamp-emoji-btn{min-height:44px;min-width:44px}
+ .executive-footer-actions{row-gap:10px}
+}
