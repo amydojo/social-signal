@@ -104,7 +104,8 @@ function Cover({url,alt}:{url:string|null;alt:string}){
   return url&&!broken?<img src={url} alt={alt} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={()=>setBroken(true)}/>:<span className="frew-cover-empty"><ImageIcon size={23}/><span className="frew-cover-label">No preview</span></span>;
 }
 function coverFor(p:LeadershipLog){
-  if(!p.url)return null;
+  if(p.thumbnailPath&&savedCovers.has(p.thumbnailPath))return p.thumbnailPath;
+  if(!p.url)return p.coverUrl??null;
   const existing=historicalPosts.find(x=>x.permalink===p.url);
   if(existing?.thumbnail_path&&savedCovers.has(existing.thumbnail_path))return existing.thumbnail_path;
   const code=p.url.match(/instagram\.com\/(?:reel|p)\/([^/]+)/)?.[1];
@@ -114,11 +115,13 @@ function coverFor(p:LeadershipLog){
       p.title.toLowerCase().includes("bulging")?"DftDagtkR6i":null;
     if(key&&savedCovers.has("/media/archive/ig-"+key+".jpg"))return "/media/archive/ig-"+key+".jpg";
   }
-  return frewCarouselCovers[p.url]??currentCoverFallbacks[p.url]??null;
+  return p.coverUrl??frewCarouselCovers[p.url]??currentCoverFallbacks[p.url]??null;
 }
 function storyCoverFor(story:LeadershipLog){
   // Prefer immutable saved files. Source thumbnails can expire and must never
   // be replaced with another story's creative.
+  if(story.thumbnailPath&&savedCovers.has(story.thumbnailPath))return story.thumbnailPath;
+  if(story.coverUrl)return story.coverUrl;
   const storyId=story.url?.match(/\/stories\/[^/]+\/(\d+)/)?.[1]??"";
   if(!storyId)return null;
   const archived="/media/archive/story-"+storyId+".jpg";
