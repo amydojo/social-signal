@@ -91,7 +91,7 @@ export function channelOverviewFromPosts(rows:LeadershipLog[],period:string):Lea
     const total=(a:LeadershipLog[])=>a.length&&a.every(p=>p.views!=null)?a.reduce((s,p)=>s+(p.views??0),0):null;
     const count=feed.map(interactionCount);
     const interactions=count.length&&count.every(n=>n!=null)?count.reduce<number>((s,n)=>s+(n??0),0):null;
-    return {platform,account,period:labelWeek(period),source:"metricool",
+    return {platform,account,period:labelWeek(period),source:"derived",
       metrics:[
         {label:"Posts",value:feed.length},
         {label:"Feed views",value:total(feed)},
