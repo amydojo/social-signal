@@ -72,7 +72,8 @@ export const currentStats={
   googleAdsSpend:76.28,
   facebookReelViews:197,
   facebookReelInteractions:1,
-  tiktokFollowers:8 // Nov 18 account reading; posts/videos unavailable
+  tiktokFollowers:8, // Nov 18 account snapshot
+  tiktokAccountLikes:189 // Nov 18 account-level likes; NOT weekly video likes
 };
 
 export const currentChannels:LeadershipChannel[]=[
@@ -97,8 +98,10 @@ export const currentChannels:LeadershipChannel[]=[
       {label:"Carousel impressions",value:2}
     ],note:"Other newly published Reel metrics pending"},
   {platform:"TikTok",account:ig,period:"Nov 18 snapshot",source:"metricool",
-    metrics:[{label:"Followers",value:currentStats.tiktokFollowers}],
-    note:"Video results not returned"},
+    metrics:[
+      {label:"Followers",value:currentStats.tiktokFollowers},
+      {label:"Account likes",value:currentStats.tiktokAccountLikes}
+    ],note:"No new video rows Nov 16–19"},
   {platform:"Google Business Profile",account:"OPUS · Upland",period:"Nov 16–18",source:"metricool",
     metrics:[],note:"Weekly totals unavailable"},
   {platform:"Meta Ads",account:"OPUS",period:"Nov 16–18",source:"metricool",
