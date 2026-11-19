@@ -6,6 +6,7 @@ import {posts as metricoolPosts, stories as metricoolStories, snapshot} from "..
 import {historicalPosts} from "../history-data";
 import archiveIndex from "../../public/media/archive/index.json";
 import {nov2Channels,nov2Log,type LeadershipLog,type LeadershipChannel} from "./frew-data";
+import {currentLog,currentChannels,currentStats} from "./frew-current-data";
 import FrewStamp from "./frew-stamp";
 
 type Period="2026-11-16"|"2026-11-09"|"2026-11-02";
@@ -35,7 +36,6 @@ const allRecentLog:LeadershipLog[]=[
 ].sort((a,b)=>b.date.localeCompare(a.date));
 
 const latestLog=allRecentLog.filter(p=>p.date>="2026-11-09"&&p.date<="2026-11-15");
-const currentLog=allRecentLog.filter(p=>p.date>="2026-11-16"&&p.date<="2026-11-22");
 // Period scoped: never mix historical account metrics into a different week.
 const latestChannels:LeadershipChannel[]=[
   {platform:"Instagram",account:"@opusplasticsurgery",period:"Nov 9–15",source:"metricool",metrics:[
@@ -53,12 +53,6 @@ const latestChannels:LeadershipChannel[]=[
     metrics:[],note:"Weekly totals unavailable"}
 ];
 // Keep accounts discoverable without silently reusing Nov 2–6 statistics.
-const currentChannels:LeadershipChannel[]=[
-  {platform:"Instagram",account:"@opusplasticsurgery",period:"Nov 16–22",source:"metricool",metrics:[],note:"Account totals unavailable"},
-  {platform:"Facebook",account:"OPUS Plastic Surgery",period:"Nov 16–22",source:"metricool",metrics:[],note:"Weekly totals unavailable"},
-  {platform:"TikTok",account:"@opusplasticsurgery",period:"Nov 16–22",source:"metricool",metrics:[],note:"Video stats unavailable"},
-  {platform:"Google Business Profile",account:"OPUS · Upland",period:"Nov 16–22",source:"metricool",metrics:[],note:"Weekly totals unavailable"}
-];
 const otherAccounts=[
   {platform:"Instagram",account:"@dr.frew"},
   {platform:"Instagram",account:"@opusresults"},
@@ -135,9 +129,9 @@ export default function FrewDashboard(){
   const channels=old?nov2Channels:current?currentChannels:latestChannels;
   const posts=rows.filter(p=>p.format!=="Story");
   const stories=rows.filter(p=>p.format==="Story");
-  const first=old?rows.find(p=>p.id==="n2-ig-tamara"):current?rows.find(p=>p.id==="ig-reel-implants-fit"):rows.find(p=>p.id==="ig-reel-scar");
-  const second=old?rows.find(p=>p.id==="n2-ig-lipo"):current?undefined:rows.find(p=>p.id==="ig-reel-keep");
-  const periodLabel=old?"NOV 2–8, 2026":current?"NOV 16–22, 2026":"NOV 9–15, 2026";
+  const first=old?rows.find(p=>p.id==="n2-ig-tamara"):current?rows.find(p=>p.id==="ig-reel-team-qa"):rows.find(p=>p.id==="ig-reel-scar");
+  const second=old?rows.find(p=>p.id==="n2-ig-lipo"):current?rows.find(p=>p.id==="ig-reel-implants-fit"):rows.find(p=>p.id==="ig-reel-keep");
+  const periodLabel=old?"NOV 2–8, 2026":current?"NOV 16–22, 2026 · WEEK TO DATE":"NOV 9–15, 2026";
   const report=old?{
     statement:"People and practical advice led the week.",
     summary:"Meet Tamara and the lipo + tummy tuck Reel drew the most views.",
@@ -149,15 +143,15 @@ export default function FrewDashboard(){
     ],
     action:"Pair another team introduction with a simple procedure explainer."
   }:current?{
-    statement:"A new surgical explainer is live.",
-    summary:"The implant-fit Reel has 846 cumulative views at the November 18 capture. Account-wide weekly totals are not yet verified.",
+    statement:"Five search conversions. A standout team Reel.",
+    summary:"The Frew + Tamara Q&A has 1,458 views; the implant-fit explainer has 1,039. Paid search reported five conversions through Wednesday, not confirmed bookings.",
     indicators:[
-      {label:"REEL VIEWS",value:846,detail:"Nov 17 Reel · cumulative at capture"},
-      {label:"REEL INTERACTIONS",value:24,detail:"Nov 17 Reel"},
-      {label:"STORY IMPRESSIONS",value:224,detail:"Nov 16 Stories · not unique viewers"},
-      {label:"ACCOUNT REACH",value:null,detail:"Period total unavailable"}
+      {label:"SEARCH CONVERSIONS",value:currentStats.googleAdsConversions,detail:"Google Ads · Nov 16–18"},
+      {label:"REEL VIEWS",value:currentStats.instagramReelViews,detail:"2 Reels · cumulative at capture"},
+      {label:"REEL INTERACTIONS",value:currentStats.instagramReelInteractions,detail:"2 Instagram Reels"},
+      {label:"STORY IMPRESSIONS",value:currentStats.storyImpressions,detail:"9 Stories · through Nov 18"}
     ],
-    action:"Keep the next surgical explanation specific and patient-centered."
+    action:"Try another specific patient-question Reel with a clear consult invitation."
   }:{
     statement:"The scar Reel led in views.",
     summary:"The consultation Reel earned more interactions.",
@@ -180,7 +174,7 @@ export default function FrewDashboard(){
           <span>{periodLabel}</span>
           <label className="executive-week-control"><CalendarDays size={15}/><span className="sr-only">Choose reporting week</span>
             <select value={period} onChange={e=>changePeriod(e.target.value as Period)}>
-              <option value="2026-11-16">Nov 16–22</option>
+              <option value="2026-11-16">Nov 16–22 · WTD</option>
               <option value="2026-11-09">Nov 9–15</option>
               <option value="2026-11-02">Nov 2–8</option>
             </select>
@@ -212,7 +206,7 @@ export default function FrewDashboard(){
         </div>
         <div className="executive-creative-grid">
           {first&&<Feature post={first} rank="MOST VIEWED" metricLabel="views"/>}
-          {second&&<Feature post={second} rank={old?"MOST VIEWED · NEXT":"MOST INTERACTIONS"} metricLabel={old?"views":"views · 23 interactions"}/>}
+          {second&&<Feature post={second} rank={current?"PATIENT QUESTION":old?"MOST VIEWED · NEXT":"MOST INTERACTIONS"} metricLabel={current?"views":old?"views":"views · 24 interactions"}/>}
         </div>
       </section>
 
@@ -271,7 +265,7 @@ export default function FrewDashboard(){
             weekStart={period}
             featured={[first,second].filter((p):p is LeadershipLog=>Boolean(p)).map(p=>({id:p.id,title:p.title}))}
           />
-          <span>Updated Nov 17, 2026</span>
+          <span>{current?"Updated Nov 19, 2026 · In progress":"Updated Nov 17, 2026"}</span>
         </div>
       </footer>
     </main>
