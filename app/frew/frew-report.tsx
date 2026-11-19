@@ -6,7 +6,7 @@ import {posts as metricoolPosts, stories as metricoolStories, snapshot} from "..
 import {historicalPosts} from "../history-data";
 import archiveIndex from "../../public/media/archive/index.json";
 import {nov2Channels,nov2Log,type LeadershipLog,type LeadershipChannel} from "./frew-data";
-import {currentLog,currentChannels,currentStats} from "./frew-current-data";
+import {currentLog,currentChannels,currentStats,currentCoverFallbacks} from "./frew-current-data";
 import FrewStamp from "./frew-stamp";
 
 type Period="2026-11-16"|"2026-11-09"|"2026-11-02";
@@ -75,7 +75,7 @@ function coverFor(p:LeadershipLog){
       p.title.toLowerCase().includes("bulging")?"DftDagtkR6i":null;
     if(key&&savedCovers.has("/media/archive/ig-"+key+".jpg"))return "/media/archive/ig-"+key+".jpg";
   }
-  return null;
+  return currentCoverFallbacks[p.url]??null;
 }
 function extract(ch:LeadershipChannel){
   const priority=ch.platform==="Google Business Profile"?["Website clicks","Calls","Directions"]:
