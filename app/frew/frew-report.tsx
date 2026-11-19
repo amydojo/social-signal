@@ -1,7 +1,7 @@
 "use client";
 
 import {useEffect,useRef,useState} from "react";
-import {Download,FileText,ExternalLink,ChevronDown,CalendarDays,ImageIcon,Images,X} from "lucide-react";
+import {Download,FileText,ExternalLink,ChevronDown,ChevronLeft,ChevronRight,CalendarDays,ImageIcon,Images,X} from "lucide-react";
 import {posts as metricoolPosts, stories as metricoolStories, snapshot} from "../report-data";
 import {historicalPosts} from "../history-data";
 import archiveIndex from "../../public/media/archive/index.json";
@@ -157,18 +157,57 @@ function CarouselShowcase({posts}:{posts:LeadershipLog[]}){
 function StoryGallery({stories,period}:{stories:LeadershipLog[];period:Period}){
   const [selected,setSelected]=useState<LeadershipLog|null>(null);
   const closeRef=useRef<HTMLButtonElement>(null);
-  useEffect(()=>setSelected(null),[period]);
+  const dialogRef=useRef<HTMLDivElement>(null);
+  const filmstripRef=useRef<HTMLDivElement>(null);
+  const openerRef=useRef<HTMLButtonElement|null>(null);
+  const touchStartX=useRef<number|null>(null);
+  const isOpen=selected!==null;
+  const activeIndex=selected?stories.findIndex(p=>p.id===selected.id):-1;
+  const move=(step:1|-1)=>{
+    setSelected(prev=>{
+      if(!prev||!stories.length)return prev;
+      const index=stories.findIndex(p=>p.id===prev.id);
+      return stories[((index<0?0:index)+step+stories.length)%stories.length];
+    });
+  };
+  useEffect(()=>{setSelected(null);filmstripRef.current?.scrollTo({left:0,behavior:"instant"});},[period]);
   useEffect(()=>{
-    if(!selected)return;
-    const prev=document.body.style.overflow;
+    if(!isOpen)return;
+    const originalOverflow=document.body.style.overflow;
     document.body.style.overflow="hidden";
     closeRef.current?.focus();
-    const onKey=(e:KeyboardEvent)=>{if(e.key==="Escape")setSelected(null);};
+    const onKey=(e:KeyboardEvent)=>{
+      if(e.key==="Escape"){e.preventDefault();setSelected(null);return;}
+      if(e.key==="ArrowRight"){e.preventDefault();move(1);return;}
+      if(e.key==="ArrowLeft"){e.preventDefault();move(-1);return;}
+      if(e.key==="Tab"&&dialogRef.current){
+        const focusable=[...dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])'
+        )].filter(el=>el.getClientRects().length>0);
+        if(!focusable.length)return;
+        const first=focusable[0],last=focusable[focusable.length-1];
+        if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+        else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+      }
+    };
     window.addEventListener("keydown",onKey);
-    return ()=>{document.body.style.overflow=prev;window.removeEventListener("keydown",onKey);};
-  },[selected]);
+    return ()=>{
+      window.removeEventListener("keydown",onKey);
+      document.body.style.overflow=originalOverflow;
+      openerRef.current?.focus();
+    };
+    // Re-establish navigation only when viewer opens/closes, not on every frame.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[isOpen]);
   if(!stories.length)return null;
   const preview=stories.filter(p=>!!storyCoverFor(p)).slice(0,3);
+  const scrollFrames=(direction:-1|1)=>{
+    const node=filmstripRef.current;
+    if(!node)return;
+    const frame=node.querySelector<HTMLElement>(".pulse-story-item");
+    const distance=frame?frame.getBoundingClientRect().width+12:128;
+    node.scrollBy({left:direction*distance*2,behavior:"smooth"});
+  };
   return <>
     <details className="executive-detail pulse-story-detail">
       <summary>
@@ -182,10 +221,17 @@ function StoryGallery({stories,period}:{stories:LeadershipLog[];period:Period}){
         <ChevronDown size={17}/>
       </summary>
       <div className="pulse-story-gallery">
-        <p className="pulse-story-gallery-hint">Tap a frame to preview · swipe for more</p>
-        <div className="pulse-story-filmstrip" role="list" aria-label="Story thumbnails">
+        <div className="pulse-story-gallery-head">
+          <p className="pulse-story-gallery-hint">Select a frame to inspect the actual Story.</p>
+          {stories.length>3&&<div className="pulse-story-gallery-controls" aria-label="Browse stories">
+            <button type="button" aria-label="Scroll to previous Stories" onClick={()=>scrollFrames(-1)}><ChevronLeft size={17}/></button>
+            <button type="button" aria-label="Scroll to next Stories" onClick={()=>scrollFrames(1)}><ChevronRight size={17}/></button>
+          </div>}
+        </div>
+        <div ref={filmstripRef} className="pulse-story-filmstrip" role="list" aria-label="Story thumbnails">
           {stories.map(p=><div className="pulse-story-item" key={p.id} role="listitem">
-            <button className="pulse-story-frame" type="button" onClick={()=>setSelected(p)} aria-label={"Preview Story from "+day(p.date)+": "+p.title}>
+            <button className="pulse-story-frame" type="button" onClick={e=>{openerRef.current=e.currentTarget;setSelected(p);}}
+              aria-label={"Preview Story from "+day(p.date)+": "+p.title}>
               <Cover url={storyCoverFor(p)} alt={p.title==="Instagram Story"?"Story from "+day(p.date):p.title}/>
             </button>
             <span className="pulse-story-caption-date">{day(p.date)}</span>
@@ -193,14 +239,27 @@ function StoryGallery({stories,period}:{stories:LeadershipLog[];period:Period}){
             <span className="pulse-story-caption-views">{fmt(p.views)} <small>impressions</small></span>
           </div>)}
         </div>
-        <p className="pulse-story-availability">Original Stories may have expired. Frames without a saved preview are shown as unavailable.</p>
+        <p className="pulse-story-availability">Some original Stories have expired; unavailable frames are labeled rather than replaced.</p>
       </div>
     </details>
     {selected&&<div className="pulse-media-shade" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setSelected(null);}}>
-      <div className="pulse-story-dialog" role="dialog" aria-modal="true" aria-label={"Story preview: "+selected.title}>
+      <div ref={dialogRef} className="pulse-story-dialog" role="dialog" aria-modal="true" aria-label={"Story "+(activeIndex+1)+" of "+stories.length+": "+selected.title}>
         <button ref={closeRef} className="pulse-story-close" type="button" aria-label="Close preview" onClick={()=>setSelected(null)}><X size={19}/></button>
-        <div className="pulse-story-dialog-media">
+        <div className="pulse-story-dialog-media"
+          onTouchStart={e=>{touchStartX.current=e.touches[0]?.clientX??null;}}
+          onTouchEnd={e=>{
+            const start=touchStartX.current;
+            touchStartX.current=null;
+            if(start==null||!e.changedTouches[0])return;
+            const dx=e.changedTouches[0].clientX-start;
+            if(Math.abs(dx)>52)move(dx<0?1:-1);
+          }}>
           <Cover url={storyCoverFor(selected)} alt={selected.title}/>
+        </div>
+        <div className="pulse-story-dialog-nav" aria-label="Story navigation">
+          <button type="button" aria-label="Previous Story" onClick={()=>move(-1)}><ChevronLeft size={21}/></button>
+          <span>{activeIndex+1} <span aria-hidden="true">/</span> {stories.length}</span>
+          <button type="button" aria-label="Next Story" onClick={()=>move(1)}><ChevronRight size={21}/></button>
         </div>
         <div className="pulse-story-dialog-copy">
           <span>{day(selected.date)} · {fmt(selected.views)} impressions</span>
