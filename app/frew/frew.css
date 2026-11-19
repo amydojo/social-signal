@@ -405,3 +405,24 @@
  .pulse-account-row,.pulse-compare-card{break-inside:avoid}
  .pulse-compare-scroll{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
 }
+
+
+/* Readable small-screen details, avoiding the old four-column microtype. */
+@media(max-width:520px){
+ .executive-edition{flex-wrap:wrap;row-gap:10px}
+ .executive-edition>span{font-size:10px;line-height:1.35}
+ .executive-week-control select{min-height:40px;font-size:11px}
+ .executive-indicator-label{font-size:10px;line-height:1.45}
+ .executive-indicator small{font-size:11px}
+ .executive-indicator strong{font-size:clamp(29px,8.5vw,36px)}
+ .executive-detail>summary{min-height:48px;line-height:1.4;align-items:center}
+ .executive-signal-labels{display:none}
+ .executive-signal-row:not(.executive-signal-labels){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px;padding:13px 2px}
+ .executive-signal-row:not(.executive-signal-labels)>strong{grid-column:1/-1;font-size:12px;font-weight:630}
+ .executive-signal-row:not(.executive-signal-labels)>span{font-size:12px;font-weight:610;line-height:1.35}
+ .executive-signal-row:not(.executive-signal-labels)>span::before{display:block;font-size:9px;line-height:1.3;color:#9b8a7d;font-weight:500;margin-bottom:4px}
+ .executive-signal-row:not(.executive-signal-labels)>span:nth-child(2)::before{content:"Avg watch"}
+ .executive-signal-row:not(.executive-signal-labels)>span:nth-child(3)::before{content:"Past 3s"}
+ .executive-signal-row:not(.executive-signal-labels)>span:nth-child(4)::before{content:"Shares / saves"}
+ .stamp-emoji-btn{min-height:38px;min-width:35px}
+}
