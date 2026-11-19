@@ -10,7 +10,7 @@
 export type LeadershipMetric = {label:string;value:number|null;unit?:string};
 export type LeadershipChannel = {
   platform:string;account:string;metrics:LeadershipMetric[];
-  note?:string;source:"sheet"|"metricool";period:string;
+  note?:string;source:"sheet"|"metricool"|"derived";period:string;
 };
 export type LeadershipLog = {
   id:string;date:string;platform:string;account:string;format:string;
