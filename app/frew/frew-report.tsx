@@ -170,7 +170,7 @@ function StoryGallery({stories,period}:{stories:LeadershipLog[];period:Period}){
       return stories[((index<0?0:index)+step+stories.length)%stories.length];
     });
   };
-  useEffect(()=>{setSelected(null);filmstripRef.current?.scrollTo({left:0,behavior:"instant"});},[period]);
+  useEffect(()=>{setSelected(null);filmstripRef.current?.scrollTo({left:0,behavior:"auto"});},[period]);
   useEffect(()=>{
     if(!isOpen)return;
     const originalOverflow=document.body.style.overflow;
