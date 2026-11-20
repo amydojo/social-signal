@@ -65,6 +65,8 @@
 .executive-detail>summary>span{margin-left:auto;font-weight:500;font-size:11px;color:#8e7e74}
 .executive-detail>summary svg{color:#9c6957;transition:transform .17s}
 .executive-detail[open]>summary svg{transform:rotate(180deg)}
+.pulse-context-body{padding:0 0 22px;max-width:790px;color:#66574e;font-size:13px;line-height:1.78}
+.pulse-context-body p{margin:0;white-space:pre-line}
 .executive-detail-list{padding:0 0 15px}
 .executive-detail-list>div{display:grid;grid-template-columns:68px minmax(0,1fr) 68px;gap:10px;padding:12px 2px;border-top:1px solid #e5dbd3;align-items:center;font-size:11px}
 .executive-detail-list>div>span{color:#8e8076}
