@@ -31,6 +31,7 @@ export default async function Home(){
     posts={combinedPosts}
     stories={combinedStories}
     coverage={published.length?studioCoverage(published[0]):coverage}
+    channelsByWeek={Object.fromEntries(published.map(week=>[week.weekStart,week.channels]))}
     socialDaily={socialDaily}
     adsDaily={adsDaily}
     insights={published.length?studioInsights(published[0]):insights}
