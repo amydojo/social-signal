@@ -79,7 +79,9 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
   // Do not manufacture a filler view-share or infer causality from incomplete
   // performance data. Unreviewed weeks simply have no insight sidebar.
   const insight=reviewed?.reviewedAt&&reviewed.insight?reviewed.insight:null;
-  const action=reviewed?.reviewedAt?reviewed.action:
+  // Historical insight review must not accidentally replace the action copy
+  // with a legacy incomplete question from an old source snapshot.
+  const action=reviewed?.reviewedAt&&reviewed.deck?reviewed.action:
     metaLeads!=null&&metaLeads>0?
       "Check whether Meta submissions turned into real replies and consultation requests.":
     googleActions!=null&&googleActions>0?
