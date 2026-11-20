@@ -46,6 +46,9 @@ export default async function OwnerPage({searchParams}:{
   const outcome=record as Outcome|null;
   const ads=published?.channels.find(c=>c.platform==="Google Ads");
   const actions=ads?.metrics.find(m=>m.label==="Conversions")?.value??null;
+  const meta=published?.channels.find(c=>c.platform==="Meta Ads");
+  const metaLeads=meta?.metrics.find(m=>m.label==="Leads")?.value??null;
+  const metaImpressions=meta?.metrics.find(m=>m.label==="Impressions")?.value??null;
 
   return <div className="executive-shell pulse-owner">
     <header className="executive-masthead">
@@ -56,13 +59,15 @@ export default async function OwnerPage({searchParams}:{
       <div className="pulse-owner-head">
         <span className="pulse-decision-kicker">OWNER ONLY</span>
         <h1>How many people actually booked?</h1>
-        <p>Google Ads tells us when someone converts. Aesthetix tells us whether anyone actually requested or booked a consultation. Add those weekly totals here—no patient names or details.</p>
+        <p>Google and Meta report ad events. Aesthetix confirms whether someone actually requested or booked a consultation. Add those weekly totals here—no patient names or details.</p>
       </div>
       <div className="pulse-owner-summary">
-        <div><span>GOOGLE ADS CONVERSIONS</span><strong>{actions===null?"—":actions.toLocaleString("en-US")}</strong><small>{ads?.period??"No matching published ad record"}</small></div>
-        <div><span>CONSULTS BOOKED</span><strong>{outcome?.consultations_booked==null?"—":outcome.consultations_booked.toLocaleString("en-US")}</strong><small>{outcome?"Checked in Aesthetix":"Not checked yet"}</small></div>
+        <div><span>NEW CRM INQUIRIES</span><strong>{outcome?.inquiries_received==null?"—":outcome.inquiries_received.toLocaleString("en-US")}</strong><small>{outcome?"Weekly verified total":"Not checked yet"}</small></div>
+        <div><span>CONSULTS BOOKED</span><strong>{outcome?.consultations_booked==null?"—":outcome.consultations_booked.toLocaleString("en-US")}</strong><small>{outcome?"Weekly verified total":"Not checked yet"}</small></div>
+        <div><span>GOOGLE ADS ACTIONS</span><strong>{actions==null?"—":actions.toLocaleString("en-US")}</strong><small>{ads?.period??"No verified Google period"}</small></div>
+        <div><span>META FORM LEADS</span><strong>{metaLeads==null?"—":metaLeads.toLocaleString("en-US")}</strong><small>{meta?.period??"No verified Meta period"}{metaLeads==null&&metaImpressions===0?" · 0 observed impressions; leads unknown":""}</small></div>
       </div>
-      <p className="pulse-owner-caveat">These two numbers may cover different people or dates. Don't treat them as a conversion rate until the records match.</p>
+      <p className="pulse-owner-caveat">CRM inquiries, confirmed bookings, Google conversion actions and Meta form submissions are different units. Never use mismatched periods to calculate a contact-to-consult rate. Historical cohort stages do not verify this week's booked appointments.</p>
       <div className="pulse-owner-form-head">
         <h2>Update this week</h2>
         <nav className="pulse-owner-week-picker" aria-label="Select a reporting week">
