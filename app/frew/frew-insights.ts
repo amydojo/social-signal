@@ -1,5 +1,5 @@
 import type {LeadershipLog,LeadershipChannel} from "./frew-data";
-import type {PublicOverview} from "../../lib/signal/publication";
+import type {PublicOverview,PublicOutcomeSummary} from "../../lib/signal/publication";
 
 export type PulseIndicator={label:string;value:number|null;detail:string;unit?:"USD"};
 export type PaidIndicator={value:number|null;period:string|null;note:string};
@@ -16,7 +16,7 @@ const metric=(channel:LeadershipChannel|undefined,name:string)=>
 const isInstagram=(p:LeadershipLog)=>p.platform==="Instagram"&&p.account.toLowerCase()==="@opusplasticsurgery";
 const isStory=(p:LeadershipLog)=>label(p.format)==="story";
 
-export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChannel[],reviewed?:PublicOverview):ExecutivePulse{
+export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChannel[],reviewed?:PublicOverview,outcomes?:PublicOutcomeSummary):ExecutivePulse{
   const feed=rows.filter(p=>isInstagram(p)&&!isStory(p));
   const reels=feed.filter(p=>label(p.format)==="reel");
   const carousels=feed.filter(p=>label(p.format)==="carousel");
@@ -26,12 +26,15 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
   const metaLeads=metric(meta,"Leads");
   const metaImpressions=metric(meta,"Impressions");
 
-  // Anonymous public page has no owner-only Aesthetix numbers. Never use ad
-  // events or old cohorts as this week's qualified inquiries or bookings.
+  // Only reviewed public CRM aggregates may populate outcomes.
+  // Ad events and historical cohort stages are never substituted for appointments.
   const metrics:PulseIndicator[]=[
-    {label:"NEW CRM INQUIRIES",value:null,detail:"Weekly CRM count to verify"},
-    {label:"CONSULTS BOOKED",value:null,detail:"Private appointment totals not published"},
-    {label:"QUALIFIED CONVERSATIONS",value:null,detail:"Human reply review needed"}
+    {label:"NEW CRM INQUIRIES",value:outcomes?.inquiriesReceived??null,
+      detail:outcomes?"Verified CRM aggregate":"Weekly CRM count to verify"},
+    {label:"CONSULTS BOOKED",value:outcomes?.consultationsBooked??null,
+      detail:outcomes?"Verified CRM aggregate":"Weekly appointments not verified"},
+    {label:"QUALIFIED INQUIRIES",value:outcomes?.qualifiedInquiries??null,
+      detail:outcomes?"Verified CRM aggregate":"Qualification not verified"}
   ];
   const paid:{
     google:PaidIndicator;meta:PaidIndicator
