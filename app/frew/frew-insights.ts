@@ -75,22 +75,13 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
       replies+" "+(replies===1?"Story reply":"Story replies")+" recorded.",
     detail:"Follow up on comments and direct messages to identify meaningful patient questions."
   };
-  // Historical reports may not have a reviewed insight. In that case use
-  // comparable views of posts published in this *selected* week, not a
-  // cross-week total or a claim about views earned during the week.
-  const observed=feed.filter(p=>p.views!=null);
-  const totalViews=observed.reduce((sum,p)=>sum+(p.views??0),0);
-  const reelViews=observed.filter(p=>label(p.format)==="reel")
-    .reduce((sum,p)=>sum+(p.views??0),0);
-  const fallbackInsight=feed.length>=3&&reels.length>0&&reels.length<feed.length&&
-    observed.length===feed.length&&totalViews>0&&reelViews>0?
-    {headline:"Reels accounted for "+Math.round(100*reelViews/totalViews)+"% of Instagram feed views.",
-      detail:reels.length+" Reels contributed "+reelViews.toLocaleString("en-US")+
-        " of "+totalViews.toLocaleString("en-US")+" recorded views across "+feed.length+
-        " feed posts. Totals reflect the latest capture."}
-    :null;
-  const insight=reviewed?.reviewedAt&&reviewed.insight?reviewed.insight:fallbackInsight;
-  const action=reviewed?.reviewedAt?reviewed.action:
+  // The executive sidebar deserves a material, week-specific finding.
+  // Do not manufacture a filler view-share or infer causality from incomplete
+  // performance data. Unreviewed weeks simply have no insight sidebar.
+  const insight=reviewed?.reviewedAt&&reviewed.insight?reviewed.insight:null;
+  // Historical insight review must not accidentally replace the action copy
+  // with a legacy incomplete question from an old source snapshot.
+  const action=reviewed?.reviewedAt&&reviewed.deck?reviewed.action:
     metaLeads!=null&&metaLeads>0?
       "Check whether Meta submissions turned into real replies and consultation requests.":
     googleActions!=null&&googleActions>0?

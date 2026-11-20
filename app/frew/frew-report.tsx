@@ -348,9 +348,9 @@ export default function FrewDashboard({published=[],readState="live"}:{published
   const partial=live?.status==="in_progress"||(!live&&current);
   const periodLabel=labelWeek(period).toUpperCase()+", "+period.slice(0,4)+(partial?" · WEEK TO DATE":"");
   const fallbackIntro=writeWeekIntro(rows,channels);
-  // Only explicitly reviewed, dated editorial findings may replace the
-  // ordinary auto-generated recap; daily sync summaries are unreviewed.
-  const intro=reviewedOverview?{
+  // A reviewed insight alone must not overwrite an older week's existing
+  // headline or summary; only an explicitly authored short hero deck does.
+  const intro=reviewedOverview?.deck?{
     headline:reviewedOverview.statement,
     summary:reviewedOverview.deck??reviewedOverview.summary,
     next:reviewedOverview.action
