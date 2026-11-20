@@ -70,7 +70,7 @@ export default function FrewCRMHistory({weeks,state}:{weeks:CRMWeek[];state:"liv
       {shown.map(w=><div className="crm-history-row" key={w.weekStart}>
         <div className="crm-history-period">
           <span>{period(w.weekStart)}</span>
-          {w.weekStart===last.weekStart&&w.dataThrough<"2026-11-22"?<small>THROUGH {period(w.dataThrough).toUpperCase()}</small>:null}
+          {w.weekStart===last.weekStart&&w.dataThrough<new Date(Date.parse(w.weekStart+"T12:00:00Z")+6*86400000).toISOString().slice(0,10)?<small>THROUGH {period(w.dataThrough).toUpperCase()}</small>:null}
         </div>
         <div className="crm-history-track" role="img"
           aria-label={period(w.weekStart)+": "+w.total+" contact records; "+categories.map(c=>c.label+" "+w[c.key]).join(", ")}>
