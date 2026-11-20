@@ -89,7 +89,7 @@ export function parsePublishedReport(row:unknown):PublicWeek|null{
   if(!obj(row)||!dateValid(row.week_start)||mondayOf(row.week_start as string)!==row.week_start||
     !dateValid(row.week_end)||row.week_end!==new Date(Date.parse((row.week_start as string)+"T12:00:00Z")+6*86400000).toISOString().slice(0,10)||
     (row.status!=="complete"&&row.status!=="in_progress")||
-    (row.data_through!=null&&(!dateValid(row.data_through)||row.data_through<row.week_start||row.data_through>row.week_end))||
+    (row.data_through!=null&&(!dateValid(row.data_through)||(row.data_through as string)<(row.week_start as string)||(row.data_through as string)>(row.week_end as string)))||
     !string(row.captured_at,55)||!Number.isFinite(Date.parse(row.captured_at as string))||
     row.schema_version!==1||typeof row.revision!=="number"||row.revision<1||!obj(row.payload)
   )return null;
