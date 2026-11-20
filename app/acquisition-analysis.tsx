@@ -72,6 +72,26 @@ export default function AcquisitionAnalysis({analysis}:{analysis:PublicAcquisiti
     <p className="acq-depth-note">“Source” describes the intake route (such as a Meta form, Instagram DM, or 4D Direct); it does <strong>not</strong> necessarily identify the paid or organic acquisition channel. First-session attribution is a separate field. The opportunity export contains {fmt(o.total)} records across {fmt(o.distinctContactIds)} contact IDs, with {fmt(o.nonSurgicalAdSourceMissing)} of {fmt(o.nonSurgicalTotal)} nonsurgical opportunities missing Ad Source.</p>
     <p className="acq-depth-note">Notably, the 32 Website First Access contact records have identifiable first-session channels (shown above), yet 12 of the 29 Website First Access <em>opportunities</em> are unattributed in their separate Ad Source field. This is an opportunity-mapping and reconciliation gap, not evidence that every visitor's acquisition source is unknown.</p>
 
+    <div className="acq-intake-coverage">
+      <div><strong>{fmt(c.metaNativeSource)}</strong><span>contacts entered through the Meta-native First Access source across campaigns, versus 36 with the relaunch UTM</span></div>
+      <div><strong>{fmt(c.instagramDM)}</strong><span>Instagram DM contacts; {fmt(c.instagramDMWithoutStatus)} have no recorded Lead Status, which does not prove no reply</span></div>
+      <div><strong>{fmt(c.utmSourceRecorded)}</strong><span>contact records with UTM Source, out of {fmt(c.total)} in the historical export</span></div>
+    </div>
+
+    <details className="acq-cohort-audit">
+      <summary>Inspect all {fmt(o.total)} open opportunities by CRM source</summary>
+      <div className="acq-audit-table-wrap">
+        <table>
+          <thead><tr><th>Source of opportunity</th><th>Records</th><th>Booked+ stage</th><th>Replied</th><th>Still Lead</th><th>Cancel / no-show</th></tr></thead>
+          <tbody>{analysis.opportunityGroups.map(g=><tr key={g.name}>
+            <td><strong>{g.name}</strong><small>{groupSubtitles[g.name]}</small></td>
+            <td>{g.opportunities}</td><td>{g.advancedStage}</td><td>{g.replied}</td><td>{g.lead}</td><td>{g.cancelNoShow}</td>
+          </tr>)}</tbody>
+        </table>
+      </div>
+      <p className="acq-depth-note">4D Direct is primarily administrative/appointment-origin intake; those records must not be credited to a paid or organic acquisition channel without independent evidence.</p>
+    </details>
+
     <div className="acq-depth-heading">
       <span>WEBSITE OPPORTUNITIES / AD SOURCE FIELD</span>
       <h3>Which origins are reaching a later stage?</h3>
