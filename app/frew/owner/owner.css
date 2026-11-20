@@ -32,3 +32,10 @@
 .pulse-owner-login button{align-self:flex-start}
 .pulse-owner-login>small{font-size:11px;color:#8b7e75}
 @media(max-width:610px){.pulse-owner-head{padding-top:30px}.pulse-owner-summary{gap:9px}.pulse-owner-summary>div{padding:23px 15px}.pulse-owner-summary span{font-size:9px}.pulse-owner-fields{grid-template-columns:1fr;gap:11px}.pulse-owner-form-head{align-items:flex-start;flex-direction:column}.pulse-owner-form-footer{align-items:stretch;flex-direction:column}.pulse-owner-form button{width:100%}}
+
+.pulse-owner-week-picker{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.pulse-owner-week-picker a,.pulse-owner-week-picker span{padding:8px 11px;border:1px solid #cfc0b6;color:#755449;text-decoration:none;border-radius:4px;font-size:11px}
+.pulse-owner-week-picker a.is-selected,.pulse-owner-week-picker a[aria-current="page"]{background:#473228;color:#fff8ef;border-color:#473228}
+.pulse-owner-week-picker a:focus-visible{outline:2px solid #9d624e;outline-offset:3px}
+.pulse-owner-form{margin-top:0;padding-top:8px;border-top:0}
+@media(max-width:610px){.pulse-owner-week-picker{justify-content:flex-start}}

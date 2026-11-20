@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {requestOwnerLink} from "../actions";
 import "../../frew.css";
+import "../../frew-executive.css";
 import "../owner.css";
 
 export const dynamic="force-dynamic";

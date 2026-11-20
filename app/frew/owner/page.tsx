@@ -63,15 +63,16 @@ export default async function OwnerPage({searchParams}:{
         <div><span>BOOKED CONSULTATIONS</span><strong>{outcome?.consultations_booked==null?"—":outcome.consultations_booked.toLocaleString("en-US")}</strong><small>{outcome?"Manually verified CRM count":"Not verified"}</small></div>
       </div>
       <p className="pulse-owner-caveat">These figures may cover different source populations or attribution windows. Do not divide ad actions by bookings to calculate a lead-to-booking rate unless individual inquiries and windows have been reconciled.</p>
+      <div className="pulse-owner-form-head">
+        <h2>Reconcile a reporting week</h2>
+        <nav className="pulse-owner-week-picker" aria-label="Select a reporting week">
+          {weeks.length?weeks.map(w=><Link href={"/frew/owner?week="+encodeURIComponent(w.weekStart)}
+            aria-current={selected===w.weekStart?"page":undefined}
+            className={selected===w.weekStart?"is-selected":""} key={w.weekStart}>{w.weekStart}</Link>):<span>{selected}</span>}
+        </nav>
+      </div>
       <form action={saveOwnerCounts} className="pulse-owner-form">
-        <div className="pulse-owner-form-head">
-          <h2>Reconcile a reporting week</h2>
-          <label>Reporting week
-            <select name="week_start" defaultValue={selected} key={selected}>
-              {[selected,...weeks.map(w=>w.weekStart).filter(w=>w!==selected)].map(w=><option value={w} key={w}>{w}</option>)}
-            </select>
-          </label>
-        </div>
+        <input type="hidden" name="week_start" value={selected}/>
         {query.saved==="1"&&<p role="status" className="pulse-owner-success">Saved to the owner-only reporting table.</p>}
         {record===null&&error&&<p role="alert" className="pulse-owner-error">Unable to load saved counts. Do not enter values until the private table is available.</p>}
         <div className="pulse-owner-fields">
