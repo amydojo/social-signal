@@ -67,16 +67,29 @@ test("reviewed contact-created evidence fills the weekly lead card, never bookin
     ]};
   const p=buildExecutivePulse([],[],reviewed);
   assert.equal(p.metrics[0].value,15);
-  assert.equal(p.metrics[0].label,"NEW CRM LEAD CONTACTS");
+  assert.equal(p.metrics[0].label,"NEW INQUIRIES");
   assert.match(p.metrics[0].detail,/Nov 16–19/);
   assert.equal(p.metrics[1].value,null);
-  assert.match(p.metrics[1].detail,/timestamps not exported/);
+  assert.match(p.metrics[1].detail,/not yet available/);
+});
+test("verified surgical consultation stage is displayed as a stage snapshot",()=>{
+  const reviewed={statement:"Consultations in progress",summary:"Leads are arriving.",
+    action:"Follow up",reviewedAt:"2026-11-20",
+    indicators:[{label:"Surgical consultations in booked stage",value:12,
+      detail:"Nov 20 · Surgical consultations currently in booked stage"}]};
+  const p=buildExecutivePulse([],[],reviewed);
+  assert.equal(p.metrics[1].value,12);
+  assert.equal(p.metrics[1].label,"SURGICAL CONSULTS · BOOKED STAGE");
+  assert.match(p.metrics[1].detail,/Nov 20/);
+  assert.equal(p.metrics[0].value,null);
 });
 test("unreviewed contact indicators, or only historical stages, do not fill KPI cards",()=>{
   const base={statement:"Draft",summary:"Unreviewed",action:"Check source",
-    indicators:[{label:"New CRM lead contacts",value:15,detail:"Nov 16–19"}]};
+    indicators:[{label:"New CRM lead contacts",value:15,detail:"Nov 16–19"},
+      {label:"Surgical consultations in booked stage",value:12,detail:"Nov 20"}]};
   const unreviewed=buildExecutivePulse([],[],base);
   assert.equal(unreviewed.metrics[0].value,null);
+  assert.equal(unreviewed.metrics[1].value,null);
   const historical=buildExecutivePulse([],[],{...base,reviewedAt:"2026-11-20",
     indicators:[{label:"Website open opportunities at booked+ stage",value:14,
       detail:"Historical cohort"}]});

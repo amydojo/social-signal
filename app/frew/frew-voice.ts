@@ -62,6 +62,6 @@ export function writeWeekIntro(rows:LeadershipLog[],channels:LeadershipChannel[]
     "This public report doesn't show how many inquiries actually booked.";
   return {
     headline,summary,
-    next:"Check confirmed inquiries and booked consults with Tamara in Aesthetix. Then review anything Frew needs to approve."
+    next:"Review inquiries and consultation progress with Tamara, then flag anything Dr. Frew needs to approve."
   };
 }

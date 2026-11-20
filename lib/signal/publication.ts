@@ -5,7 +5,7 @@ import {parsePublicAcquisition,type PublicAcquisition} from "./acquisition.ts";
 /** Public-safe projection: never hydrate arbitrary private source records into pages. */
 export type PublicOverview={
   statement:string;summary:string;action:string;
-  reviewedAt?:string;
+  deck?:string;reviewedAt?:string;
   indicators:{label:string;value:number|null;detail:string}[];
 };
 export type PublicWeek={
@@ -80,8 +80,9 @@ function parseChannel(x:unknown):LeadershipChannel|null{
   };
 }
 function parseOverview(x:unknown):PublicOverview|null{
-  if(!obj(x)||!attrs(x,["statement","summary","action","indicators","reviewedAt"])||
+  if(!obj(x)||!attrs(x,["statement","summary","action","indicators","reviewedAt","deck"])||
     !string(x.statement,250)||!string(x.summary,800)||!string(x.action,500)||
+    (x.deck!=null&&!string(x.deck,220))||
     (x.reviewedAt!=null&&!dateValid(x.reviewedAt))||
     !Array.isArray(x.indicators)||x.indicators.length>5)return null;
   const indicators:PublicOverview["indicators"]=[];
@@ -93,6 +94,7 @@ function parseOverview(x:unknown):PublicOverview|null{
   }
   return {statement:x.statement as string,summary:x.summary as string,
     action:x.action as string,indicators,
+    ...(x.deck?{deck:x.deck as string}:{}),
     ...(x.reviewedAt?{reviewedAt:x.reviewedAt as string}:{})};
 }
 function parseDiagnostics(x:unknown):PerformanceWeek|null{

@@ -32,15 +32,20 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
   const newLeadEvidence=reviewed?.reviewedAt
     ?reviewed.indicators.find(x=>x.label==="New CRM lead contacts")
     :undefined;
+  const surgicalBooked=reviewed?.reviewedAt
+    ?reviewed.indicators.find(x=>x.label==="Surgical consultations in booked stage")
+    :undefined;
   const metrics:PulseIndicator[]=[
-    {label:"NEW CRM LEAD CONTACTS",value:newLeadEvidence?.value??null,
+    {label:"NEW INQUIRIES",value:newLeadEvidence?.value??null,
       detail:newLeadEvidence?.value!=null
         ?newLeadEvidence.detail
-        :"Contact creation dates not verified for this reporting week"},
-    {label:"CONSULTS BOOKED",value:null,
-      detail:"Appointment-created timestamps not exported; CRM stages are not bookings"},
+        :"Not yet available for this week"},
+    {label:"SURGICAL CONSULTS · BOOKED STAGE",value:surgicalBooked?.value??null,
+      detail:surgicalBooked?.value!=null
+        ?surgicalBooked.detail
+        :"Current consultation stage count not yet available"},
     {label:"QUALIFIED CONVERSATIONS",value:null,
-      detail:"Human reply and qualification review still needed"}
+      detail:"Patient conversations have not yet been counted"}
   ];
   const paid:{
     google:PaidIndicator;meta:PaidIndicator
@@ -67,7 +72,7 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
   const conversation={
     headline:replies==null?"Story replies aren't available for this week.":
       replies+" "+(replies===1?"Story reply":"Story replies")+" recorded.",
-    detail:"The actual questions in comments, DMs and Aesthetix still need review before drawing conclusions about patient intent."
+    detail:"Follow up on comments and direct messages to identify meaningful patient questions."
   };
   const action=reviewed?.reviewedAt?reviewed.action:
     metaLeads!=null&&metaLeads>0?
