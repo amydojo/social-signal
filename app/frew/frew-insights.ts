@@ -36,6 +36,22 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
   const surgicalBooked=reviewed?.reviewedAt
     ?reviewed.indicators.find(x=>x.label==="Surgical consultations in booked stage")
     :undefined;
+  const surgicalComplete=reviewed?.reviewedAt
+    ?reviewed.indicators.find(x=>x.label==="Surgical consultations complete stage")
+    :undefined;
+  const ig=channels.find(c=>c.platform==="Instagram"&&c.account.toLowerCase()==="@opusplasticsurgery");
+  const igInteractions=metric(ig,"Feed interactions");
+  // Use a verified current-stage consultation snapshot when available. Older
+  // weeks have no point-in-time surgical snapshot: show their own recorded
+  // feed interactions instead of borrowing the latest week's completions or
+  // publishing an empty, unhelpful card.
+  const thirdMetric:PulseIndicator|null=surgicalComplete?.value!=null?
+    {label:"SURGICAL CONSULTS · COMPLETE STAGE",value:surgicalComplete.value,
+      detail:surgicalComplete.detail}:
+    igInteractions!=null?
+      {label:"INSTAGRAM FEED INTERACTIONS",value:igInteractions,
+        detail:(ig?.period??"Selected reporting week")+" · recorded interactions"}
+      :null;
   const metrics:PulseIndicator[]=[
     {label:"NEW INQUIRIES",value:newLeadEvidence?.value??null,
       detail:newLeadEvidence?.value!=null
@@ -45,8 +61,7 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
       detail:surgicalBooked?.value!=null
         ?surgicalBooked.detail
         :"Current consultation stage count not yet available"},
-    {label:"QUALIFIED CONVERSATIONS",value:null,
-      detail:"Patient conversations have not yet been counted"}
+    ...(thirdMetric?[thirdMetric]:[])
   ];
   const paid:{
     google:PaidIndicator;meta:PaidIndicator
@@ -68,7 +83,6 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
       "Recent: "+latest.map(p=>p.date+" · "+p.title).join(" / ")+". Open the posts and dates below."
       :"The available records may be incomplete. Check source accounts before drawing conclusions."
   };
-  const ig=channels.find(c=>c.platform==="Instagram"&&c.account.toLowerCase()==="@opusplasticsurgery");
   const replies=metric(ig,"Story replies");
   const conversation={
     headline:replies==null?"Story replies aren't available for this week.":
