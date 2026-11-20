@@ -9,6 +9,8 @@ const sumIfComplete=(values:(number|null|undefined)[]):number|null=>
 
 export function studioSnapshots(weeks:PublicWeek[]):Snapshot[]{
   return weeks.map(w=>{
+    const channel=w.channels.find(c=>c.platform==="Instagram"&&c.account==="@opusplasticsurgery");
+    const source=(label:string)=>channel?.metrics.find(m=>m.label===label)?.value??null;
     const ig=w.posts.filter(p=>p.platform==="Instagram"&&!isStory(p));
     const reels=ig.filter(p=>p.format.trim().toLowerCase()==="reel");
     const stories=w.posts.filter(p=>p.platform==="Instagram"&&isStory(p));
@@ -16,13 +18,13 @@ export function studioSnapshots(weeks:PublicWeek[]):Snapshot[]{
       id:"opus-public-"+w.weekStart,
       week_start:w.weekStart,week_end:w.weekEnd,captured_at:w.capturedAt,
       source:"OPUS SIGNAL · curated reporting snapshot",
-      reel_views:sumIfComplete(reels.map(p=>p.views)),
-      reel_interactions:sumIfComplete(reels.map(interactionCount)),
-      feed_views:sumIfComplete(ig.map(p=>p.views)),
-      feed_interactions:sumIfComplete(ig.map(interactionCount)),
+      reel_views:source("Reel views")??sumIfComplete(reels.map(p=>p.views)),
+      reel_interactions:source("Reel interactions")??sumIfComplete(reels.map(interactionCount)),
+      feed_views:source("Feed views")??sumIfComplete(ig.map(p=>p.views)),
+      feed_interactions:source("Feed interactions")??sumIfComplete(ig.map(interactionCount)),
       feed_pieces:ig.length,story_count:stories.length,
-      story_impressions:sumIfComplete(stories.map(p=>p.views)),
-      story_replies:null,
+      story_impressions:source("Story impressions")??sumIfComplete(stories.map(p=>p.views)),
+      story_replies:source("Story replies"),
       account_data_through:w.dataThrough,
       coverage_notes:w.status==="in_progress"?
         "Week to date. Metrics represent latest published captures; unavailable fields are not zero.":
@@ -40,7 +42,7 @@ export function studioPosts(weeks:PublicWeek[]):Post[]{
         id:p.id,published_on:p.date,title:p.title,permalink:p.url??"",
         platform:p.platform.toLowerCase(),format:p.format,views:p.views,
         reach:null,likes:p.likes,comments:p.comments,shares:p.shares,saves:p.saves,
-        impressions:null,interactions:interactionCount(p),
+        impressions:p.impressions??null,interactions:interactionCount(p),
         skip_3s_pct:null,avg_watch_seconds:null,
         thumbnail_path:p.thumbnailPath??undefined,
         thumbnail_original_url:p.coverUrl??undefined,
