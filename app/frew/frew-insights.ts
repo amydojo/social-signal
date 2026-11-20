@@ -115,9 +115,9 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
   // Historical snapshots remain explicitly labeled; do not confuse them with this week's activity.
   const highlights:ExecutiveHighlight[]=[];
   if(newLeadEvidence?.value!=null){
-    const first=newLeadEvidence.detail.match(/First Access\\s+(\\d+)\\b/i);
-    const dm=newLeadEvidence.detail.match(/Instagram DM\\s+(\\d+)\\b/i);
-    const direct=newLeadEvidence.detail.match(/\\bDirect\\s+(\\d+)\\b/i);
+    const first=newLeadEvidence.detail.match(/First Access\s+(\d+)\b/i);
+    const dm=newLeadEvidence.detail.match(/Instagram DM\s+(\d+)\b/i);
+    const direct=newLeadEvidence.detail.match(/\bDirect\s+(\d+)\b/i);
     const breakdown=first&&dm&&direct
       ?[Number(first[1]),Number(dm[1]),Number(direct[1])]:null;
     const verifiedBreakdown=breakdown&&breakdown.reduce((n,x)=>n+x,0)===newLeadEvidence.value;
