@@ -1,101 +1,80 @@
-import {notFound,redirect} from "next/navigation";
 import Link from "next/link";
-import {createSignalServerClient} from "../../../lib/supabase/server";
 import {loadPublishedWeeksWithState} from "../../../lib/signal/read-public";
-import {saveOwnerCounts} from "./actions";
+import AcquisitionView from "../../acquisition-view";
 import "../frew.css";
 import "../frew-executive.css";
 import "./owner.css";
 
 export const dynamic="force-dynamic";
-export const metadata={title:"Consultation numbers · OPUS",robots:{index:false,follow:false,nocache:true}};
-
-type Outcome={
-  week_start:string;inquiries_received:number|null;qualified_inquiries:number|null;
-  consultations_requested:number|null;consultations_booked:number|null;
-  checked_at:string;
-};
-const fields=[
-  {key:"inquiries_received",label:"New inquiries",detail:"Count confirmed in Aesthetix"},
-  {key:"qualified_inquiries",label:"Qualified inquiries",detail:"Of the new inquiries, how many were a fit?"},
-  {key:"consultations_requested",label:"Consults requested",detail:"People who actually asked for an appointment"},
-  {key:"consultations_booked",label:"Consults booked",detail:"Appointments confirmed on the calendar"}
-] as const;
-function weekValid(v:string){
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return false;
-  const d=new Date(v+"T12:00:00Z");
-  return d.getUTCDay()===1&&d.toISOString().slice(0,10)===v;
+export const metadata={title:"Acquisition & outcomes · OPUS",robots:{index:false,follow:false,nocache:true}};
+const fmt=(v:number|null|undefined)=>v==null?"—":v.toLocaleString("en-US");
+function validWeek(s:string){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;
+ const d=new Date(s+"T12:00:00Z");
+ return !Number.isNaN(d.getTime())&&d.toISOString().slice(0,10)===s&&d.getUTCDay()===1;
 }
-export default async function OwnerPage({searchParams}:{
-  searchParams:Promise<{week?:string;saved?:string}>
-}){
-  const supabase=await createSignalServerClient();
-  const {data:{user},error:authError}=await supabase.auth.getUser();
-  if(authError||!user)redirect("/frew/owner/login");
-  const {data:membership,error:memberError}=await supabase.from("signal_members")
-    .select("role").eq("user_id",user.id).maybeSingle();
-  if(memberError||membership?.role!=="owner")notFound();
-
-  const {weeks,state}=await loadPublishedWeeksWithState();
-  const query=await searchParams;
-  const selected=query.week&&weekValid(query.week)?query.week:(weeks[0]?.weekStart??"2026-11-16");
-  const published=weeks.find(w=>w.weekStart===selected);
-  const {data:record,error}=await supabase.from("signal_owner_outcomes")
-    .select("week_start,inquiries_received,qualified_inquiries,consultations_requested,consultations_booked,checked_at")
-    .eq("week_start",selected).maybeSingle();
-  const outcome=record as Outcome|null;
-  const ads=published?.channels.find(c=>c.platform==="Google Ads");
-  const actions=ads?.metrics.find(m=>m.label==="Conversions")?.value??null;
-  const meta=published?.channels.find(c=>c.platform==="Meta Ads");
-  const metaLeads=meta?.metrics.find(m=>m.label==="Leads")?.value??null;
-  const metaImpressions=meta?.metrics.find(m=>m.label==="Impressions")?.value??null;
-
-  return <div className="executive-shell pulse-owner">
-    <header className="executive-masthead">
-      <div className="executive-brand"><span className="executive-logomark">O.</span><span>OPUS<span className="executive-word-divider">/</span> PRIVATE NUMBERS</span></div>
-      <Link href="/frew" className="pulse-owner-back">← Weekly Pulse</Link>
-    </header>
-    <main className="executive-main">
-      <div className="pulse-owner-head">
-        <span className="pulse-decision-kicker">OWNER ONLY</span>
-        <h1>How many people actually booked?</h1>
-        <p>Google and Meta report ad events. Aesthetix confirms whether someone actually requested or booked a consultation. Add those weekly totals here—no patient names or details.</p>
-      </div>
-      <div className="pulse-owner-summary">
-        <div><span>NEW CRM INQUIRIES</span><strong>{outcome?.inquiries_received==null?"—":outcome.inquiries_received.toLocaleString("en-US")}</strong><small>{outcome?"Weekly verified total":"Not checked yet"}</small></div>
-        <div><span>CONSULTS BOOKED</span><strong>{outcome?.consultations_booked==null?"—":outcome.consultations_booked.toLocaleString("en-US")}</strong><small>{outcome?"Weekly verified total":"Not checked yet"}</small></div>
-        <div><span>GOOGLE ADS ACTIONS</span><strong>{actions==null?"—":actions.toLocaleString("en-US")}</strong><small>{ads?.period??"No verified Google period"}</small></div>
-        <div><span>META FORM LEADS</span><strong>{metaLeads==null?"—":metaLeads.toLocaleString("en-US")}</strong><small>{meta?.period??"No verified Meta period"}{metaLeads==null&&metaImpressions===0?" · 0 observed impressions; leads unknown":""}</small></div>
-      </div>
-      <p className="pulse-owner-caveat">CRM inquiries, confirmed bookings, Google conversion actions and Meta form submissions are different units. Never use mismatched periods to calculate a contact-to-consult rate. Historical cohort stages do not verify this week's booked appointments.</p>
-      <div className="pulse-owner-form-head">
-        <h2>Update this week</h2>
-        <nav className="pulse-owner-week-picker" aria-label="Select a reporting week">
-          {weeks.length?weeks.map(w=><Link href={"/frew/owner?week="+encodeURIComponent(w.weekStart)}
-            aria-current={selected===w.weekStart?"page":undefined}
-            className={selected===w.weekStart?"is-selected":""} key={w.weekStart}>{w.weekStart}</Link>):<span>{selected}</span>}
-        </nav>
-      </div>
-      <form action={saveOwnerCounts} className="pulse-owner-form">
-        <input type="hidden" name="week_start" value={selected}/>
-        {query.saved==="1"&&<p role="status" className="pulse-owner-success">Saved.</p>}
-        {record===null&&error&&<p role="alert" className="pulse-owner-error">Couldn’t load the saved numbers. Please don’t enter new ones yet.</p>}
-        <div className="pulse-owner-fields">
-          {fields.map(f=><label key={f.key}>
-            <strong>{f.label}</strong>
-            <small>{f.detail}</small>
-            <input disabled={Boolean(error)} name={f.key} type="number" min="0" max="1000000" step="1" inputMode="numeric" defaultValue={outcome?.[f.key]??""} placeholder="Not checked"/>
-          </label>)}
-        </div>
-        <div className="pulse-owner-form-footer">
-          <p>Only enter numbers you've checked in Aesthetix. Leave the rest blank—blank is not zero.</p>
-          <button disabled={Boolean(error)} type="submit">Save numbers</button>
-        </div>
-      </form>
-      <footer className="pulse-owner-foot">
-        <span>{outcome?"Last checked "+new Date(outcome.checked_at).toLocaleString("en-US",{dateStyle:"medium",timeStyle:"short",timeZone:"America/Los_Angeles"}):"No Aesthetix numbers saved this week"}</span>
-        <span>Public report: {state==="live"?"available":state}</span>
-      </footer>
-    </main>
-  </div>;
+const date=(s:string)=>new Date(s+"T12:00:00Z").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"});
+export default async function PublicOutcomes({searchParams}:{searchParams:Promise<{week?:string}>}){
+ // Anonymous, public-safe report ONLY. Never read protected CRM/owner tables.
+ const {weeks,state}=await loadPublishedWeeksWithState();
+ const q=await searchParams;
+ const selected=q.week&&validWeek(q.week)&&weeks.some(w=>w.weekStart===q.week)?q.week:(weeks[0]?.weekStart??"2026-11-16");
+ const week=weeks.find(w=>w.weekStart===selected);
+ const counts=week?.outcomes;
+ const history=weeks.find(w=>w.acquisition)?.acquisition??null;
+ const google=week?.channels.find(c=>c.platform==="Google Ads");
+ const meta=week?.channels.find(c=>c.platform==="Meta Ads");
+ const g=google?.metrics.find(m=>m.label==="Conversions")?.value??null;
+ const m=meta?.metrics.find(m=>m.label==="Leads")?.value??null;
+ const metaImpressions=meta?.metrics.find(m=>m.label==="Impressions")?.value??null;
+ const measures=[
+  {label:"NEW CRM INQUIRIES",value:counts?.inquiriesReceived??null},
+  {label:"QUALIFIED INQUIRIES",value:counts?.qualifiedInquiries??null},
+  {label:"CONSULTS REQUESTED",value:counts?.consultationsRequested??null},
+  {label:"CONSULTS BOOKED",value:counts?.consultationsBooked??null}
+ ];
+ return <div className="executive-shell pulse-owner pulse-outcomes">
+  <header className="executive-masthead">
+   <div className="executive-brand"><span className="executive-logomark">O.</span><span>OPUS<span className="executive-word-divider">/</span> OUTCOMES</span></div>
+   <nav className="pulse-public-nav" aria-label="Reports"><Link className="pulse-owner-back" href="/frew">Weekly Pulse</Link><Link className="pulse-owner-back" href="/">SIGNAL</Link></nav>
+  </header>
+  <main className="executive-main">
+   <div className="pulse-owner-head">
+    <span className="pulse-decision-kicker">PUBLIC REPORT · READ ONLY</span>
+    <h1>Is marketing bringing people into the practice?</h1>
+    <p>Track verified inquiries and consultations alongside Google and Meta activity. No login required, and no private contact records are exposed.</p>
+   </div>
+   <div className="pulse-owner-form-head pulse-public-week-heading">
+    <h2>Weekly outcomes</h2>
+    <nav className="pulse-owner-week-picker" aria-label="Reporting week">
+     {weeks.length?weeks.map(w=><Link key={w.weekStart} href={"/frew/owner?week="+encodeURIComponent(w.weekStart)}
+       aria-current={selected===w.weekStart?"page":undefined} className={selected===w.weekStart?"is-selected":""}>
+        {date(w.weekStart)}{w.status==="in_progress"?" · WTD":""}
+       </Link>):<span>Week of {date(selected)}</span>}
+    </nav>
+   </div>
+   <section className="pulse-owner-summary" aria-label="Published weekly CRM outcomes">
+    {measures.map(x=><div key={x.label}><span>{x.label}</span><strong>{fmt(x.value)}</strong><small>{counts?"Reviewed Aesthetix aggregate":"Not yet verified"}</small></div>)}
+   </section>
+   <p className="pulse-owner-caveat">{counts?
+    "Verified "+date(counts.verifiedAt)+" · Aesthetix aggregate. These four measurements do not automatically form a contact-matched conversion funnel.":
+    "No confirmed CRM outcome totals have been published for this week. A dash means unknown, not zero. Historical lead stages are not confirmed appointments."}</p>
+   <section className="pulse-public-paid" aria-label="Paid acquisition activity">
+    <div className="pulse-public-paid-head"><span className="pulse-decision-kicker">AD PLATFORM REPORTING</span>
+     <h2>What the ads reported</h2><p>Platform events are different from inquiries and bookings. Date coverage can vary.</p></div>
+    <div className="pulse-public-paid-grid">
+     <div className="pulse-public-paid-tile"><span>GOOGLE ADS</span><strong>{fmt(g)}</strong><p>Conversion actions · {google?.period??"Period not verified"}</p></div>
+     <div className="pulse-public-paid-tile"><span>META ADS</span><strong>{fmt(m)}</strong><p>Native form leads · {meta?.period??"Period not verified"}</p>
+      {m==null&&metaImpressions===0&&<small>0 observed impressions; submitted-lead count not verified.</small>}</div>
+    </div>
+   </section>
+   <section className="pulse-public-history" aria-label="Dated historical acquisition baseline">
+    <AcquisitionView snapshot={history}/>
+   </section>
+   <footer className="pulse-owner-foot">
+    <span>{week?"Week of "+date(week.weekStart)+(week.status==="in_progress"?" · in progress":" · complete"):"No current published snapshot"}</span>
+    <span>Reporting feed: {state==="live"?"available":state} · Aggregate data only</span>
+   </footer>
+  </main>
+ </div>;
 }
