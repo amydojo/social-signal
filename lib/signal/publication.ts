@@ -1,5 +1,4 @@
 import type {LeadershipChannel,LeadershipLog} from "../../app/frew/frew-data";
-import {weekStartFor} from "../../app/frew/frew-selection";
 import type {PerformanceWeek} from "../../app/frew/frew-performance";
 
 /** Public-safe projection: never hydrate arbitrary private source records into pages. */
@@ -19,6 +18,11 @@ const safeURL=(x:unknown)=>x==null||(string(x,2048)&&/^https:\/\//i.test(x as st
 const safePath=(x:unknown)=>x==null||(string(x,400)&&/^\/media\/archive\/[a-zA-Z0-9_.-]+$/.test(x as string));
 const dateValid=(v:unknown)=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&
   !Number.isNaN(Date.parse(v+"T12:00:00Z"))&&new Date(v+"T12:00:00Z").toISOString().slice(0,10)===v;
+const mondayOf=(v:string):string=>{
+  const dt=new Date(v+"T12:00:00Z");
+  dt.setUTCDate(dt.getUTCDate()-((dt.getUTCDay()+6)%7));
+  return dt.toISOString().slice(0,10);
+};
 const obj=(x:unknown):x is Record<string,unknown>=>!!x&&typeof x==="object"&&!Array.isArray(x);
 const attrs=(x:Record<string,unknown>,keys:string[])=>
   Object.keys(x).every(key=>keys.includes(key));
@@ -28,7 +32,7 @@ const metricFields=["label","value","unit"];
 
 function parsePost(x:unknown,week:string):LeadershipLog|null{
   if(!obj(x)||!attrs(x,postFields)||
-    !string(x.id,130)||!dateValid(x.date)||weekStartFor(x.date as string)!==week||
+    !string(x.id,130)||!dateValid(x.date)||mondayOf(x.date as string)!==week||
     !string(x.platform,80)||!string(x.account,180)||
     !string(x.format,80)||!string(x.title,500)||
     !safeURL(x.url)||!safeURL(x.coverUrl)||
@@ -82,7 +86,7 @@ function parseOverview(x:unknown):PublicOverview|null{
     action:x.action as string,indicators};
 }
 export function parsePublishedReport(row:unknown):PublicWeek|null{
-  if(!obj(row)||!dateValid(row.week_start)||weekStartFor(row.week_start as string)!==row.week_start||
+  if(!obj(row)||!dateValid(row.week_start)||mondayOf(row.week_start as string)!==row.week_start||
     !dateValid(row.week_end)||row.week_end!==new Date(Date.parse((row.week_start as string)+"T12:00:00Z")+6*86400000).toISOString().slice(0,10)||
     (row.status!=="complete"&&row.status!=="in_progress")||
     (row.data_through!=null&&(!dateValid(row.data_through)||row.data_through<row.week_start||row.data_through>row.week_end))||
