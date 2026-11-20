@@ -26,12 +26,21 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
   const metaLeads=metric(meta,"Leads");
   const metaImpressions=metric(meta,"Impressions");
 
-  // Anonymous public page has no owner-only Aesthetix numbers. Never use ad
-  // events or old cohorts as this week's qualified inquiries or bookings.
+  // Only use a formally reviewed contact-created aggregate for this *selected*
+  // published week; do not substitute opportunity counts, Meta leads, or an
+  // earlier historical cohort. The aggregate has no names, IDs, or contact info.
+  const newLeadEvidence=reviewed?.reviewedAt
+    ?reviewed.indicators.find(x=>x.label==="New CRM lead contacts")
+    :undefined;
   const metrics:PulseIndicator[]=[
-    {label:"NEW CRM INQUIRIES",value:null,detail:"Weekly CRM count to verify"},
-    {label:"CONSULTS BOOKED",value:null,detail:"Private appointment totals not published"},
-    {label:"QUALIFIED CONVERSATIONS",value:null,detail:"Human reply review needed"}
+    {label:"NEW CRM LEAD CONTACTS",value:newLeadEvidence?.value??null,
+      detail:newLeadEvidence?.value!=null
+        ?newLeadEvidence.detail
+        :"Contact creation dates not verified for this reporting week"},
+    {label:"CONSULTS BOOKED",value:null,
+      detail:"Appointment-created timestamps not exported; CRM stages are not bookings"},
+    {label:"QUALIFIED CONVERSATIONS",value:null,
+      detail:"Human reply and qualification review still needed"}
   ];
   const paid:{
     google:PaidIndicator;meta:PaidIndicator

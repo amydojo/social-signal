@@ -25,8 +25,8 @@ export default function FrewExecutiveBrief({pulse,partial}:{pulse:ExecutivePulse
       <article>
         <span className="pulse-brief-no">NEXT</span>
         <h3>Did anyone book?</h3>
-        <strong>Consultation totals need private CRM verification.</strong>
-        <p>{pulse.action} The public report only shows source-backed marketing activity.</p>
+        <strong>Consult bookings require appointment-level verification.</strong>
+        <p>{pulse.action} The public report shows reviewed aggregate CRM intake and marketing data, not private appointment records.</p>
       </article>
     </div>
   </section>;
