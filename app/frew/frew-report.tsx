@@ -532,7 +532,7 @@ export default function FrewDashboard({published=[]}:{published?:PublicWeek[]}){
             weekStart={period}
             featured={[first,second].filter((p):p is LeadershipLog=>Boolean(p)).map(p=>({id:p.id,title:p.title}))}
           />
-          <span>{live?`Captured ${new Date(live.capturedAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}${partial?" · In progress":""}`:current?"Updated Nov 19, 2026 · In progress":previous?"Updated Nov 19, 2026":old?"Historical report":"Week data as captured"}</span>
+          <span>{live?`Captured ${new Date(live.capturedAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"America/Los_Angeles"})}${partial?" · In progress":""}`:current?"Updated Nov 19, 2026 · In progress":previous?"Updated Nov 19, 2026":old?"Historical report":"Week data as captured"}</span>
         </div>
       </footer>
     </main>
