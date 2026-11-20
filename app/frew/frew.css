@@ -667,3 +667,18 @@
  .stamp-emoji-btn{min-height:44px;min-width:44px}
  .executive-footer-actions{row-gap:10px}
 }
+
+
+/* OPUS editorial dispatch: journalistic headline rhythm without newspaper imitation. */
+.executive-dispatch-kicker{display:flex;align-items:center;gap:9px;margin-bottom:17px;color:#d4aa96;font-size:10px;letter-spacing:.14em;font-weight:680;line-height:1.4}
+.executive-dispatch-kicker span{color:#947467}
+.executive-hero-copy h1{font-family:Georgia,"Iowan Old Style",serif;letter-spacing:-.037em;font-weight:550;font-size:clamp(36px,4.45vw,63px);line-height:1.095;max-width:790px;margin:0 0 20px;text-wrap:balance}
+.executive-hero-copy>p{max-width:690px;font-size:14px;line-height:1.73;color:#ddd1c8;letter-spacing:0}
+.executive-hero-aside strong{font-weight:515;line-height:1.45}
+@media(max-width:800px){.executive-hero-copy h1{font-size:clamp(36px,6.2vw,57px)}}
+@media(max-width:520px){
+ .executive-dispatch-kicker{font-size:9px;gap:7px;margin-bottom:14px;letter-spacing:.11em}
+ .executive-hero-copy h1{font-size:clamp(33px,8.9vw,43px);line-height:1.12;letter-spacing:-.031em;margin-bottom:16px}
+ .executive-hero-copy>p{font-size:13px;line-height:1.67}
+}
+@media print{.executive-hero-copy h1{font-size:42px}}
