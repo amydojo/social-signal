@@ -24,9 +24,11 @@ export default function FrewExecutiveBrief({pulse,partial}:{pulse:ExecutivePulse
       </article>
       <article>
         <span className="pulse-brief-no">NEXT</span>
-        <h3>Did anyone book?</h3>
-        <strong>Consult bookings require appointment-level verification.</strong>
-        <p>{pulse.action} The public report shows reviewed aggregate CRM intake and marketing data, not private appointment records.</p>
+        <h3>Where does interest go next?</h3>
+        <strong>{pulse.metrics[1].value!=null
+          ?pulse.metrics[1].value+" surgical consultations are currently in the booked stage."
+          :"Consultation progress is the next focus."}</strong>
+        <p>{pulse.action}</p>
       </article>
     </div>
   </section>;
