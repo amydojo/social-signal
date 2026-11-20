@@ -6,6 +6,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
+import {archivedFilenameForPost,isPublishedWeek} from "../lib/media/archive-path.mjs";
 
 const feed=process.env.SIGNAL_PUBLICATION_FEED||"https://opussignal.vercel.app/api/publications";
 const target=path.resolve("public/media/archive");
@@ -19,15 +20,6 @@ function trusted(url){
       (u.hostname.endsWith(".cdninstagram.com")||
        u.hostname.endsWith(".fbcdn.net"));
   }catch{return false;}
-}
-function pathFor(post){
-  const url=post.url||"";
-  const match=url.match(/instagram\\.com\\/(?:p|reel)\\/([^/]+)/);
-  const story=url.match(/instagram\\.com\\/stories\\/[^/]+\\/(\\d+)/);
-  if(story)return "story-"+story[1]+".jpg";
-  if(match&&/^[a-zA-Z0-9_-]{5,35}$/.test(match[1]))return "ig-"+match[1]+".jpg";
-  const hash=crypto.createHash("sha256").update(post.platform+"|"+url).digest("hex").slice(0,18);
-  return "social-"+hash+".jpg";
 }
 function validJpeg(b){return b.length>400&&b[0]===255&&b[1]===216&&b[2]===255;}
 async function getImage(url){
@@ -61,22 +53,29 @@ const manifest=JSON.parse(await fs.readFile(indexPath,"utf8").catch(()=>"{}"));
 const byFile=new Map((manifest.assets??[]).filter(a=>typeof a.file==="string").map(a=>[a.file,a]));
 const candidate=new Map();
 for(const week of raw.weeks){
- if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(week.weekStart)||!Array.isArray(week.posts))continue;
+ if(!isPublishedWeek(week.weekStart)||!Array.isArray(week.posts))continue;
  for(const post of week.posts){
    if(!post.url||!post.coverUrl||!trusted(post.coverUrl))continue;
-   const name=pathFor(post);
+   const name=archivedFilenameForPost(post);
    const file="/media/archive/"+name;
    if(!candidate.has(file))candidate.set(file,{name,file,post});
  }
 }
 if(candidate.size>500)throw Error("Too many images queued");
-let added=0,failures=0;
+let added=0,failures=0,manifestChanges=0;
 for(const {name,file,post} of candidate.values()){
  const out=path.resolve(target,name);
  if(!out.startsWith(target+path.sep))throw Error("Unsafe archive path");
  try{
    const existing=await fs.readFile(out).catch(()=>null);
-   if(existing&&validJpeg(existing))continue;
+   if(existing&&validJpeg(existing)){
+     if(byFile.get(file)?.status!=="saved"){
+       byFile.set(file,{id:post.id,file,status:"saved",bytes:existing.length,
+         sha256:crypto.createHash("sha256").update(existing).digest("hex")});
+       manifestChanges++;
+     }
+     continue;
+   }
    const image=await getImage(post.coverUrl);
    await fs.writeFile(out+".tmp",image);
    await fs.rename(out+".tmp",out);
@@ -85,13 +84,20 @@ for(const {name,file,post} of candidate.values()){
      sha256:crypto.createHash("sha256").update(image).digest("hex")
    });
    added++;
+   manifestChanges++;
    console.log("ARCHIVED "+file);
  }catch(e){
    failures++;
-   console.warn("Could not archive "+name+": "+String(e.message).slice(0,100));
+   const reason=String(e.message||e).slice(0,100);
+   const prior=byFile.get(file);
+   if(prior?.status!=="unavailable"||prior.reason!==reason){
+     byFile.set(file,{id:post.id,file,status:"unavailable",reason});
+     manifestChanges++;
+   }
+   console.warn("Could not archive "+name+": "+reason);
  }
 }
-if(added){
+if(manifestChanges){
  const assets=[...byFile.values()].sort((a,b)=>a.file.localeCompare(b.file));
  const output={
    archived_at:new Date().toISOString(),source:"Approved published OPUS media URLs",

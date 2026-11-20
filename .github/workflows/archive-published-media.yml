@@ -1,5 +1,11 @@
 name: Archive new SIGNAL media
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/archive-published-media.mjs'
+      - 'lib/media/archive-path.mjs'
+      - '.github/workflows/archive-published-media.yml'
   schedule:
     - cron: '23 18 * * *'
   workflow_dispatch:

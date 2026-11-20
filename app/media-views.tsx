@@ -29,14 +29,16 @@ function localPostCover(post:Post) {
   const archived=code?"/media/archive/ig-"+code+".jpg":"";
   if(archived&&savedImagePaths.has(archived))return archived;
   if(post.thumbnail_path&&savedImagePaths.has(post.thumbnail_path))return post.thumbnail_path;
-  return code?"/media/p-"+encodeURIComponent(code):"";
+  // Avoid fabricated local paths that return 404.
+  return "";
 }
 function localStoryCover(story:Story) {
   const id=storyId(story);
   const archived=id?"/media/archive/story-"+id+".jpg":"";
   if(archived&&savedImagePaths.has(archived))return archived;
   if(story.thumbnail_path&&savedImagePaths.has(story.thumbnail_path))return story.thumbnail_path;
-  return id?"/media/s-"+encodeURIComponent(id):"";
+  // Missing Story image: use the original source URL or an honest placeholder.
+  return "";
 }
 
 function snapshotCover(post:Post|null,story:Story|null){
