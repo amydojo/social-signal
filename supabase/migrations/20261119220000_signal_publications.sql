@@ -109,6 +109,87 @@ begin
   ) then
     raise exception 'unrecognized top-level public field';
   end if;
+  -- Whitelist nested keys as well: public rows must never be raw exports.
+  if exists (
+    select 1 from jsonb_array_elements(p_payload->'posts') p(item)
+    cross join lateral jsonb_object_keys(p.item) k(key)
+    where k.key not in ('id','date','platform','account','format','title',
+      'url','views','likes','comments','shares','saves','status','ctaChecked',
+      'complianceChecked','thumbnailPath','coverUrl')
+  ) then
+    raise exception 'unrecognized post field in public payload';
+  end if;
+  if exists (
+    select 1 from jsonb_array_elements(p_payload->'channels') c(item)
+    cross join lateral jsonb_object_keys(c.item) k(key)
+    where k.key not in ('platform','account','period','source','note','metrics')
+  ) then
+    raise exception 'unrecognized channel field in public payload';
+  end if;
+  if exists (
+    select 1 from jsonb_array_elements(p_payload->'channels') c(item)
+    where jsonb_typeof(c.item->'metrics')<>'array'
+    or not (c.item ? 'metrics')
+  ) then
+    raise exception 'invalid channel metrics array';
+  end if;
+  if exists (
+    select 1 from jsonb_array_elements(p_payload->'channels') c(item)
+    cross join lateral jsonb_array_elements(c.item->'metrics') m(item)
+    cross join lateral jsonb_object_keys(m.item) k(key)
+    where k.key not in ('label','value','unit')
+  ) then
+    raise exception 'unrecognized metric field in public payload';
+  end if;
+  if exists (
+    select 1 from jsonb_array_elements(p_payload->'posts') p(item)
+    where (p.item->>'url') is not null and (p.item->>'url') !~* '^https://'
+       or (p.item->>'coverUrl') is not null and (p.item->>'coverUrl') !~* '^https://'
+       or (p.item->>'thumbnailPath') is not null and
+          (p.item->>'thumbnailPath') !~ '^/media/archive/[a-zA-Z0-9_.-]+
+  if found and p_captured_at<existing.captured_at then
+    raise exception 'stale capture: newer report is already published';
+  end if;
+  if found and p_captured_at=existing.captured_at
+     and p_payload=existing.payload and p_status=existing.status
+     and p_published=existing.published and p_data_through is not distinct from existing.data_through
+  then
+    return existing.revision; -- exact replay is idempotent
+  end if;
+  next_revision:=coalesce(existing.revision,0)+1;
+  if found then
+    insert into public.signal_publication_history(
+      week_start,revision,payload,captured_at,status,published
+    ) values(existing.week_start,existing.revision,existing.payload,
+             existing.captured_at,existing.status,existing.published);
+    update public.signal_published_reports
+      set status=p_status,data_through=p_data_through,captured_at=p_captured_at,
+          payload=p_payload,published=p_published,revision=next_revision,updated_at=now()
+      where week_start=p_week;
+  else
+    insert into public.signal_published_reports(
+      week_start,week_end,status,data_through,captured_at,payload,published,revision
+    ) values (p_week,p_week+6,p_status,p_data_through,p_captured_at,p_payload,p_published,1);
+  end if;
+  insert into public.signal_publication_runs(
+    week_start,captured_at,revision,post_count,channel_count,status
+  ) values(p_week,p_captured_at,next_revision,jsonb_array_length(p_payload->'posts'),
+           jsonb_array_length(p_payload->'channels'),p_status);
+  return next_revision;
+end;
+$$;
+
+revoke all on function public.publish_signal_week(date,timestamptz,text,date,jsonb,boolean)
+  from PUBLIC,anon,authenticated;
+comment on table public.signal_published_reports is
+  'Explicitly approved public-safe weekly reporting payloads only. Source tables remain RLS-private; no CRM or internal account notes.';
+comment on function public.publish_signal_week(date,timestamptz,text,date,jsonb,boolean) is
+  'Trusted publisher. Atomic revision history, idempotence and stale-capture refusal. Never callable by site visitors.';
+commit;
+
+  ) then
+    raise exception 'unsafe public media or post URL';
+  end if;
   select * into existing from public.signal_published_reports
     where week_start=p_week for update;
   if found and p_captured_at<existing.captured_at then
