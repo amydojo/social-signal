@@ -8,10 +8,20 @@ export type PublicOverview={
   reviewedAt?:string;
   indicators:{label:string;value:number|null;detail:string}[];
 };
+export type PublicOutcomeSummary={
+  weekStart:string;
+  source:"Aesthetix verified aggregate";
+  verifiedAt:string;
+  inquiriesReceived:number|null;
+  qualifiedInquiries:number|null;
+  consultationsRequested:number|null;
+  consultationsBooked:number|null;
+};
 export type PublicWeek={
   weekStart:string;weekEnd:string;status:"in_progress"|"complete";
   capturedAt:string;dataThrough:string|null;revision:number;
   posts:LeadershipLog[];channels:LeadershipChannel[];
+  outcomes?:PublicOutcomeSummary;
   overview?:PublicOverview;acquisition?:PublicAcquisition;diagnostics?:PerformanceWeek;
   coverage?:{platform:string;account:string;linked:boolean;note?:string}[];
 };
@@ -95,6 +105,24 @@ function parseOverview(x:unknown):PublicOverview|null{
     action:x.action as string,indicators,
     ...(x.reviewedAt?{reviewedAt:x.reviewedAt as string}:{})};
 }
+function parseOutcomes(x:unknown,week:string):PublicOutcomeSummary|null{
+  const fields=["weekStart","source","verifiedAt","inquiriesReceived",
+    "qualifiedInquiries","consultationsRequested","consultationsBooked"];
+  const count=(v:unknown)=>v===null||
+    (typeof v==="number"&&Number.isSafeInteger(v)&&v>=0&&v<=1000000);
+  if(!obj(x)||!attrs(x,fields)||x.weekStart!==week||
+    x.source!=="Aesthetix verified aggregate"||!dateValid(x.verifiedAt)||
+    (x.verifiedAt as string)<week||
+    fields.slice(3).some(k=>!Object.hasOwn(x,k)||!count(x[k])))return null;
+  return {
+    weekStart:week,source:"Aesthetix verified aggregate",
+    verifiedAt:x.verifiedAt as string,
+    inquiriesReceived:x.inquiriesReceived as number|null,
+    qualifiedInquiries:x.qualifiedInquiries as number|null,
+    consultationsRequested:x.consultationsRequested as number|null,
+    consultationsBooked:x.consultationsBooked as number|null
+  };
+}
 function parseDiagnostics(x:unknown):PerformanceWeek|null{
   if(!obj(x)||!attrs(x,["reels","stories","keyword","audience"])||
     !Array.isArray(x.reels)||x.reels.length>40||!obj(x.stories))return null;
@@ -150,7 +178,7 @@ export function parsePublishedReport(row:unknown):PublicWeek|null{
     row.schema_version!==1||typeof row.revision!=="number"||row.revision<1||!obj(row.payload)
   )return null;
   const payload=row.payload as Record<string,unknown>;
-  if(!attrs(payload,["posts","channels","overview","acquisition","diagnostics","coverage"])||
+  if(!attrs(payload,["posts","channels","overview","acquisition","outcomes","diagnostics","coverage"])||
     !Array.isArray(payload.posts)||!Array.isArray(payload.channels)||
     payload.posts.length>400||payload.channels.length>40)return null;
   const posts=payload.posts.map(post=>parsePost(post,row.week_start as string));
@@ -160,9 +188,11 @@ export function parsePublishedReport(row:unknown):PublicWeek|null{
   if(unique.size!==posts.length)return null;
   const overview=payload.overview==null?undefined:parseOverview(payload.overview);
   const acquisition=payload.acquisition==null?undefined:parsePublicAcquisition(payload.acquisition);
+  const outcomes=payload.outcomes==null?undefined:parseOutcomes(payload.outcomes,row.week_start as string);
   const diagnostics=payload.diagnostics==null?undefined:parseDiagnostics(payload.diagnostics);
   const coverage=payload.coverage==null?undefined:parseCoverage(payload.coverage);
-  if((payload.acquisition!=null&&!acquisition)||
+  if((payload.outcomes!=null&&!outcomes)||
+    (payload.acquisition!=null&&!acquisition)||
     (payload.overview!=null&&!overview)||
     (payload.diagnostics!=null&&!diagnostics)||
     (payload.coverage!=null&&!coverage))return null;
@@ -175,6 +205,7 @@ export function parsePublishedReport(row:unknown):PublicWeek|null{
     posts:posts as LeadershipLog[],channels:channels as LeadershipChannel[],
     ...(overview?{overview}:{}),
     ...(acquisition?{acquisition}:{}),
+    ...(outcomes?{outcomes}:{}),
     ...(diagnostics?{diagnostics}:{}),
     ...(coverage?{coverage}:{})
   };
