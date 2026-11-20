@@ -417,6 +417,7 @@ export default function FrewDashboard({published=[]}:{published?:PublicWeek[]}){
         </div>
         <div className="executive-hero-grid">
           <div className="executive-hero-copy">
+            <div className="executive-dispatch-kicker" aria-hidden="true">THE WEEK AT OPUS <span> / </span> GROWTH &amp; OUTREACH</div>
             <h1>{report.statement}</h1>
             <p>{report.summary}</p>
           </div>
