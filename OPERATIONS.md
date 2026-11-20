@@ -34,6 +34,10 @@ The existing **SIGNAL Daily Sync** ChatGPT automation runs at about 8 AM Pacific
 
 **Important limitation:** Vercel does not have a Metricool API token or an independent vendor API cron job. We have not claimed a fully self-contained Metricool collector. A failed connector query or publish must leave the last validated snapshot intact and report the precise blocker. Never assert that a connection returned 0 posts just because its query returned no rows.
 
+## Editorial reporting policy
+
+Weekly Pulse and the linked **Opus Weekly Social Insights** sheet record what was actually published, with source-reported dates, direct links, verified visibility and engagement, patient-interest signals, and next actions. **Do not calculate, store, or report punctuality/compliance status for posting** (including planned-vs-actual time differences or nonpublication grades). Keep planned calendars and approval gates in planning tools, not an executive attendance report. When dates from an old posting log disagree with a platform, show the verified platform publication date and note provenance without making a judgment. Medical and CTA approval checks are separate safety/workflow requirements, not posting punctuality grades. Missing data is unknown, never evidence of a skipped post.
+
 ## Data integrity rules
 
 1. Always use **published post date** to choose the Monday–Sunday report, and label partial weeks WTD. Keep source capture dates and per-account reporting windows.
