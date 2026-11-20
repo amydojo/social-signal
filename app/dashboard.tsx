@@ -489,11 +489,11 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
         </section>
         <p className="small-note">Published values are source-dated. A dash means unavailable, not zero; reported conversions are not verified bookings.</p>
         <details className="surface expandable-block">
-          <summary>Notes & next tests <ChevronDown size={16}/></summary>
+          <summary>Weekly reporting notes <ChevronDown size={16}/></summary>
           <div className="notes-list">
             {findings.map(x=><div key={x.id}><b>{x.title}</b><p>{x.body}</p></div>)}
             {actions.map(x=><div key={x.id}><b>{x.title}</b><p>{x.body}</p></div>)}
-            {experiments.map(x=><div key={x.id}><b>{x.title}</b><p>{x.hypothesis}</p></div>)}
+            
           </div>
         </details>
       </> : latestWeek ? <>
