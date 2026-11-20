@@ -98,3 +98,30 @@ test("unreviewed timestamp or invalid editorial date are rejected",()=>{
   const p=original();p.payload.overview.reviewedAt="tomorrow";
   assert.equal(parsePublishedReport(p),null);
 });
+
+
+test("accepts exact reviewed aggregate outcomes for the matching week",()=>{
+  const p=original();
+  p.payload.outcomes={
+    weekStart:"2026-11-16",source:"Aesthetix verified aggregate",
+    verifiedAt:"2026-11-20",inquiriesReceived:8,qualifiedInquiries:3,
+    consultationsRequested:2,consultationsBooked:1
+  };
+  const v=parsePublishedReport(p);
+  assert.ok(v);
+  assert.equal(v.outcomes.inquiriesReceived,8);
+  assert.equal(v.outcomes.consultationsBooked,1);
+});
+test("rejects patient fields, unsupported source, invalid counts and mismatched weeks",()=>{
+  const make=()=>{
+    const p=original();p.payload.outcomes={
+      weekStart:"2026-11-16",source:"Aesthetix verified aggregate",
+      verifiedAt:"2026-11-20",inquiriesReceived:null,qualifiedInquiries:null,
+      consultationsRequested:null,consultationsBooked:null
+    };return p;
+  };
+  const badName=make();badName.payload.outcomes.patient_name="Someone";assert.equal(parsePublishedReport(badName),null);
+  const badSource=make();badSource.payload.outcomes.source="platform ad conversion";assert.equal(parsePublishedReport(badSource),null);
+  const badWeek=make();badWeek.payload.outcomes.weekStart="2026-11-09";assert.equal(parsePublishedReport(badWeek),null);
+  const badCount=make();badCount.payload.outcomes.consultationsBooked=-1;assert.equal(parsePublishedReport(badCount),null);
+});
