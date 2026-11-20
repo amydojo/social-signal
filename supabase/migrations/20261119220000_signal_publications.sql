@@ -20,8 +20,8 @@ create table if not exists public.signal_published_reports (
   constraint published_through_bounded check (data_through is null or (data_through>=week_start and data_through<=week_end)),
   constraint published_payload_structure check (
     jsonb_typeof(payload)='object'
-    and jsonb_typeof(payload->'posts')='array'
-    and jsonb_typeof(payload->'channels')='array'
+    and coalesce(jsonb_typeof(payload->'posts'),'')='array'
+    and coalesce(jsonb_typeof(payload->'channels'),'')='array'
     and jsonb_array_length(payload->'posts')<=400
     and jsonb_array_length(payload->'channels')<=40
     and pg_column_size(payload)<=524288
@@ -94,8 +94,8 @@ begin
     raise exception 'invalid capture timestamp';
   end if;
   if jsonb_typeof(p_payload)<>'object'
-    or jsonb_typeof(p_payload->'posts')<>'array'
-    or jsonb_typeof(p_payload->'channels')<>'array'
+    or coalesce(jsonb_typeof(p_payload->'posts'),'')<>'array'
+    or coalesce(jsonb_typeof(p_payload->'channels'),'')<>'array'
     or jsonb_array_length(p_payload->'posts')>400
     or jsonb_array_length(p_payload->'channels')>40
     or pg_column_size(p_payload)>524288
