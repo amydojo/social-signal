@@ -115,29 +115,25 @@ test("reviewed week's insight is preferred over recorded view composition",()=>{
   assert.equal(p.metrics[0].value,15);
   assert.equal(p.metrics[1].value,null);
 });
-test("historical insight only uses comparable per-post recorded views",()=>{
+test("no weak fallback insight is manufactured for weeks lacking reviewed evidence",()=>{
   const posts=[
     post("r1","Instagram","@opusplasticsurgery","Reel",2014),
     post("r2","Instagram","@opusplasticsurgery","Carousel",937),
-    post("unrelated","Instagram","@dr.frew","Reel",90000)
-  ];
-  assert.equal(buildExecutivePulse(posts,[]).insight,null,"two posts are not enough");
-  posts.push(post("r3","Instagram","@opusplasticsurgery","Reel",0));
-  const p=buildExecutivePulse(posts,[]);
-  assert.match(p.insight.headline,/68%/);
-  assert.match(p.insight.detail,/latest capture/);
-  posts[0].views=null;
-  assert.equal(buildExecutivePulse(posts,[]).insight,null,"missing views are not zero");
-});
-test("unreviewed insights cannot override the data-derived finding",()=>{
-  const posts=[
-    post("r1","Instagram","@opusplasticsurgery","Reel",140),
-    post("r2","Instagram","@opusplasticsurgery","Carousel",60),
     post("r3","Instagram","@opusplasticsurgery","Reel",100)
   ];
-  const unreviewed={statement:"draft",summary:"draft",action:"draft",indicators:[],
-    insight:{headline:"Inaccurate",detail:"Do not publish"}};
-  const pulse=buildExecutivePulse(posts,[],unreviewed);
-  assert.match(pulse.insight.headline,/80%/);
-  assert.doesNotMatch(pulse.insight.headline,/Inaccurate/);
+  assert.equal(buildExecutivePulse(posts,[]).insight,null);
+  const draft={statement:"draft",summary:"draft",action:"draft",indicators:[],
+    insight:{headline:"Unverified conclusion",detail:"Do not publish"}};
+  assert.equal(buildExecutivePulse(posts,[],draft).insight,null);
+});
+test("reviewed insights are not borrowed from other weeks",()=>{
+  const posts=[post("r1","Instagram","@opusplasticsurgery","Reel",100)];
+  const oldOverview={statement:"Scar Reel",summary:"Past 3-second hold",action:"Review",
+    indicators:[],reviewedAt:"2026-11-20",
+    insight:{headline:"Scar content held attention longer",
+      detail:"Nov 9–15: 63.3% vs 53.2%"}};
+  // The caller supplies the currently selected week's overview; a week with
+  // no reviewed overview must stay empty rather than reusing another period.
+  assert.match(buildExecutivePulse(posts,[],oldOverview).insight.headline,/Scar/);
+  assert.equal(buildExecutivePulse(posts,[]).insight,null);
 });
