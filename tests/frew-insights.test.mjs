@@ -137,3 +137,38 @@ test("reviewed insights are not borrowed from other weeks",()=>{
   assert.match(buildExecutivePulse(posts,[],oldOverview).insight.headline,/Scar/);
   assert.equal(buildExecutivePulse(posts,[]).insight,null);
 });
+
+test("completed surgical consultation stage replaces empty conversations card",()=>{
+  const reviewed={
+    statement:"Consultation progress",summary:"Progress in consultation pipeline",
+    action:"Review appointments",reviewedAt:"2026-11-20",
+    indicators:[
+      {label:"New CRM lead contacts",value:15,detail:"Nov 16–19"},
+      {label:"Surgical consultations in booked stage",value:12,
+        detail:"As of Nov 20 · current stage, not weekly bookings"},
+      {label:"Surgical consultations complete stage",value:15,
+        detail:"As of Nov 20 · current Consult Complete stage, not weekly completions"}
+    ]
+  };
+  const pulse=buildExecutivePulse([],[
+    channel("Instagram",{"Feed interactions":76},"@opusplasticsurgery")
+  ],reviewed);
+  assert.deepEqual(pulse.metrics.map(x=>x.value),[15,12,15]);
+  assert.equal(pulse.metrics[2].label,"SURGICAL CONSULTS · COMPLETE STAGE");
+  assert.match(pulse.metrics[2].detail,/not weekly completions/);
+  assert.equal(pulse.metrics.some(x=>x.label==="QUALIFIED CONVERSATIONS"),false);
+});
+test("older weeks do not inherit another week's completed consultations",()=>{
+  const pulse=buildExecutivePulse([],[
+    channel("Instagram",{"Feed interactions":55},"@opusplasticsurgery"),
+    channel("Instagram",{"Feed interactions":888},"@dr.frew")
+  ],{statement:"Scar content",summary:"Reviewed",action:"Check replies",
+     reviewedAt:"2026-11-20",indicators:[]});
+  assert.equal(pulse.metrics[2].label,"INSTAGRAM FEED INTERACTIONS");
+  assert.equal(pulse.metrics[2].value,55);
+  assert.match(pulse.metrics[2].detail,/Nov 16–18/);
+});
+test("no third KPI is rendered when neither outcomes nor interactions exist",()=>{
+  const pulse=buildExecutivePulse([],[]);
+  assert.equal(pulse.metrics.length,2);
+});
