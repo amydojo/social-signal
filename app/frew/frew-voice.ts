@@ -85,7 +85,7 @@ export function writeWeekIntro(rows:LeadershipLog[],channels:LeadershipChannel[]
   }
   if(paid){
     return {
-      headline:paid.note.split(". ")[0]+".",
+      headline:paid.note.split(". ")[0].replace(/[.!?]+$/,"")+"." ,
       summary:"We don't have enough post results to pick a content highlight yet. These ad results aren't confirmed bookings.",
       next:paid.next
     };
