@@ -14,6 +14,9 @@ import {frewStoryCovers,frewCarouselCovers} from "./frew-media";
 import {formatCaptureDate} from "../../lib/signal/reporting-time";
 import {chooseWeeklyFeatures,groupPostsByWeek,channelOverviewFromPosts,labelWeek,isStory,interactionCount} from "./frew-selection";
 import type {PublicWeek} from "../../lib/signal/publication";
+import type {PublicReadState} from "../../lib/signal/read-public";
+import {buildExecutivePulse} from "./frew-insights";
+import FrewExecutiveBrief from "./frew-executive";
 
 type Period=string;
 const savedCovers=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
@@ -312,7 +315,7 @@ function Feature({post,rank,metricLabel,signal}:{post:LeadershipLog;rank:string;
   </article>;
 }
 
-export default function FrewDashboard({published=[]}:{published?:PublicWeek[]}){
+export default function FrewDashboard({published=[],readState="live"}:{published?:PublicWeek[];readState?:PublicReadState}){
   const reportIndex=new Map(published.map(report=>[report.weekStart,report]));
   const availableWeeks=[...new Set([...reportWeeks,...published.map(report=>report.weekStart)])].sort((a,b)=>b.localeCompare(a));
   const mostRecent=availableWeeks[0]??newestWeek;
@@ -335,7 +338,9 @@ export default function FrewDashboard({published=[]}:{published?:PublicWeek[]}){
   const channels=live?.channels??(old?nov2Channels:current?currentChannels:previous?latestChannels:channelOverviewFromPosts(rows,period));
   const posts=rows.filter(p=>!isStory(p));
   const stories=rows.filter(isStory);
-  const detail=live?.diagnostics??(period in performanceByWeek?performanceByWeek[period as keyof typeof performanceByWeek]:null);
+  // Published reporting never borrows diagnostics from a different, static capture.
+  const detail=live?(live.diagnostics??null):(period in performanceByWeek?performanceByWeek[period as keyof typeof performanceByWeek]:null);
+  const brief=buildExecutivePulse(rows,channels);
   const diagnosticsFor=(post:LeadershipLog|undefined)=>detail?.reels.find(x=>x.id===post?.id);
   const featured=chooseWeeklyFeatures(rows);
   const first=featured[0]?.post;
@@ -415,6 +420,14 @@ export default function FrewDashboard({published=[]}:{published?:PublicWeek[]}){
             </select>
           </label>
         </div>
+        <p className={"pulse-freshness"+(readState!=="live"?" pulse-freshness-warning":"")} role="status">
+          {readState==="unavailable"?"Live reporting unavailable. Showing the last embedded historical extract; numbers may be stale.":
+            readState==="invalid"?"Published records failed validation. Showing historical extract until verified.": 
+            readState==="partial"?"Some published records failed validation and were excluded. Check reporting coverage.": 
+            readState==="empty"?"No live published records were found. Showing verified historical extracts where available.":
+            live?"Verified published snapshot · revision "+live.revision+(live.dataThrough?" · data through "+day(live.dataThrough):""):
+            "Historical source extract · not a live capture"}
+        </p>
         <div className="executive-hero-grid">
           <div className="executive-hero-copy">
             <div className="executive-dispatch-kicker" aria-hidden="true">THE WEEK AT OPUS <span> / </span> GROWTH &amp; OUTREACH</div>
@@ -423,19 +436,20 @@ export default function FrewDashboard({published=[]}:{published?:PublicWeek[]}){
           </div>
           <div className="executive-hero-aside">
             <div className="executive-aside-label">{live?"TO WATCH":"TRY NEXT"}</div>
-            <strong>{report.action}</strong>
+            <strong>{brief.action??report.action}</strong>
           </div>
         </div>
       </section>
 
       <section className="executive-indicators" aria-label="Key weekly metrics">
-        {report.indicators.map(m=><div key={m.label} className="executive-indicator">
+        {brief.metrics.map(m=><div key={m.label} className="executive-indicator">
           <div className="executive-indicator-label">{m.label}</div>
-          <strong>{fmt(m.value)}</strong>
+          <strong>{m.value==null?"—":m.unit==="USD"?"$"+m.value.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):fmt(m.value)}</strong>
           <small>{m.detail}</small>
         </div>)}
       </section>
 
+      <FrewExecutiveBrief pulse={brief} partial={partial}/>
       <section className="executive-creative-section">
         <div className="executive-section-heading">
           <h2>Top posts</h2>
