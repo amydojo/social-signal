@@ -50,3 +50,14 @@ test("equal view counts break ties deterministically",()=>{
     post("a","2026-11-19","Carousel",50,0)]);
   assert.equal(f[0].post.id,"a");
 });
+
+
+test("provider aggregates are valid even if share counts are unavailable",()=>{
+  const p=post("verified-carousel","2026-11-19","Carousel",800,14);
+  p.shares=null;
+  p.interactions=18;
+  p.impressions=1200;
+  assert.equal(interactionCount(p),18);
+  const features=chooseWeeklyFeatures([post("other","2026-11-19","Reel",900,10),p]);
+  assert.equal(features[1].post.id,"verified-carousel");
+});
