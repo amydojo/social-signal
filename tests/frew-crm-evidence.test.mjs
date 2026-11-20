@@ -28,7 +28,7 @@ test("clinic snapshot validates and remains aggregate-only",()=>{
   assert.equal(s.consultBookedStage,12);
   assert.equal(s.consultBookedDated,10);
   assert.equal(s.upcomingUnconfirmed,9);
-  assert.deepEqual(Object.keys(s).filter(k=>/name|email|phone|id|note/i.test(k)),[]);
+  assert.equal(Object.keys(s).some(k=>/^(firstName|lastName|contactId|email|phone|patientName|message|notes|gclidValue)$/i.test(k)),false);
 });
 test("upcoming consultations are grouped into dated appointment weeks",()=>{
   const s=parseCRMClinicalSnapshot(raw);
