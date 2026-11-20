@@ -1,5 +1,6 @@
 import type {PublicAcquisition,AttributionEvidence} from "../lib/signal/acquisition";
 import "./acquisition.css";
+import AcquisitionAnalysis from "./acquisition-analysis";
 
 const label:Record<AttributionEvidence,string>={
   campaign_tag:"Campaign-tagged contact",
@@ -39,6 +40,7 @@ export default function AcquisitionView({snapshot}:{snapshot:PublicAcquisition|n
           {snapshot.websiteFirstTouch.map(c=><div key={c.channel}><span>{c.channel}</span><strong>{fmt(c.contacts)}</strong></div>)}
         </div>
       </div>}
+      {snapshot.analysis&&<AcquisitionAnalysis analysis={snapshot.analysis}/>}
       <div className="acq-findings">
         <div><span>WHAT THE EVIDENCE SUGGESTS</span><p>{snapshot.finding}</p></div>
         <div><span>NEXT INVESTIGATION</span><p>{snapshot.decision}</p></div>

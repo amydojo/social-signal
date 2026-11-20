@@ -97,3 +97,30 @@ or attempts to replace them with an older as-of date. A new human-reviewed
 overview with the same/newer date may intentionally supersede it. To retire
 an erroneous reviewed finding, use a trusted explicit correction and preserve
 the audit trail; never silently erase it through the daily sync.
+
+## November 20, 2026 — deeper attribution intelligence
+
+The optional reviewed `acquisition.analysis` projection is limited to
+explicit aggregate shapes with nested key allowlists in BOTH the TypeScript
+reader and trusted database publisher. It provides:
+- 240-contact export coverage, including raw intake Source vs first-session
+  attribution (they are **different dimensions**).
+- A separate 78-open-opportunity snapshot (76 contact IDs, 44 opportunity
+  Ad Source fields unpopulated). It cannot reconstruct stage history.
+- Four *mutually exclusive opportunity source* groups and their current
+  stages, without names, contact IDs, appointment details or raw notes.
+- The 29 website open-opportunity Ad Source grouping, distinct from the
+  32 website First Access contacts' first-session attribution.
+- Platform-vs-contact-vs-opportunity reconciliation with the actual
+  Oct 20–Nov 19 Metricool campaign window and different measurement units.
+- A bounded, reviewed set of narrative findings. Only source-backed, de-identified
+  aggregate numbers may be published here.
+
+Do not call the 14/29 vs 1/16 *current stage share* a booking conversion rate:
+the cohorts vary in time to mature, pipeline membership and attribution
+coverage. Do not interpret a contact's CRM `Lead Status` or an opportunity's
+stage as verified booked or attended appointment data. The anonymous SIGNAL
+view must never fetch `signal_private` tables; update the private aggregate
+review first, then publish the audited projection through
+`public.publish_signal_week`. Publishing the enriched shape requires the
+corresponding approved production reader to be deployed first.
