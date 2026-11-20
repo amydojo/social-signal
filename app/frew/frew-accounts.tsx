@@ -39,7 +39,7 @@ function FullMetrics({c}:{c:LeadershipChannel}){
       {c.metrics.length?c.metrics.map(m=><div className="pulse-account-metric" key={m.label}>
         <strong className={m.value==null?"pulse-missing":""}>{formatNumber(m.value,m.unit)}</strong>
         <span>{m.label}</span>
-      </div>):<p className="pulse-no-data">No verified figures for this period.</p>}
+      </div>):<p className="pulse-no-data">No numbers available for these dates.</p>}
     </div>
     {c.note&&<p className="pulse-account-note">{c.note}</p>}
   </>;
@@ -68,7 +68,7 @@ export default function FrewAccounts({
 
   return <section className="executive-platform-section pulse-accounts-section">
     <div className="executive-section-heading pulse-accounts-heading">
-      <h2>By account</h2>
+      <h2>Results by account</h2>
       <div className="pulse-view-switch" role="group" aria-label="Account display">
         <button type="button" aria-pressed={view==="list"}
           onClick={()=>setView("list")}>List</button>
@@ -114,7 +114,7 @@ export default function FrewAccounts({
       </div>
     </>:<>
       <div className="pulse-compare-head">
-        <p className="pulse-compare-hint">Different platforms, different metrics. Swipe on mobile.</p>
+        <p className="pulse-compare-hint">Each platform measures things differently. Swipe to see more.</p>
         <div className="pulse-compare-controls" aria-label="Browse comparison cards">
           <button type="button" aria-label="Previous account" onClick={()=>scrollCompare(-1)}><ChevronLeft size={17}/></button>
           <button type="button" aria-label="Next account" onClick={()=>scrollCompare(1)}><ChevronRight size={17}/></button>

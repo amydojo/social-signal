@@ -17,16 +17,16 @@ export default async function OwnerLogin({searchParams}:{
     </header>
     <main className="executive-main">
       <section className="pulse-owner-login">
-        <span className="pulse-decision-kicker">PRIVATE REPORTING</span>
-        <h1>Owner sign-in</h1>
-        <p>Verified consultation reporting is restricted to authorized OPUS owners. Sign in using the email already registered with OPUS SIGNAL.</p>
-        {query.sent==="1"?<p role="status">If this is an authorized account, check your email for the sign-in link.</p>:null}
+        <span className="pulse-decision-kicker">PRIVATE ACCESS</span>
+        <h1>Sign in to check bookings</h1>
+        <p>This page is only for authorized OPUS owners. Use the email linked to your SIGNAL account.</p>
+        {query.sent==="1"?<p role="status">Check your email for a sign-in link if your account has access.</p>:null}
         {query.error?<p role="alert">Unable to send the link. Check your address and account access, then retry.</p>:null}
         <form action={requestOwnerLink}>
-          <label>Authorized email address<input name="email" type="email" autoComplete="email" required maxLength={250} placeholder="you@practice.com"/></label>
-          <button type="submit">Email sign-in link</button>
+          <label>Your work email<input name="email" type="email" autoComplete="email" required maxLength={250} placeholder="you@practice.com"/></label>
+          <button type="submit">Send sign-in link</button>
         </form>
-        <small>No patient or CRM data is available on the public Weekly Pulse.</small>
+        <small>The public report doesn’t show private consultation counts.</small>
       </section>
     </main>
   </div>;
