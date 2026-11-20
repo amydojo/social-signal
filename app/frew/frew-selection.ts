@@ -38,6 +38,7 @@ export function isStory(post:LeadershipLog):boolean{
   return post.format.trim().toLowerCase()==="story";
 }
 export function interactionCount(post:LeadershipLog):number|null{
+  if(post.interactions!=null&&Number.isFinite(post.interactions))return post.interactions;
   const metrics=[post.likes,post.comments,post.shares,post.saves];
   if(metrics.some(m=>m===null||m===undefined||!Number.isFinite(m)))return null;
   return (metrics as number[]).reduce((sum,n)=>sum+n,0);

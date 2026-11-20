@@ -28,7 +28,7 @@ const mondayOf=(v:string):string=>{
 const obj=(x:unknown):x is Record<string,unknown>=>!!x&&typeof x==="object"&&!Array.isArray(x);
 const attrs=(x:Record<string,unknown>,keys:string[])=>
   Object.keys(x).every(key=>keys.includes(key));
-const postFields=["id","date","platform","account","format","title","url","views","likes","comments","shares","saves","status","ctaChecked","complianceChecked","thumbnailPath","coverUrl"];
+const postFields=["id","date","platform","account","format","title","url","views","likes","comments","shares","saves","interactions","impressions","status","ctaChecked","complianceChecked","thumbnailPath","coverUrl"];
 const channelFields=["platform","account","metrics","note","source","period"];
 const metricFields=["label","value","unit"];
 
@@ -39,8 +39,10 @@ function parsePost(x:unknown,week:string):LeadershipLog|null{
     !string(x.format,80)||!string(x.title,500)||
     !safeURL(x.url)||!safeURL(x.coverUrl)||
     !safePath(x.thumbnailPath))return null;
-  const keys=["views","likes","comments","shares","saves"];
-  if(keys.some(k=>!nonnegative(x[k])))return null;
+  const requiredMetrics=["views","likes","comments","shares","saves"];
+  const optionalMetrics=["interactions","impressions"];
+  if(requiredMetrics.some(k=>!nonnegative(x[k]))||
+    optionalMetrics.some(k=>x[k]!==undefined&&!nonnegative(x[k])))return null;
   return {
     id:x.id as string,date:x.date as string,platform:x.platform as string,
     account:x.account as string,format:x.format as string,title:x.title as string,
@@ -50,6 +52,8 @@ function parsePost(x:unknown,week:string):LeadershipLog|null{
     comments:(x.comments as number|null|undefined)??null,
     shares:(x.shares as number|null|undefined)??null,
     saves:(x.saves as number|null|undefined)??null,
+    interactions:(x.interactions as number|null|undefined)??null,
+    impressions:(x.impressions as number|null|undefined)??null,
     thumbnailPath:(x.thumbnailPath as string|null|undefined)??null,
     coverUrl:(x.coverUrl as string|null|undefined)??null,
     status:null,ctaChecked:null,complianceChecked:null

@@ -53,3 +53,18 @@ test("detects duplicate records and unsupported metric values",()=>{
   const n=original();n.payload.channels[0].metrics[0].value=-5;
   assert.equal(parsePublishedReport(n),null);
 });
+
+
+test("preserves source-reported interactions when saves/shares are unreported",()=>{
+  const p=original();
+  p.payload.posts[0].shares=null;
+  p.payload.posts[0].interactions=18;
+  p.payload.posts[0].impressions=3;
+  const parsed=parsePublishedReport(p);
+  assert.ok(parsed);
+  assert.equal(parsed.posts[0].interactions,18);
+  assert.equal(parsed.posts[0].impressions,3);
+  const bad=original();
+  bad.payload.posts[0].impressions=-2;
+  assert.equal(parsePublishedReport(bad),null);
+});
