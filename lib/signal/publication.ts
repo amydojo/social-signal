@@ -6,6 +6,7 @@ import {parsePublicAcquisition,type PublicAcquisition} from "./acquisition.ts";
 export type PublicOverview={
   statement:string;summary:string;action:string;
   deck?:string;reviewedAt?:string;
+  insight?:{headline:string;detail:string};
   indicators:{label:string;value:number|null;detail:string}[];
 };
 export type PublicWeek={
@@ -80,9 +81,12 @@ function parseChannel(x:unknown):LeadershipChannel|null{
   };
 }
 function parseOverview(x:unknown):PublicOverview|null{
-  if(!obj(x)||!attrs(x,["statement","summary","action","indicators","reviewedAt","deck"])||
+  if(!obj(x)||!attrs(x,["statement","summary","action","indicators","reviewedAt","deck","insight"])||
     !string(x.statement,250)||!string(x.summary,800)||!string(x.action,500)||
     (x.deck!=null&&!string(x.deck,220))||
+    (x.insight!=null&&(!obj(x.insight)||
+      !attrs(x.insight,["headline","detail"])||
+      !string(x.insight.headline,125)||!string(x.insight.detail,230)))||
     (x.reviewedAt!=null&&!dateValid(x.reviewedAt))||
     !Array.isArray(x.indicators)||x.indicators.length>5)return null;
   const indicators:PublicOverview["indicators"]=[];
@@ -95,6 +99,8 @@ function parseOverview(x:unknown):PublicOverview|null{
   return {statement:x.statement as string,summary:x.summary as string,
     action:x.action as string,indicators,
     ...(x.deck?{deck:x.deck as string}:{}),
+    ...(x.insight?{insight:{headline:(x.insight as Record<string,unknown>).headline as string,
+      detail:(x.insight as Record<string,unknown>).detail as string}}:{}),
     ...(x.reviewedAt?{reviewedAt:x.reviewedAt as string}:{})};
 }
 function parseDiagnostics(x:unknown):PerformanceWeek|null{

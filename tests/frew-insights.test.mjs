@@ -96,3 +96,48 @@ test("unreviewed contact indicators, or only historical stages, do not fill KPI 
   assert.equal(historical.metrics[0].value,null);
   assert.equal(historical.metrics[1].value,null);
 });
+
+test("reviewed week's insight is preferred over recorded view composition",()=>{
+  const reviewed={statement:"Patient inquiries",summary:"First Access leads intake.",
+    action:"Follow up",reviewedAt:"2026-11-20",
+    indicators:[{label:"New CRM lead contacts",value:15,detail:"Nov 16–19"}],
+    insight:{
+      headline:"First Access brought in twice as many inquiries as other routes combined.",
+      detail:"10 of 15 new inquiries (67%) arrived through First Access Nov 16–19."
+    }};
+  const p=buildExecutivePulse([
+    post("reel1","Instagram","@opusplasticsurgery","Reel",100),
+    post("reel2","Instagram","@opusplasticsurgery","Reel",50),
+    post("carousel","Instagram","@opusplasticsurgery","Carousel",40)
+  ],[],reviewed);
+  assert.match(p.insight.headline,/twice as many/);
+  assert.match(p.insight.detail,/10 of 15/);
+  assert.equal(p.metrics[0].value,15);
+  assert.equal(p.metrics[1].value,null);
+});
+test("historical insight only uses comparable per-post recorded views",()=>{
+  const posts=[
+    post("r1","Instagram","@opusplasticsurgery","Reel",2014),
+    post("r2","Instagram","@opusplasticsurgery","Carousel",937),
+    post("unrelated","Instagram","@dr.frew","Reel",90000)
+  ];
+  assert.equal(buildExecutivePulse(posts,[]).insight,null,"two posts are not enough");
+  posts.push(post("r3","Instagram","@opusplasticsurgery","Reel",0));
+  const p=buildExecutivePulse(posts,[]);
+  assert.match(p.insight.headline,/68%/);
+  assert.match(p.insight.detail,/latest capture/);
+  posts[0].views=null;
+  assert.equal(buildExecutivePulse(posts,[]).insight,null,"missing views are not zero");
+});
+test("unreviewed insights cannot override the data-derived finding",()=>{
+  const posts=[
+    post("r1","Instagram","@opusplasticsurgery","Reel",140),
+    post("r2","Instagram","@opusplasticsurgery","Carousel",60),
+    post("r3","Instagram","@opusplasticsurgery","Reel",100)
+  ];
+  const unreviewed={statement:"draft",summary:"draft",action:"draft",indicators:[],
+    insight:{headline:"Inaccurate",detail:"Do not publish"}};
+  const pulse=buildExecutivePulse(posts,[],unreviewed);
+  assert.match(pulse.insight.headline,/80%/);
+  assert.doesNotMatch(pulse.insight.headline,/Inaccurate/);
+});

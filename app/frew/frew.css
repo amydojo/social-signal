@@ -15,6 +15,7 @@
 .executive-week-control{display:flex;align-items:center;gap:6px;color:#d5b4a7}
 .executive-week-control select{border:1px solid #80645b;background:#45322c;color:#f7ede5;border-radius:5px;padding:7px 10px;font-size:11px;min-width:124px;cursor:pointer}
 .executive-hero-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(255px,.75fr);gap:clamp(20px,4vw,58px);align-items:stretch;padding:clamp(29px,4vw,52px)}
+.executive-hero-grid.is-solo{grid-template-columns:minmax(0,1fr)}
 .executive-kicker,.executive-aside-label{font-weight:750;letter-spacing:.13em;font-size:10px;color:#d8a791}
 .executive-hero-copy h1{font-size:clamp(37px,4.6vw,67px);font-weight:600;line-height:1.085;letter-spacing:-.06em;max-width:760px;margin:23px 0;word-break:normal}
 .executive-hero-copy>p{color:#d8cbc1;font-size:14px;line-height:1.8;max-width:620px;margin:0}
