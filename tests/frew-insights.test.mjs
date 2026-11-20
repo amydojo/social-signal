@@ -44,7 +44,7 @@ test("no punctuality, posting quota, or attendance scoring",()=>{
 });
 test("only reviewed editorial can supersede the generic decision",()=>{
   const base={statement:"Follow-up needs checking",summary:"Older contacts are not new inquiries",
-    action:"Review Meta replies before scaling",indicators:[]};
+    action:"Review Meta replies before scaling",deck:"The reviewed week summary.",indicators:[]};
   const reviewed=buildExecutivePulse([],[],{...base,reviewedAt:"2026-11-20"});
   assert.match(reviewed.action,/Review Meta replies/);
   const plain=buildExecutivePulse([],[channel("Google Ads",{Conversions:5})],base);
