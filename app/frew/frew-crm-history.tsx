@@ -66,7 +66,7 @@ export default function FrewCRMHistory({weeks,state}:{weeks:CRMWeek[];state:"liv
     <div className="crm-history-legend" aria-label="Category legend">
       {categories.map(c=><span key={c.key}><i className={"crm-segment-"+c.key}/>{c.label}</span>)}
     </div>
-    <div className="crm-history-bars" role="group" aria-label="Weekly contact totals by "+(view==="intake"?"CRM intake route":"first-session attribution")}>
+    <div className="crm-history-bars" role="group" aria-label={"Weekly contact totals by "+(view==="intake"?"CRM intake route":"first-session attribution")}}>
       {shown.map(w=><div className="crm-history-row" key={w.weekStart}>
         <div className="crm-history-period">
           <span>{period(w.weekStart)}</span>
