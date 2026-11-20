@@ -8,7 +8,7 @@ export async function GET(){
   const weeks=await loadPublishedWeeks();
   return Response.json({schemaVersion:1,weeks},{
     headers:{
-      "Cache-Control":"public, s-maxage=120, stale-while-revalidate=180",
+      "Cache-Control":"no-store, max-age=0",
       "X-Content-Type-Options":"nosniff"
     }
   });
