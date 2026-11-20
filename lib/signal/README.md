@@ -90,3 +90,10 @@ cohort into newly published weeks as weekly acquisition results.
 Verified weekly outcomes remain in the **owner-only**
 `public.signal_owner_outcomes` relation and require manual confirmation;
 the anonymous Weekly Pulse must not query the private table.
+
+The database publisher also preserves the existing, reviewed `overview`
+and `acquisition` for **the same week** when an automated refresh omits them
+or attempts to replace them with an older as-of date. A new human-reviewed
+overview with the same/newer date may intentionally supersede it. To retire
+an erroneous reviewed finding, use a trusted explicit correction and preserve
+the audit trail; never silently erase it through the daily sync.

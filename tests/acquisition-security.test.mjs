@@ -22,3 +22,11 @@ test("the anonymous reader never touches the private acquisition source",()=>{
   const publicRoute=read("app/api/publications/route.ts");
   assert.doesNotMatch(publicRead+publicRoute,/signal_private\.acquisition_snapshots/);
 });
+
+test("the publisher preserves reviewed insight and historical baselines on routine daily refreshes",()=>{
+  const sql=read("supabase/migrations/20261120193000_signal_acquisition_intelligence.sql");
+  assert.match(sql,/existing\.payload \? 'acquisition'/);
+  assert.match(sql,/jsonb_set\(p_payload,'\{acquisition\}'/);
+  assert.match(sql,/existing\.payload->'overview' \? 'reviewedAt'/);
+  assert.match(sql,/jsonb_set\(p_payload,'\{overview\}'/);
+});

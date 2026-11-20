@@ -140,6 +140,20 @@ begin
   if found and p_captured_at<existing.captured_at then
     raise exception 'stale capture: newer report is already published';
   end if;
+  -- Preserve human-reviewed business context across automatic daily refreshes.
+  -- Do not carry it to another reporting week, and do not regress the as-of date.
+  if found and existing.payload ? 'acquisition'
+     and (not (p_payload ? 'acquisition') or
+       coalesce(p_payload->'acquisition'->>'asOf','') <
+         coalesce(existing.payload->'acquisition'->>'asOf','')) then
+    p_payload:=jsonb_set(p_payload,'{acquisition}',existing.payload->'acquisition',true);
+  end if;
+  if found and existing.payload->'overview' ? 'reviewedAt'
+     and (not (p_payload->'overview' ? 'reviewedAt') or
+       coalesce(p_payload->'overview'->>'reviewedAt','') <
+         coalesce(existing.payload->'overview'->>'reviewedAt','')) then
+    p_payload:=jsonb_set(p_payload,'{overview}',existing.payload->'overview',true);
+  end if;
   if found and p_captured_at=existing.captured_at
      and p_payload=existing.payload and p_status=existing.status
      and p_published=existing.published and p_data_through is not distinct from existing.data_through
