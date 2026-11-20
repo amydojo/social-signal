@@ -341,7 +341,7 @@ export default function FrewDashboard({published=[],readState="live"}:{published
   // Published reporting never borrows diagnostics from a different, static capture.
   const detail=live?(live.diagnostics??null):(period in performanceByWeek?performanceByWeek[period as keyof typeof performanceByWeek]:null);
   const reviewedOverview=live?.overview?.reviewedAt?live.overview:undefined;
-  const brief=buildExecutivePulse(rows,channels,reviewedOverview);
+  const brief=buildExecutivePulse(rows,channels,reviewedOverview,live?.acquisition);
   const featured=chooseWeeklySpotlights(rows);
   const first=featured[0]?.post;
   const second=featured[1]?.post;
