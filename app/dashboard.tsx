@@ -214,21 +214,27 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
   const reels=periodIgPosts.filter(p=>p.format==="Reel"&&p.skip_3s_pct!=null);
   const sortedPosts=[...periodIgPosts].sort((a,b)=>(b.views??0)-(a.views??0));
   const sortedStories=[...periodStories].sort((a,b)=>(b.impressions??0)-(a.impressions??0));
+  const selectedSnapshot=weeks.find(w=>w.week_start===selectedWeek);
+  // Prefer published period totals: not all Story records contain replies.
+  // A partially observed set is unknown, not a zero-padded whole week.
+  const storySum=(field:"impressions"|"replies")=>
+    periodStories.length>0&&periodStories.every(story=>story[field]!=null)
+      ?periodStories.reduce((n,story)=>n+(story[field]??0),0):null;
   const periodStoryImpressions=latestWeek?snapshot.story_impressions:
-    periodStories.some(s=>s.impressions!=null)?
-      periodStories.reduce((n,s)=>n+(s.impressions??0),0):
-    periodDaily.some(d=>("story_impressions" in d)&&d.story_impressions!=null)?
-      periodDaily.reduce((n,d)=>n+Number("story_impressions" in d?(d.story_impressions??0):0),0):null;
+    selectedSnapshot?.story_impressions??storySum("impressions");
   const periodStoryReplies=latestWeek?snapshot.story_replies:
-    periodStories.some(s=>s.replies!=null)?
-      periodStories.reduce((n,s)=>n+(s.replies??0),0):null;
+    selectedSnapshot?.story_replies??storySum("replies");
   const savedHistoricalFiles=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
   const storyHasCover=(story:Story)=>{
     const id=story.permalink?.split("/stories/")[1]?.split("/")[1];
-    const path=story.thumbnail_path||(id?"/media/archive/story-"+id+".jpg":"");
-    return !!path&&savedHistoricalFiles.has(path);
+    const possible=[story.thumbnail_path,id?"/media/archive/story-"+id+".jpg":""].filter(Boolean);
+    return possible.some(p=>savedHistoricalFiles.has(p));
   };
-  const visualStories=sortedStories.filter(storyHasCover);
+  // Original URLs are useful as temporary previews, not proof of archiving.
+  const storyHasPreview=(story:Story)=>storyHasCover(story)||Boolean(story.thumbnail_original_url);
+  const visualStories=sortedStories.filter(storyHasPreview);
+  const savedStoryPreviews=visualStories.filter(storyHasCover).length;
+  const temporaryStoryPreviews=visualStories.length-savedStoryPreviews;
   const storyWithoutCover=sortedStories.filter(s=>!storyHasCover(s));
   const shownPosts=periodPosts.filter(p=>(platform==="all"||p.platform===platform)&&p.title.toLowerCase().includes(search.toLowerCase()));
   // Use the same deduplicated publication set as the Posts tab.
@@ -316,7 +322,9 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
           <h1>{tabs.find(t=>t.id===tab)?.name}</h1>
           <div className="header-sub">
             {tab==="archive"?"Sep–Nov 2026":date(selectedWeek)+"–"+date(endOfWeek(selectedWeek))+", 2026"}
-            <span>·</span> Updated {formatCaptureDate(snapshot.captured_at)}
+            <span>·</span> {tab==="archive"?"Historical capture dates vary":
+                selectedSnapshot?"Captured "+formatCaptureDate(selectedSnapshot.captured_at):
+                "Historical source records"}
           </div>
         </div>
         <div className="app-header-actions">
@@ -365,7 +373,7 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
         </section>
         <div className="content-columns">
           <section className="surface rankings">
-            <SectionHead title="Posts published" meta={latestWeek?"Views at export":"Lifetime views · Nov 16"}/>
+            <SectionHead title="Posts published" meta={latestWeek?"Views at export":"Lifetime views · captures vary"}/>
             {sortedPosts.length ? <div className="featured-media">
               {sortedPosts.slice(0,4).map(p=><PostVisual key={p.id} post={p} featured onOpen={openPost}/>)}
             </div> : <p className="empty-state">No Instagram feed posts recorded this week.</p>}
@@ -383,10 +391,10 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
         </div>
         <div className="content-columns">
           <section className="surface">
-            <SectionHead title="Story previews" meta={visualStories.length+" saved covers"}/>
+            <SectionHead title="Story previews" meta={savedStoryPreviews+" preserved · "+temporaryStoryPreviews+" temporary"}/>
             {visualStories.length ? <div className="story-filmstrip">
               {visualStories.slice(0,4).map(s=><StoryVisual key={s.id} story={s} compact onOpen={openStory}/>)}
-            </div> : <p className="empty-state">No saved Story covers for this week.</p>}
+            </div> : <p className="empty-state">No available Story previews for this week. Metrics remain in Story details.</p>}
             <button className="inline-action" type="button" onClick={()=>setView("stories")}>Story details <ArrowUpRight size={14}/></button>
           </section>
           <section className="surface facts-panel">
@@ -420,7 +428,7 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
           <Stat label="Replies" value={num(periodStoryReplies)}/>
         </section>
         <section className="surface">
-          <SectionHead title="Story gallery" meta={visualStories.length+" saved covers"}/>
+          <SectionHead title="Story gallery" meta={savedStoryPreviews+" preserved · "+temporaryStoryPreviews+" temporary"}/>
           {visualStories.length>0&&<div className="story-gallery">
             {visualStories.map(s=><StoryVisual key={s.id} story={s} onOpen={openStory}/>)}
           </div>}
@@ -555,7 +563,9 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
 
       <MediaPreviewModal key={selectedPost?.id??selectedStory?.id??"none"} post={selectedPost} story={selectedStory} onClose={closeMedia}/>
       <footer className="app-footer">
-        <span>OPUS / SIGNAL · Captured {formatCaptureDate(snapshot.captured_at)}</span>
+        <span>OPUS / SIGNAL · {tab==="archive"?"Historical capture dates vary":
+        selectedSnapshot?"Captured "+formatCaptureDate(selectedSnapshot.captured_at):
+        "Historical source records"}</span>
         <span>Read-only · Published reporting snapshot</span>
       </footer>
     </main>
