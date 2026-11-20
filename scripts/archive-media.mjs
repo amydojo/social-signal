@@ -22,6 +22,7 @@ function allowedSource(value){
  return u.protocol==="https:" &&
    (u.hostname==="social-signal-amy-dos-projects.vercel.app" ||
     u.hostname==="social-signal-iota.vercel.app" ||
+    u.hostname==="opussignal.vercel.app" ||
     u.hostname.endsWith(".cdninstagram.com"));
 }
 function validJPEG(buffer){
@@ -65,15 +66,15 @@ for(const asset of assets){
    await fs.rename(temporary,outPath);
   }
   const sha256=crypto.createHash("sha256").update(buffer).digest("hex");
-  output.push({id:asset.id,source_link:asset.post_url||null,path:"/"+file.slice("public/".length),status:"saved",bytes:buffer.length,sha256});
+  output.push({id:asset.id,source_link:asset.post_url||null,file:"/"+file.slice("public/".length),status:"saved",bytes:buffer.length,sha256});
   console.log("SAVED "+file+" ("+buffer.length+" bytes)");
  }catch(error){
-  output.push({id:asset.id,source_link:asset.post_url||null,path:"/"+file.slice("public/".length),status:"unavailable",error:String(error.message||error).slice(0,250)});
+  output.push({id:asset.id,source_link:asset.post_url||null,file:"/"+file.slice("public/".length),status:"unavailable",error:String(error.message||error).slice(0,250)});
   console.warn("UNAVAILABLE "+file+": "+String(error.message||error));
  }
 }
-const report={archived_on:new Date().toISOString(),source:"Metricool image URLs and previously cached SIGNAL post thumbnails",
+const report={archived_at:new Date().toISOString(),source:"Verified original post media URLs",
  total:output.length,saved:output.filter(x=>x.status==="saved").length,
- unavailable:output.filter(x=>x.status!=="saved").length,files:output};
+ unavailable:output.filter(x=>x.status!=="saved").length,assets:output};
 await fs.writeFile(path.join(root,"index.json"),JSON.stringify(report,null,2)+"\n");
 console.log("Archive summary: "+report.saved+"/"+report.total+" saved");
