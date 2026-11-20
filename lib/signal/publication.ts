@@ -14,7 +14,8 @@ export type PublicWeek={
   coverage?:{platform:string;account:string;linked:boolean;note?:string}[];
 };
 const string=(x:unknown,n=500)=>typeof x==="string"&&x.length>0&&x.length<=n;
-const nonnegative=(x:unknown)=>x===null||(typeof x==="number"&&Number.isFinite(x)&&x>=0);
+const finiteNonnegative=(x:unknown)=>typeof x==="number"&&Number.isFinite(x)&&x>=0;
+const nonnegative=(x:unknown)=>x===null||finiteNonnegative(x);
 const safeURL=(x:unknown)=>x==null||(string(x,2048)&&/^https:\/\//i.test(x as string));
 const safePath=(x:unknown)=>x==null||(string(x,400)&&/^\/media\/archive\/[a-zA-Z0-9_.-]+$/.test(x as string));
 const dateValid=(v:unknown)=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&
@@ -94,17 +95,17 @@ function parseDiagnostics(x:unknown):PerformanceWeek|null{
     const fields=["id","title","views","reach","interactions","avgWatchSeconds",
       "past3SecondsPct","skip3SecondsPct","shares","saves"];
     if(!obj(item)||!attrs(item,fields)||!string(item.id,130)||!string(item.title,250)||
-      fields.slice(2).some(k=>!nonnegative(item[k]))||
+      fields.slice(2).some(k=>!finiteNonnegative(item[k]))||
       (item.past3SecondsPct as number)>100||(item.skip3SecondsPct as number)>100)return null;
     reels.push(item as unknown as PerformanceWeek["reels"][number]);
   }
   const stories=x.stories as Record<string,unknown>;
   const keys=["count","impressions","replies","exits","backTaps","forwardTaps"];
-  if(!attrs(stories,keys)||keys.some(k=>!nonnegative(stories[k])))return null;
+  if(!attrs(stories,keys)||keys.some(k=>!finiteNonnegative(stories[k])))return null;
   const keyword=x.keyword;
   if(keyword!=null){
     if(!obj(keyword)||!attrs(keyword,["term","conversions","clicks","spend","impressions"])||
-      !string(keyword.term,160)||["conversions","clicks","spend","impressions"].some(k=>!nonnegative(keyword[k])))return null;
+      !string(keyword.term,160)||["conversions","clicks","spend","impressions"].some(k=>!finiteNonnegative(keyword[k])))return null;
   }
   const audience=x.audience;
   if(audience!=null){
@@ -112,7 +113,7 @@ function parseDiagnostics(x:unknown):PerformanceWeek|null{
       !nonnegative(audience.instagramFollowers)||!string(audience.asOf,100)||
       !Array.isArray(audience.engagedByDay)||audience.engagedByDay.length>35||
       audience.engagedByDay.some(v=>!obj(v)||!attrs(v,["date","accounts"])||
-        !string(v.date,30)||!nonnegative(v.accounts)))return null;
+        !string(v.date,30)||!finiteNonnegative(v.accounts)))return null;
   }
   return {
     reels,stories:stories as unknown as PerformanceWeek["stories"],
