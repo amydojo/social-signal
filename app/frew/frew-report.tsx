@@ -341,7 +341,7 @@ export default function FrewDashboard({published=[],readState="live"}:{published
   // Published reporting never borrows diagnostics from a different, static capture.
   const detail=live?(live.diagnostics??null):(period in performanceByWeek?performanceByWeek[period as keyof typeof performanceByWeek]:null);
   const reviewedOverview=live?.overview?.reviewedAt?live.overview:undefined;
-  const brief=buildExecutivePulse(rows,channels,reviewedOverview);
+  const brief=buildExecutivePulse(rows,channels,reviewedOverview,live?.outcomes);
   const featured=chooseWeeklySpotlights(rows);
   const first=featured[0]?.post;
   const second=featured[1]?.post;
@@ -358,7 +358,7 @@ export default function FrewDashboard({published=[],readState="live"}:{published
   return <div className="executive-shell">
     <header className="executive-masthead">
       <div className="executive-brand"><span className="executive-logomark">O.</span><span>OPUS<span className="executive-word-divider">/</span> WEEKLY PULSE</span></div>
- 
+      <a href={"/frew/owner?week="+encodeURIComponent(period)} className="pulse-public-outcomes-link">View outcomes →</a>
     </header>
     <main className="executive-main">
       <section className="executive-intro">
