@@ -27,6 +27,17 @@ test("accepts a reviewed, in-week public report with null measurements",()=>{
   assert.equal(v.overview.indicators[0].value,5);
   assert.equal(v.posts[0].thumbnailPath,"/media/archive/ig-example.jpg");
 });
+test("concise hero deck is allowed while unapproved overview fields are rejected",()=>{
+  const p=original();
+  p.payload.overview.deck="New inquiries are arriving; consultation follow-through matters.";
+  const parsed=parsePublishedReport(p);
+  assert.ok(parsed);
+  assert.equal(parsed.overview.deck,p.payload.overview.deck);
+  const overlong=original();overlong.payload.overview.deck="x".repeat(221);
+  assert.equal(parsePublishedReport(overlong),null);
+  const privateData=original();privateData.payload.overview.patient_ids=["private"];
+  assert.equal(parsePublishedReport(privateData),null);
+});
 test("rejects cross-week posts instead of silently blending periods",()=>{
   const p=original();p.payload.posts[0].date="2026-11-23";
   assert.equal(parsePublishedReport(p),null);
