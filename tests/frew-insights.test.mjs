@@ -54,3 +54,12 @@ test("measured zero actions preserve zero without inventing cost",()=>{
   assert.equal(v.metrics[1].value,null);
   assert.equal(v.metrics[3].value,0);
 });
+
+test("positive Meta leads appear ahead of unrelated zero Google conversions",()=>{
+  const v=buildExecutivePulse([],[
+    channel("Google Ads",{Conversions:0}),
+    channel("Meta Ads",{Leads:4})
+  ]);
+  assert.equal(v.metrics[3].label,"META LEADS");
+  assert.equal(v.metrics[3].value,4);
+});

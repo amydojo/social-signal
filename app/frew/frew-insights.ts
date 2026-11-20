@@ -40,16 +40,15 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
   }).map(p=>p.date));
   const google=channels.find(c=>c.platform==="Google Ads"&&metric(c,"Conversions")!=null);
   const meta=channels.find(c=>c.platform==="Meta Ads"&&metric(c,"Leads")!=null);
-  const paid=google??meta;
-  const paidValue=google?metric(google,"Conversions"):meta?metric(meta,"Leads"):null;
-  const cost=google?metric(google,"Cost / conversion"):
-    meta&&paidValue!=null&&paidValue>0&&metric(meta,"Spend")!=null?
-    (metric(meta,"Spend") as number)/paidValue:null;
+  const paid=google&&(metric(google,"Conversions")??0)>0?google:
+    meta&&(metric(meta,"Leads")??0)>0?meta:
+    google??meta;
+  const paidValue=paid?metric(paid,paid.platform==="Google Ads"?"Conversions":"Leads"):null;
   const metrics:PulseIndicator[]=[
     {label:"CONSULTS BOOKED",value:null,detail:"Private · see owner report"},
     {label:"INQUIRIES CONFIRMED",value:null,detail:"Check in Aesthetix"},
     {label:"POSTS DOCUMENTED",value:feed.length||null,detail:"OPUS Instagram · feed posts"},
-    {label:google?"GOOGLE AD ACTIONS":meta?"META LEADS":"AD RESULTS",value:paidValue,
+    {label:paid?.platform==="Google Ads"?"GOOGLE AD ACTIONS":paid?.platform==="Meta Ads"?"META LEADS":"AD RESULTS",value:paidValue,
       detail:paid?.period??"Not available"}
   ];
   const count=(platform:string,format:string,account?:string):number|null=>{

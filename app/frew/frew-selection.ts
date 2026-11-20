@@ -78,6 +78,24 @@ export function chooseWeeklyFeatures(rows:LeadershipLog[],max=2):WeeklyFeature[]
   });
   return result;
 }
+/** Two recent posts for an owner to see what actually shipped.
+ * Show variety of formats, not the highest view counts.
+ * Publishing order and account identity are the only selection criteria.
+ */
+export function chooseWeeklySpotlights(rows:LeadershipLog[],max=2):
+  {post:LeadershipLog;label:"LATEST POST"|"ALSO THIS WEEK"}[]{
+  if(max<1)return [];
+  const eligible=rows.filter(p=>!isStory(p));
+  const opus=eligible.filter(p=>p.platform==="Instagram"&&p.account.toLowerCase()==="@opusplasticsurgery");
+  const pool=[...(opus.length?opus:eligible)].sort((a,b)=>b.date.localeCompare(a.date)||a.id.localeCompare(b.id));
+  const first=pool[0];
+  if(!first)return [];
+  const result:{post:LeadershipLog;label:"LATEST POST"|"ALSO THIS WEEK"}[]=[{post:first,label:"LATEST POST"}];
+  if(max===1||pool.length<2)return result;
+  const second=pool.slice(1).find(p=>p.format.toLowerCase()!==first.format.toLowerCase())??pool[1];
+  result.push({post:second,label:"ALSO THIS WEEK"});
+  return result;
+}
 /** Safe fallback when no period-specific account totals have been ingested. */
 export function channelOverviewFromPosts(rows:LeadershipLog[],period:string):LeadershipChannel[]{
   const groups=new Map<string,LeadershipLog[]>();

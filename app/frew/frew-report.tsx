@@ -9,10 +9,10 @@ import {nov2Channels,nov2Log,type LeadershipLog,type LeadershipChannel} from "./
 import {currentLog,currentChannels,currentCoverFallbacks} from "./frew-current-data";
 import FrewStamp from "./frew-stamp";
 import FrewAccounts from "./frew-accounts";
-import {performanceByWeek,type ReelSignal} from "./frew-performance";
+import {performanceByWeek} from "./frew-performance";
 import {frewStoryCovers,frewCarouselCovers} from "./frew-media";
 import {formatCaptureDate} from "../../lib/signal/reporting-time";
-import {chooseWeeklyFeatures,groupPostsByWeek,channelOverviewFromPosts,labelWeek,isStory,interactionCount} from "./frew-selection";
+import {chooseWeeklySpotlights,groupPostsByWeek,channelOverviewFromPosts,labelWeek,isStory,interactionCount} from "./frew-selection";
 import type {PublicWeek} from "../../lib/signal/publication";
 import type {PublicReadState} from "../../lib/signal/read-public";
 import {buildExecutivePulse} from "./frew-insights";
@@ -296,10 +296,10 @@ function DownloadCsv({rows,period}:{rows:LeadershipLog[];period:string}){
     const link=document.createElement("a");link.href=file;link.download="OPUS_Weekly_Results_"+period+".csv";link.click();URL.revokeObjectURL(file);
   }}><Download size={15}/> Export CSV</button>;
 }
-function Feature({post,rank,metricLabel,signal}:{post:LeadershipLog;rank:string;metricLabel:string;signal?:ReelSignal}){
+function Feature({post,rank}:{post:LeadershipLog;rank:string}){
   const media=coverFor(post);
   return <article className="executive-feature">
-    <a className="executive-feature-media" href={post.url||undefined} target="_blank" rel="noopener noreferrer" aria-label={"View original "+post.title}>
+    <a className="executive-feature-media" href={post.url||undefined} target="_blank" rel="noopener noreferrer" aria-label={"Open original "+post.title}>
       <Cover url={media} alt={post.title}/>
       <span className="executive-media-link"><ExternalLink size={17}/></span>
     </a>
@@ -307,11 +307,10 @@ function Feature({post,rank,metricLabel,signal}:{post:LeadershipLog;rank:string;
       <span className="executive-rank">{rank}</span>
       <h3>{post.title}</h3>
       <p>{post.format} · {day(post.date)}</p>
-      <div className="executive-feature-number">{fmt(post.views)}<small>{metricLabel}</small></div>
-      {signal&&<div className="executive-feature-signals">
-        <span><strong>{signal.avgWatchSeconds.toFixed(1)}s</strong> avg watch</span>
-        <span><strong>{signal.past3SecondsPct.toFixed(1)}%</strong> past 3s</span>
-      </div>}
+      <div className="executive-feature-action">
+        {post.url?<a href={post.url} target="_blank" rel="noopener noreferrer">Open post <ExternalLink size={13}/></a>:
+          <span>Post recorded</span>}
+      </div>
     </div>
   </article>;
 }
@@ -342,8 +341,7 @@ export default function FrewDashboard({published=[],readState="live"}:{published
   // Published reporting never borrows diagnostics from a different, static capture.
   const detail=live?(live.diagnostics??null):(period in performanceByWeek?performanceByWeek[period as keyof typeof performanceByWeek]:null);
   const brief=buildExecutivePulse(rows,channels);
-  const diagnosticsFor=(post:LeadershipLog|undefined)=>detail?.reels.find(x=>x.id===post?.id);
-  const featured=chooseWeeklyFeatures(rows);
+  const featured=chooseWeeklySpotlights(rows);
   const first=featured[0]?.post;
   const second=featured[1]?.post;
   const partial=live?.status==="in_progress"||(!live&&current);
@@ -396,12 +394,11 @@ export default function FrewDashboard({published=[],readState="live"}:{published
       <FrewExecutiveBrief pulse={brief} partial={partial}/>
       <section className="executive-creative-section">
         <div className="executive-section-heading">
-          <h2>Most watched posts</h2>
+          <h2>From this week’s posts</h2>
         </div>
         <div className="executive-creative-grid">
-          {featured.map(item=><Feature key={item.post.id} post={item.post}
-            rank={item.label} metricLabel={item.metricLabel} signal={diagnosticsFor(item.post)}/> )}
-          {!featured.length&&<p className="executive-feature-empty">No ranked posts yet for this week.</p>}
+          {featured.map(item=><Feature key={item.post.id} post={item.post} rank={item.label}/> )}
+          {!featured.length&&<p className="executive-feature-empty">No posts recorded yet for this week.</p>}
         </div>
       </section>
 
