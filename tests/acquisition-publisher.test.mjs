@@ -18,5 +18,6 @@ test("trusted publisher remains invoker-only, not anonymous callable",()=>{
 });
 
 test("publisher function terminates before permissions are revoked",()=>{
-  assert.ok(sql.includes("$function$;\\n\\nrevoke all on function public.publish_signal_week"));
+  assert.ok(sql.includes("$function$;"));
+  assert.ok(sql.split("$function$;")[1].includes("revoke all on function public.publish_signal_week"));
 });
