@@ -227,7 +227,7 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
   const savedHistoricalFiles=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
   const storyHasCover=(story:Story)=>{
     const id=story.permalink?.split("/stories/")[1]?.split("/")[1];
-    const possible=[story.thumbnail_path,id?"/media/archive/story-"+id+".jpg":""].filter(Boolean);
+    const possible=[story.thumbnail_path,id?"/media/archive/story-"+id+".jpg":""].filter((path):path is string=>Boolean(path));
     return possible.some(p=>savedHistoricalFiles.has(p));
   };
   // Original URLs are useful as temporary previews, not proof of archiving.
