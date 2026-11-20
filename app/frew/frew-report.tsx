@@ -379,16 +379,17 @@ export default function FrewDashboard({published=[],readState="live"}:{published
             live?"Updated "+(live.dataThrough?day(live.dataThrough):day(live.weekStart))+" · live report":
             "Saved report · not live"}
         </p>
-        <div className="executive-hero-grid">
+        <div className={"executive-hero-grid"+(brief.insight?"":" is-solo")}>
           <div className="executive-hero-copy">
             <div className="executive-dispatch-kicker" aria-hidden="true">OPUS <span> / </span> {"THIS WEEK"}</div>
             <h1>{intro.headline}</h1>
             <p>{intro.summary}</p>
           </div>
-          <div className="executive-hero-aside">
-            <div className="executive-aside-label">NEXT UP</div>
-            <strong>{intro.next}</strong>
-          </div>
+          {brief.insight&&<div className="executive-hero-aside" aria-label="Weekly insight">
+            <div className="executive-aside-label">WEEKLY INSIGHT</div>
+            <strong>{brief.insight.headline}</strong>
+            <p>{brief.insight.detail}</p>
+          </div>}
         </div>
       </section>
 
