@@ -144,7 +144,7 @@ function ExportActions({posts,period}:{posts:Post[];period:string}) {
   </div>;
 }
 
-export default function SignalDashboard({snapshot,posts,stories,coverage,socialDaily,adsDaily,insights,experiments}:Props) {
+export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,socialDaily,adsDaily,insights,experiments}:Props) {
   const [tab,setTab]=useState<Tab>("overview");
   const [navCollapsed,setNavCollapsed]=useState(false);
   const [mobileNavOpen,setMobileNavOpen]=useState(false);
@@ -176,11 +176,16 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
   const closeMedia=useCallback(()=>{setSelectedPost(null);setSelectedStory(null)},[]);
   const openPost=useCallback((p:Post)=>{setSelectedStory(null);setSelectedPost(p)},[]);
   const openStory=useCallback((s:Story)=>{setSelectedPost(null);setSelectedStory(s)},[]);
-  const allPosts:Post[]=[...historicalPosts,...posts];
-  const allStories:Story[]=[...historicalStories,...stories];
+  const allPosts:Post[]=[...new Map(
+    [...historicalPosts,...posts].map(p=>[p.platform+"|"+(p.permalink||p.id),p])
+  ).values()];
+  const allStories:Story[]=[...new Map(
+    [...historicalStories,...stories].map(story=>[story.permalink||story.id,story])
+  ).values()];
   const allDaily=[...historicalDaily,...socialDaily];
   const availableWeeks=[...new Set([
     snapshot.week_start,
+    ...weeks.map(w=>w.week_start),
     ...allDaily.map(d=>weekOf(d.date)),
     ...allPosts.map(p=>weekOf(p.published_on)),
     ...allStories.map(weekFromStory),
@@ -291,7 +296,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
           <h1>{tabs.find(t=>t.id===tab)?.name}</h1>
           <div className="header-sub">
             {tab==="archive"?"Sep–Nov 2026":date(selectedWeek)+"–"+date(endOfWeek(selectedWeek))+", 2026"}
-            <span>·</span> Updated Nov 17
+            <span>·</span> Updated {new Date(snapshot.captured_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
           </div>
         </div>
         <div className="app-header-actions">
@@ -321,7 +326,7 @@ export default function SignalDashboard({snapshot,posts,stories,coverage,socialD
         </div>
       </header>
       {!latestWeek&&tab!=="archive"&&<p className="period-note">
-        Older post counts are cumulative as of Nov 16. Account views are counted only on reporting days.
+        Post counts are cumulative as of their last recorded capture, not traffic earned during this week. Account views are counted only on reporting days.
       </p>}
 
       {tab==="overview" && <>
