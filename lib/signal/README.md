@@ -97,3 +97,24 @@ or attempts to replace them with an older as-of date. A new human-reviewed
 overview with the same/newer date may intentionally supersede it. To retire
 an erroneous reviewed finding, use a trusted explicit correction and preserve
 the audit trail; never silently erase it through the daily sync.
+
+## Public outcomes for testing (November 20)
+The former `/frew/owner` page is now the **anonymous, read-only** Outcomes
+view, also linked from SIGNAL and Weekly Pulse. Legacy
+`/frew/owner/login` redirects to Outcomes instead of requiring email auth.
+This displays public-reviewed weekly CRM aggregates, separate Google/Meta
+platform results and the historically dated acquisition cohort.
+
+No public page queries or writes `signal_owner_outcomes`,
+`signal_private.acquisition_snapshots` or raw CRM contacts; the original
+protected write action still requires a signed-in owner, and is not shown on
+the public viewer. Current owner outcome storage contains no saved weekly
+totals, so unknown values stay null.
+
+A future reviewed publication may include `payload.outcomes` with the fixed
+source label `Aesthetix verified aggregate`, a matching Monday week, reviewed
+date and only four nullable counts (inquiries received, qualified inquiries,
+consultation requests, consultations booked). The trusted publisher rejects
+unrecognized fields or invalid counts, and retains the last verified week
+across routine ad/social refreshes. No CRM identities, raw records or
+simulation values may be published.
