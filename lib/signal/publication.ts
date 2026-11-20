@@ -39,8 +39,10 @@ function parsePost(x:unknown,week:string):LeadershipLog|null{
     !string(x.format,80)||!string(x.title,500)||
     !safeURL(x.url)||!safeURL(x.coverUrl)||
     !safePath(x.thumbnailPath))return null;
-  const keys=["views","likes","comments","shares","saves","interactions","impressions"];
-  if(keys.some(k=>!nonnegative(x[k])))return null;
+  const requiredMetrics=["views","likes","comments","shares","saves"];
+  const optionalMetrics=["interactions","impressions"];
+  if(requiredMetrics.some(k=>!nonnegative(x[k]))||
+    optionalMetrics.some(k=>x[k]!==undefined&&!nonnegative(x[k])))return null;
   return {
     id:x.id as string,date:x.date as string,platform:x.platform as string,
     account:x.account as string,format:x.format as string,title:x.title as string,
