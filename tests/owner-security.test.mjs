@@ -36,3 +36,11 @@ test("private outcome writes remain owner-only",()=>{
   assert.match(act,/supabase\.auth\.getUser\(\)/);
   assert.match(act,/member\?\.role!=="owner"/);
 });
+
+test("public publication accepts only whitelisted CRM aggregates, not private records",()=>{
+  const sql=readFileSync(new URL("../supabase/migrations/20261120195000_signal_public_outcomes.sql",import.meta.url),"utf8");
+  assert.match(sql,/unrecognized public outcomes field/);
+  assert.match(sql,/Aesthetix verified aggregate/);
+  assert.match(sql,/jsonb_set\(p_payload,'\{outcomes\}'/);
+  assert.doesNotMatch(sql,/grant\s+select\s+on\s+public\.signal_owner_outcomes\s+to\s+anon/i);
+});
