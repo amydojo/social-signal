@@ -1,5 +1,6 @@
 import type {LeadershipLog,LeadershipChannel} from "./frew-data";
 import type {PublicOverview} from "../../lib/signal/publication";
+import type {PublicAcquisition} from "../../lib/signal/acquisition";
 
 export type PulseIndicator={label:string;value:number|null;detail:string;unit?:"USD"};
 export type PaidIndicator={value:number|null;period:string|null;note:string};
@@ -17,7 +18,7 @@ const metric=(channel:LeadershipChannel|undefined,name:string)=>
 const isInstagram=(p:LeadershipLog)=>p.platform==="Instagram"&&p.account.toLowerCase()==="@opusplasticsurgery";
 const isStory=(p:LeadershipLog)=>label(p.format)==="story";
 
-export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChannel[],reviewed?:PublicOverview):ExecutivePulse{
+export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChannel[],reviewed?:PublicOverview,acquisition?:PublicAcquisition):ExecutivePulse{
   const feed=rows.filter(p=>isInstagram(p)&&!isStory(p));
   const reels=feed.filter(p=>label(p.format)==="reel");
   const carousels=feed.filter(p=>label(p.format)==="carousel");
@@ -41,11 +42,18 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
     :undefined;
   const ig=channels.find(c=>c.platform==="Instagram"&&c.account.toLowerCase()==="@opusplasticsurgery");
   const igInteractions=metric(ig,"Feed interactions");
+  const firstAccess=acquisition?.analysis?.opportunityGroups.find(g=>g.name==="Website First Access");
+  const firstAccessAsOf=acquisition?.asOf
+    ?new Date(acquisition.asOf+"T12:00:00Z").toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"})
+    :"latest reviewed snapshot";
   // Use a verified current-stage consultation snapshot when available. Older
   // weeks have no point-in-time surgical snapshot: show their own recorded
   // feed interactions instead of borrowing the latest week's completions or
   // publishing an empty, unhelpful card.
-  const thirdMetric:PulseIndicator|null=surgicalComplete?.value!=null?
+  const thirdMetric:PulseIndicator|null=firstAccess&&firstAccess.opportunities>0?
+    {label:"FIRST ACCESS CONSULT PROGRESS",value:firstAccess.advancedStage,
+      detail:`${firstAccess.advancedStage} of ${firstAccess.opportunities} website opportunities · ${(100*firstAccess.advancedStage/firstAccess.opportunities).toFixed(1)}% at booked-or-later stages · CRM snapshot ${firstAccessAsOf}, not weekly bookings`}:
+    surgicalComplete?.value!=null?
     {label:"SURGICAL CONSULTS · COMPLETE STAGE",value:surgicalComplete.value,
       detail:surgicalComplete.detail}:
     igInteractions!=null?
