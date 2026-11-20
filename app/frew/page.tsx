@@ -1,7 +1,8 @@
 import type {Metadata} from "next";
 import FrewDashboard from "./frew-report";
-import {loadPublishedWeeks} from "../../lib/signal/read-public";
+import {loadPublishedWeeksWithState} from "../../lib/signal/read-public";
 import "./frew.css";
+import "./frew-executive.css";
 
 export const metadata:Metadata={
   title:"PULSE · OPUS",
@@ -10,6 +11,6 @@ export const metadata:Metadata={
 };
 export const dynamic="force-dynamic";
 export default async function FrewPage(){
-  const published=await loadPublishedWeeks();
-  return <FrewDashboard published={published}/>;
+  const {weeks,state}=await loadPublishedWeeksWithState();
+  return <FrewDashboard published={weeks} readState={state}/>;
 }

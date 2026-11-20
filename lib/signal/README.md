@@ -1,7 +1,10 @@
 # OPUS SIGNAL — publication boundary
 
-The client is public/read-only. Existing protected `signal_*` source tables retain
-RLS and are **not** opened to anonymous visitors.
+The public `/` and `/frew` pages are read-only. Existing protected `signal_*`
+source tables retain RLS and are **not** opened to anonymous visitors.
+The separate `/frew/owner` route uses Supabase Auth plus owner membership and RLS
+to record manually checked weekly aggregate consultation counts only. It never
+publishes private counts, patient records or internal approvals.
 
 The only anonymous reporting read is `signal_published_reports` with
 `published=true`, via `lib/signal/read-public.ts`. It contains explicitly
