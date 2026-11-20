@@ -6,7 +6,7 @@ import {posts as metricoolPosts, stories as metricoolStories, snapshot} from "..
 import {historicalPosts} from "../history-data";
 import archiveIndex from "../../public/media/archive/index.json";
 import {nov2Channels,nov2Log,type LeadershipLog,type LeadershipChannel} from "./frew-data";
-import {currentLog,currentChannels,currentStats,currentCoverFallbacks} from "./frew-current-data";
+import {currentLog,currentChannels,currentCoverFallbacks} from "./frew-current-data";
 import FrewStamp from "./frew-stamp";
 import FrewAccounts from "./frew-accounts";
 import {performanceByWeek,type ReelSignal} from "./frew-performance";
@@ -17,6 +17,7 @@ import type {PublicWeek} from "../../lib/signal/publication";
 import type {PublicReadState} from "../../lib/signal/read-public";
 import {buildExecutivePulse} from "./frew-insights";
 import FrewExecutiveBrief from "./frew-executive";
+import {writeWeekIntro} from "./frew-voice";
 
 type Period=string;
 const savedCovers=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
@@ -347,64 +348,7 @@ export default function FrewDashboard({published=[],readState="live"}:{published
   const second=featured[1]?.post;
   const partial=live?.status==="in_progress"||(!live&&current);
   const periodLabel=labelWeek(period).toUpperCase()+", "+period.slice(0,4)+(partial?" · WEEK TO DATE":"");
-  const instagramPosts=posts.filter(p=>p.platform==="Instagram");
-  const instagramReels=instagramPosts.filter(p=>p.format.trim().toLowerCase()==="reel");
-  const reelViews=instagramReels.length&&instagramReels.every(p=>p.views!=null)
-    ?instagramReels.reduce((sum,p)=>sum+(p.views??0),0):null;
-  const reelInteractions=instagramReels.map(interactionCount);
-  const reelInteractionTotal=reelInteractions.length&&reelInteractions.every(v=>v!=null)
-    ?reelInteractions.reduce<number>((sum,v)=>sum+(v??0),0):null;
-  const capturedStoryImpressions=stories.length&&stories.every(p=>p.views!=null)
-    ?stories.reduce((sum,p)=>sum+(p.views??0),0):null;
-  const knownViews=instagramPosts.length&&instagramPosts.every(p=>p.views!=null)
-    ?instagramPosts.reduce((sum,p)=>sum+(p.views??0),0):null;
-  const knownInteractions=instagramPosts.map(interactionCount);
-  const interactionTotal=knownInteractions.length&&knownInteractions.every(v=>v!=null)
-    ?knownInteractions.reduce<number>((sum,v)=>sum+(v??0),0):null;
-  const report=live?.overview??(old?{
-    statement:"People and practical advice led the week.",
-    summary:"Meet Tamara and the lipo + tummy tuck Reel drew the most views.",
-    indicators:[
-      {label:"INSTAGRAM REACH",value:1112,detail:"OPUS account"},
-      {label:"ENGAGED",value:85,detail:"OPUS Instagram"},
-      {label:"WEBSITE CLICKS",value:4,detail:"Google Business"},
-      {label:"CALLS",value:1,detail:"Google Business"}
-    ],
-    action:"Pair another team introduction with a simple procedure explainer."
-  }:current?{
-    statement:`${fmt(currentStats.googleAdsConversions)} reported search conversions. Content people watched.`,
-    summary:first?
-      `${first.title} leads tracked posts with ${fmt(first.views)} cumulative views.${second?" "+second.title+" follows with "+fmt(second.views)+".":""} Search conversions are not confirmed bookings.`:
-      "Publishing and advertising results are still arriving.",
-    indicators:[
-      {label:"SEARCH CONVERSIONS",value:currentStats.googleAdsConversions,detail:"Google Ads · Nov 16–18"},
-      {label:"REEL VIEWS",value:reelViews,detail:instagramReels.length+" Reels · cumulative at capture"},
-      {label:"REEL INTERACTIONS",value:reelInteractionTotal,detail:instagramReels.length+" Instagram Reels"},
-      {label:"STORY IMPRESSIONS",value:capturedStoryImpressions,detail:stories.length+" Stories · at capture"}
-    ],
-    action:"Try another specific patient-question Reel with a clear consult invitation."
-  }:previous?{
-    statement:first?`${first.title} led views.`:"Posts are still being collected.",
-    summary:second?`${second.title} stood out on interactions per view.`:"See which creative earned the most attention.",
-    indicators:[
-      {label:"FEED VIEWS",value:snapshot.feed_views??null,detail:"3 posts · at export"},
-      {label:"INTERACTIONS",value:snapshot.feed_interactions??null,detail:"Instagram feed"},
-      {label:"STORY IMPRESSIONS",value:snapshot.story_impressions??null,detail:"12 Stories"},
-      {label:"STORY REPLIES",value:snapshot.story_replies,detail:"12 Stories"}
-    ],
-    action:"Open with a surgical detail. End with a patient question."
-  }:{
-    statement:first?"This week's posts, at a glance.":"New week. Results still coming in.",
-    summary:first?`${first.title} leads the captured posts with ${fmt(first.views)} cumulative views.`:
-      "New performance data will appear as posts and account results become available.",
-    indicators:[
-      {label:"CAPTURED POSTS",value:instagramPosts.length,detail:"Instagram · posts with records"},
-      {label:"POST VIEWS",value:knownViews,detail:"Cumulative · captured posts only"},
-      {label:"INTERACTIONS",value:interactionTotal,detail:"Captured Instagram posts"},
-      {label:"STORY IMPRESSIONS",value:capturedStoryImpressions,detail:"Captured Stories · not unique viewers"}
-    ],
-    action:"Review the strongest creative and update next week's content."
-  });
+  const intro=writeWeekIntro(rows,channels);
   return <div className="executive-shell">
     <header className="executive-masthead">
       <div className="executive-brand"><span className="executive-logomark">O.</span><span>OPUS<span className="executive-word-divider">/</span> WEEKLY PULSE</span></div>
@@ -421,22 +365,22 @@ export default function FrewDashboard({published=[],readState="live"}:{published
           </label>
         </div>
         <p className={"pulse-freshness"+(readState!=="live"?" pulse-freshness-warning":"")} role="status">
-          {readState==="unavailable"?"Live reporting unavailable. Showing the last embedded historical extract; numbers may be stale.":
-            readState==="invalid"?"Published records failed validation. Showing historical extract until verified.": 
-            readState==="partial"?"Some published records failed validation and were excluded. Check reporting coverage.": 
-            readState==="empty"?"No live published records were found. Showing verified historical extracts where available.":
-            live?"Verified published snapshot · revision "+live.revision+(live.dataThrough?" · data through "+day(live.dataThrough):""):
-            "Historical source extract · not a live capture"}
+          {readState==="unavailable"?"Live numbers aren’t loading. Showing the last saved report.":
+            readState==="invalid"?"Some numbers couldn’t be checked. Showing the saved report instead.": 
+            readState==="partial"?"Some results couldn’t be checked and were left out.": 
+            readState==="empty"?"No live update yet. Showing the saved numbers.":
+            live?"Updated "+(live.dataThrough?day(live.dataThrough):day(live.weekStart))+" · live report":
+            "Saved report · not live"}
         </p>
         <div className="executive-hero-grid">
           <div className="executive-hero-copy">
-            <div className="executive-dispatch-kicker" aria-hidden="true">THE WEEK AT OPUS <span> / </span> GROWTH &amp; OUTREACH</div>
-            <h1>{report.statement}</h1>
-            <p>{report.summary}</p>
+            <div className="executive-dispatch-kicker" aria-hidden="true">OPUS <span> / </span> THIS WEEK</div>
+            <h1>{intro.headline}</h1>
+            <p>{intro.summary}</p>
           </div>
           <div className="executive-hero-aside">
-            <div className="executive-aside-label">{live?"TO WATCH":"TRY NEXT"}</div>
-            <strong>{brief.action??report.action}</strong>
+            <div className="executive-aside-label">NEXT UP</div>
+            <strong>{intro.next}</strong>
           </div>
         </div>
       </section>
@@ -452,7 +396,7 @@ export default function FrewDashboard({published=[],readState="live"}:{published
       <FrewExecutiveBrief pulse={brief} partial={partial}/>
       <section className="executive-creative-section">
         <div className="executive-section-heading">
-          <h2>Top posts</h2>
+          <h2>Most watched posts</h2>
         </div>
         <div className="executive-creative-grid">
           {featured.map(item=><Feature key={item.post.id} post={item.post}
@@ -470,10 +414,10 @@ export default function FrewDashboard({published=[],readState="live"}:{published
       />
 
       <section className="executive-bottom">
-        <h2 className="executive-bottom-title">More details</h2>
+        <h2 className="executive-bottom-title">All the numbers</h2>
         <div className="executive-detail-controls">
           {detail&&<details className="executive-detail">
-            <summary>Performance signals <span>Video · Stories{detail.keyword?" · Search":""}</span><ChevronDown size={17}/></summary>
+            <summary>Video and Story details <span>Video · Stories{detail.keyword?" · Search":""}</span><ChevronDown size={17}/></summary>
             <div className="executive-signal-details">
               <div className="executive-signal-section">
                 <h3>Reel attention</h3>
@@ -522,7 +466,7 @@ export default function FrewDashboard({published=[],readState="live"}:{published
             </div>
           </details>}
           <details className="executive-detail">
-            <summary>All published posts <span>{posts.length} posts</span><ChevronDown size={17}/></summary>
+            <summary>Every post <span>{posts.length} posts</span><ChevronDown size={17}/></summary>
             <div className="executive-detail-list">{posts.map(p=><div key={p.id}>
               <span>{day(p.date)}</span>
               <div>{p.url?<a href={p.url} target="_blank" rel="noopener noreferrer">{p.title}<ExternalLink size={12}/></a>:p.title}<small>{p.platform} · {p.format}</small></div>
@@ -531,7 +475,7 @@ export default function FrewDashboard({published=[],readState="live"}:{published
           </details>
           <StoryGallery period={period} stories={stories}/>
           <details className="executive-detail">
-            <summary>Download report <ChevronDown size={17}/></summary>
+            <summary>Export this week <ChevronDown size={17}/></summary>
             <div className="executive-source-body">
               <div className="executive-source-actions">
                 <DownloadCsv rows={rows} period={period}/>

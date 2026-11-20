@@ -6,51 +6,51 @@ function Track({item}:{item:CadenceItem}){
   return <div className="pulse-plan-item">
     <div className="pulse-plan-item-top">
       <strong>{item.label}</strong>
-      <span>{unknown?"Unverified":value+" / "+item.target}</span>
+      <span>{unknown?"No count yet":value+" / "+item.target}</span>
     </div>
     <progress aria-label={item.label+" recorded against weekly target"} max={item.target} value={value}/>
-    <small>{unknown?item.detail:"Recorded toward weekly target · not an on-time audit"}</small>
+    <small>{unknown?item.detail:"Posts we can see · not an on-time check"}</small>
   </div>;
 }
 export default function FrewExecutiveBrief({pulse,partial}:{pulse:ExecutivePulse;partial:boolean}){
-  return <section className="pulse-decision" aria-label="Executive decisions and content accountability">
+  return <section className="pulse-decision" aria-label="Weekly posts and notes">
     <div className="pulse-decision-head">
       <div>
-        <span className="pulse-decision-kicker">EXECUTION &amp; LEARNING</span>
-        <h2>What the week is telling us</h2>
+        <span className="pulse-decision-kicker">POSTS &amp; NOTES</span>
+        <h2>How the week is going</h2>
       </div>
-      <span className="pulse-decision-status">{partial?"IN PROGRESS":"RECORDED WEEK"}</span>
+      <span className="pulse-decision-status">{partial?"SO FAR":"WEEK TOTAL"}</span>
     </div>
     <div className="pulse-plan-grid">
       {pulse.primary.map(item=><Track key={item.key} item={item}/>)}
     </div>
     <div className="pulse-brief-grid">
       <article>
-        <span className="pulse-brief-no">01 / SIGNAL</span>
-        <h3>What worked</h3>
+        <span className="pulse-brief-no">POSTS</span>
+        <h3>What got attention</h3>
         <strong>{pulse.creative.headline}</strong>
         <p>{pulse.creative.evidence}</p>
       </article>
       <article>
-        <span className="pulse-brief-no">02 / RESPONSE</span>
-        <h3>What to test next</h3>
-        <strong>Pair a specific patient-question Reel with another surgeon-and-team moment.</strong>
+        <span className="pulse-brief-no">NEXT</span>
+        <h3>What I'd try again</h3>
+        <strong>One Reel answering a real patient question. One showing more of Frew and the team.</strong>
         <p>{pulse.creative.interpretation}</p>
       </article>
       <article>
-        <span className="pulse-brief-no">03 / DECISION</span>
-        <h3>What needs verification</h3>
-        <strong>Tracked ad actions are not confirmed consult bookings.</strong>
-        <p>Check the private CRM handoff. Friday content approvals, audience questions and medical compliance status remain outside this public report.</p>
+        <span className="pulse-brief-no">TO CHECK</span>
+        <h3>Did anyone book?</h3>
+        <strong>Ad conversions aren't the same as booked consults.</strong>
+        <p>We still need the Aesthetix numbers. Post approvals and medical review aren't tracked in this public report either.</p>
       </article>
     </div>
     <details className="pulse-plan-details">
-      <summary>Full posting cadence and reporting gaps <span>What we can and cannot verify</span></summary>
+      <summary>Other platforms and missing info <span>Posting goals and what isn't connected</span></summary>
       <div className="pulse-plan-details-grid">
         {pulse.secondary.map(item=><Track key={item.key} item={item}/>)}
       </div>
-      <p>Frew's targets: 3 Instagram Reels, 2 carousels, 4 TikToks, 3 YouTube Shorts, 2 results posts, weekday Stories and one Google Business post. Collab tagging, deadlines, CTAs and surgeon approval require separate review.</p>
-      <p>Publishing checklist fully evidenced for {pulse.verification.checked} of {pulse.verification.observed} captured Instagram feed posts. Missing checks mean unverified, not failed. Audience questions and organic search exports are not ingested here.</p>
+      <p>Weekly plan: 3 Reels, 2 carousels, 4 TikToks, 3 YouTube Shorts, 2 posts on the results account, Stories on weekdays, and one Google Business post. The figures above are posts we can find, not a check of whether everything went out on time.</p>
+      <p>We have posting, CTA and medical-review status for {pulse.verification.checked} of {pulse.verification.observed} Instagram feed posts. Blank means we haven't checked, not that a post failed review.</p>
       <p>{pulse.comparisonNote}</p>
     </details>
   </section>;
