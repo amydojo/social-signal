@@ -31,7 +31,7 @@ function weekLabel(date:string){
 }
 
 /**
- * PUBLIC PREVIEW ONLY. Do not fetch signal_owner_outcomes or private CRM.
+ * PUBLIC PREVIEW ONLY. Read approved public analytics, never protected CRM.
  * Privileged edits remain in the separately owner-gated server action,
  * which is never imported by this page or the preview component.
  */
