@@ -38,6 +38,22 @@ test("concise hero deck is allowed while unapproved overview fields are rejected
   const privateData=original();privateData.payload.overview.patient_ids=["private"];
   assert.equal(parsePublishedReport(privateData),null);
 });
+test("reviewed insights require short approved aggregate copy",()=>{
+  const p=original();p.payload.overview.reviewedAt="2026-11-20";
+  p.payload.overview.insight={
+    headline:"First Access accounts for two-thirds of new inquiries.",
+    detail:"10 of 15 new contacts entered through First Access Nov 16–19."
+  };
+  const parsed=parsePublishedReport(p);
+  assert.ok(parsed);
+  assert.equal(parsed.overview.insight.headline,p.payload.overview.insight.headline);
+  const tooLong=original();tooLong.payload.overview.insight={
+    headline:"x".repeat(126),detail:"Ten of fifteen inquiries."};
+  assert.equal(parsePublishedReport(tooLong),null);
+  const bad=original();bad.payload.overview.insight={
+    headline:"First Access led",detail:"10 of 15",contact_id:"private"};
+  assert.equal(parsePublishedReport(bad),null);
+});
 test("rejects cross-week posts instead of silently blending periods",()=>{
   const p=original();p.payload.posts[0].date="2026-11-23";
   assert.equal(parsePublishedReport(p),null);
