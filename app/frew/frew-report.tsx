@@ -452,7 +452,7 @@ export default function FrewDashboard({published=[]}:{published?:PublicWeek[]}){
       <FrewAccounts
         period={period}
         channels={channels}
-        otherAccounts={old?[]:live?.coverage?live.coverage.filter(c=>!c.linked).map(({platform,account})=>({platform,account})):otherAccounts}
+        otherAccounts={live?.coverage?live.coverage.filter(c=>!c.linked).map(({platform,account})=>({platform,account})):old?[]:otherAccounts}
       />
 
       <section className="executive-bottom">

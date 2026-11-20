@@ -35,6 +35,7 @@ export default async function Home(){
     socialDaily={socialDaily}
     adsDaily={adsDaily}
     insights={published.length?studioInsights(published[0]):insights}
+    insightsByWeek={Object.fromEntries(published.map(week=>[week.weekStart,studioInsights(week)]))}
     experiments={experiments}
   />;
 }
