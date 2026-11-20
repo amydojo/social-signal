@@ -230,18 +230,21 @@ test("reconstructed contact dates fill older weeks without inventing consultatio
     assert.doesNotMatch(pulse.highlights[0].detail,/consultations booked/i);
   }
 });
-test("reviewed narrative remains separate from contact-event backfill",()=>{
-  const crm={weekStart:"2026-11-16",dataThrough:"2026-11-19",snapshotDate:"2026-11-20",
-    total:15,website:10,meta:0,instagram:3,direct4d:2,other:0,
-    paidSearch:8,paidSocial:0,organicSearch:0,socialMedia:1,directTraffic:1,referral:0,
+test("newer CRM snapshot supersedes stale weekly narrative without changing other outcome stages",()=>{
+  const crm={weekStart:"2026-11-16",dataThrough:"2026-11-20",snapshotDate:"2026-11-20",
+    total:16,website:11,meta:0,instagram:3,direct4d:2,other:0,
+    paidSearch:9,paidSocial:0,organicSearch:0,socialMedia:1,directTraffic:1,referral:0,
     unattributed:5,backdatedImports:0};
-  const reviewed={statement:"New inquiries",summary:"Sourced CRM",
+  const reviewed={statement:"Older inquiries",summary:"Prior export",
     action:"Review",reviewedAt:"2026-11-20",
     indicators:[{label:"New CRM lead contacts",value:15,
-      detail:"Nov 16–19 · First Access 10 · Instagram DM 3 · Direct 2"}]};
+      detail:"Nov 16–19 · First Access 10 · Instagram DM 3 · Direct 2"},
+      {label:"Surgical consultations in booked stage",value:12,detail:"Current stage only"}]};
   const p=buildExecutivePulse([],[],reviewed,undefined,crm);
-  assert.equal(p.metrics[0].value,15);
+  assert.equal(p.metrics[0].value,16);
   assert.equal(p.metrics[0].label,"CRM CONTACTS RECORDED");
-  assert.equal(p.highlights[0].label,"PATIENT DEMAND");
-  assert.match(p.highlights[0].detail,/CRM intake routes/);
+  assert.equal(p.metrics[1].value,12);
+  assert.equal(p.highlights[0].label,"CRM INTAKE");
+  assert.match(p.highlights[0].detail,/11 Website First Access/);
+  assert.doesNotMatch(p.highlights[0].detail,/10 First Access/);
 });
