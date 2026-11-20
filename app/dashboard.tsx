@@ -302,6 +302,9 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
         <a href="/frew" className="frew-nav-link" title="Weekly Pulse" aria-label="Open OPUS Weekly Pulse leadership brief">
           <ClipboardList size={17}/><span className="nav-label">Weekly Pulse</span>
         </a>
+        <a href="/frew/owner" className="frew-nav-link" title="Test outcomes" aria-label="Open public OPUS outcomes preview">
+          <BarChart3 size={17}/><span className="nav-label">Outcomes preview</span>
+        </a>
       </nav>
       <div className="sidebar-foot"><span className="status-dot"/><span className="sidebar-foot-label">Read-only snapshot</span></div>
     </aside>
