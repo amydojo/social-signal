@@ -57,3 +57,17 @@
 .acq-reconcile-steps{gap:6px}.acq-reconcile>article{padding:18px}
 .acq-coverage-strip,.acq-operational{grid-template-columns:repeat(2,minmax(0,1fr))}
 .acq-compare-number strong{font-size:57px}}
+
+.acq-intake-coverage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:20px 0}
+.acq-intake-coverage>div{border:1px solid #e3d9d0;padding:15px;background:#f5eee6}
+.acq-intake-coverage strong{display:block;font-size:29px;font-weight:580;line-height:1.1;letter-spacing:-.05em}
+.acq-intake-coverage span{display:block;margin-top:8px;font-size:11px;line-height:1.5;color:#7c695b}
+.acq-cohort-audit{border:1px solid #e3d9d0;background:#fff;margin:20px 0}
+.acq-cohort-audit summary{cursor:pointer;padding:17px;font-size:12px;font-weight:650;color:#684a3a}
+.acq-audit-table-wrap{padding:0 17px;overflow-x:auto}
+.acq-audit-table-wrap table{width:100%;border-collapse:collapse;text-align:right;font-size:11px;min-width:600px}
+.acq-audit-table-wrap th,.acq-audit-table-wrap td{padding:12px 8px;border-top:1px solid #eee3db;text-align:right;vertical-align:top}
+.acq-audit-table-wrap th:first-child,.acq-audit-table-wrap td:first-child{text-align:left}
+.acq-audit-table-wrap small{display:block;font-size:9px;font-weight:450;color:#907e70;margin-top:4px;line-height:1.5}
+.acq-cohort-audit>.acq-depth-note{padding:0 17px 15px}
+@media(max-width:650px){.acq-intake-coverage{grid-template-columns:1fr}}
