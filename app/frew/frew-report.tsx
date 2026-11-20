@@ -421,7 +421,7 @@ export default function FrewDashboard({published=[]}:{published?:PublicWeek[]}){
             <p>{report.summary}</p>
           </div>
           <div className="executive-hero-aside">
-            <div className="executive-aside-label">TRY NEXT</div>
+            <div className="executive-aside-label">{live?"TO WATCH":"TRY NEXT"}</div>
             <strong>{report.action}</strong>
           </div>
         </div>
