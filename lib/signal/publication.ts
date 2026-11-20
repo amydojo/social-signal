@@ -11,6 +11,7 @@ export type PublicWeek={
   capturedAt:string;dataThrough:string|null;revision:number;
   posts:LeadershipLog[];channels:LeadershipChannel[];
   overview?:PublicOverview;diagnostics?:PerformanceWeek;
+  coverage?:{platform:string;account:string;linked:boolean;note?:string}[];
 };
 const string=(x:unknown,n=500)=>typeof x==="string"&&x.length>0&&x.length<=n;
 const nonnegative=(x:unknown)=>x===null||(typeof x==="number"&&Number.isFinite(x)&&x>=0);
@@ -85,6 +86,52 @@ function parseOverview(x:unknown):PublicOverview|null{
   return {statement:x.statement as string,summary:x.summary as string,
     action:x.action as string,indicators};
 }
+function parseDiagnostics(x:unknown):PerformanceWeek|null{
+  if(!obj(x)||!attrs(x,["reels","stories","keyword","audience"])||
+    !Array.isArray(x.reels)||x.reels.length>40||!obj(x.stories))return null;
+  const reels=[];
+  for(const item of x.reels){
+    const fields=["id","title","views","reach","interactions","avgWatchSeconds",
+      "past3SecondsPct","skip3SecondsPct","shares","saves"];
+    if(!obj(item)||!attrs(item,fields)||!string(item.id,130)||!string(item.title,250)||
+      fields.slice(2).some(k=>!nonnegative(item[k]))||
+      (item.past3SecondsPct as number)>100||(item.skip3SecondsPct as number)>100)return null;
+    reels.push(item as unknown as PerformanceWeek["reels"][number]);
+  }
+  const stories=x.stories as Record<string,unknown>;
+  const keys=["count","impressions","replies","exits","backTaps","forwardTaps"];
+  if(!attrs(stories,keys)||keys.some(k=>!nonnegative(stories[k])))return null;
+  const keyword=x.keyword;
+  if(keyword!=null){
+    if(!obj(keyword)||!attrs(keyword,["term","conversions","clicks","spend","impressions"])||
+      !string(keyword.term,160)||["conversions","clicks","spend","impressions"].some(k=>!nonnegative(keyword[k])))return null;
+  }
+  const audience=x.audience;
+  if(audience!=null){
+    if(!obj(audience)||!attrs(audience,["instagramFollowers","asOf","engagedByDay"])||
+      !nonnegative(audience.instagramFollowers)||!string(audience.asOf,100)||
+      !Array.isArray(audience.engagedByDay)||audience.engagedByDay.length>35||
+      audience.engagedByDay.some(v=>!obj(v)||!attrs(v,["date","accounts"])||
+        !string(v.date,30)||!nonnegative(v.accounts)))return null;
+  }
+  return {
+    reels,stories:stories as unknown as PerformanceWeek["stories"],
+    ...(keyword?{keyword:keyword as PerformanceWeek["keyword"]}:{}),
+    ...(audience?{audience:audience as PerformanceWeek["audience"]}:{})
+  };
+}
+function parseCoverage(x:unknown):PublicWeek["coverage"]|null{
+  if(!Array.isArray(x)||x.length>30)return null;
+  const out:NonNullable<PublicWeek["coverage"]>=[];
+  for(const item of x){
+    if(!obj(item)||!attrs(item,["platform","account","linked","note"])||
+      !string(item.platform,90)||!string(item.account,180)||
+      typeof item.linked!=="boolean"||!(item.note==null||string(item.note,400)))return null;
+    out.push({platform:item.platform as string,account:item.account as string,
+      linked:item.linked as boolean,...(item.note?{note:item.note as string}:{})});
+  }
+  return out;
+}
 export function parsePublishedReport(row:unknown):PublicWeek|null{
   if(!obj(row)||!dateValid(row.week_start)||mondayOf(row.week_start as string)!==row.week_start||
     !dateValid(row.week_end)||row.week_end!==new Date(Date.parse((row.week_start as string)+"T12:00:00Z")+6*86400000).toISOString().slice(0,10)||
@@ -103,7 +150,11 @@ export function parsePublishedReport(row:unknown):PublicWeek|null{
   const unique=new Set(posts.map(post=>post?.id));
   if(unique.size!==posts.length)return null;
   const overview=payload.overview==null?undefined:parseOverview(payload.overview);
-  if(payload.overview!=null&&!overview)return null;
+  const diagnostics=payload.diagnostics==null?undefined:parseDiagnostics(payload.diagnostics);
+  const coverage=payload.coverage==null?undefined:parseCoverage(payload.coverage);
+  if((payload.overview!=null&&!overview)||
+    (payload.diagnostics!=null&&!diagnostics)||
+    (payload.coverage!=null&&!coverage))return null;
   // Only reviewed overview/diagnostic keys can reach public UI; never forward
   // arbitrary raw source data or private account exports.
   return {
@@ -112,7 +163,7 @@ export function parsePublishedReport(row:unknown):PublicWeek|null{
     dataThrough:(row.data_through as string|null)??null,revision:row.revision as number,
     posts:posts as LeadershipLog[],channels:channels as LeadershipChannel[],
     ...(overview?{overview}:{}),
-    // Diagnostics are optional; the page can show verified legacy diagnostics
-    // until a typed diagnostics parser is added.
+    ...(diagnostics?{diagnostics}:{}),
+    ...(coverage?{coverage}:{})
   };
 }
