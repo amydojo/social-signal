@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {weekStartFor,groupPostsByWeek,chooseWeeklyFeatures,interactionCount,labelWeek} from "../app/frew/frew-selection.ts";
+import {weekStartFor,groupPostsByWeek,chooseWeeklyFeatures,chooseWeeklySpotlights,interactionCount,labelWeek} from "../app/frew/frew-selection.ts";
 
 const post=(id,date,format,views,likes,shares=0,platform="Instagram")=>({
   id,date,format,platform,account:"@opusplasticsurgery",title:id,url:"https://www.instagram.com/p/"+id+"/",
@@ -60,4 +60,21 @@ test("provider aggregates are valid even if share counts are unavailable",()=>{
   assert.equal(interactionCount(p),18);
   const features=chooseWeeklyFeatures([post("other","2026-11-19","Reel",900,10),p]);
   assert.equal(features[1].post.id,"verified-carousel");
+});
+
+test("owner spotlights show recent content, not the posts with highest views",()=>{
+  const rows=[
+    post("high-views","2026-11-16","Reel",18000,2),
+    post("new-carousel","2026-11-19","Carousel",null,0),
+    post("recent-reel","2026-11-18","Reel",40,1),
+    post("story","2026-11-19","Story",90000,2),
+    post("tiktok","2026-11-19","Video",30000,0,0,"TikTok")
+  ];
+  const selected=chooseWeeklySpotlights(rows);
+  assert.deepEqual(selected.map(x=>x.post.id),["new-carousel","recent-reel"]);
+  assert.deepEqual(selected.map(x=>x.label),["LATEST POST","ALSO THIS WEEK"]);
+});
+test("owner spotlights can show posts even before performance data arrives",()=>{
+  const x=chooseWeeklySpotlights([post("unmeasured","2026-11-19","Reel",null,0)]);
+  assert.equal(x[0].post.id,"unmeasured");
 });

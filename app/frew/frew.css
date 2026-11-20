@@ -682,3 +682,9 @@
  .executive-hero-copy>p{font-size:13px;line-height:1.67}
 }
 @media print{.executive-hero-copy h1{font-size:42px}}
+
+/* Feature previews show shipped creative; reach metrics stay in the drilldowns. */
+.executive-feature-action{margin-top:auto;padding-top:32px;font-size:12px;font-weight:650}
+.executive-feature-action a{display:inline-flex;align-items:center;gap:7px;color:#814b39;text-decoration:none;border-bottom:1px solid #b58d7a;padding-bottom:5px}
+.executive-feature-action a:hover{color:#533126;border-bottom-color:#533126}
+.executive-feature-action span{font-weight:500;color:#96877b}
