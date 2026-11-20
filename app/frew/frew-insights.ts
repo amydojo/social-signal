@@ -8,6 +8,7 @@ export type ExecutivePulse={
   paid:{google:PaidIndicator;meta:PaidIndicator};
   published:{headline:string;detail:string};
   conversation:{headline:string;detail:string};
+  insight:{headline:string;detail:string}|null;
   action:string;
 };
 const label=(s:string)=>s.trim().toLowerCase();
@@ -74,11 +75,26 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
       replies+" "+(replies===1?"Story reply":"Story replies")+" recorded.",
     detail:"Follow up on comments and direct messages to identify meaningful patient questions."
   };
+  // Historical reports may not have a reviewed insight. In that case use
+  // comparable views of posts published in this *selected* week, not a
+  // cross-week total or a claim about views earned during the week.
+  const observed=feed.filter(p=>p.views!=null);
+  const totalViews=observed.reduce((sum,p)=>sum+(p.views??0),0);
+  const reelViews=observed.filter(p=>label(p.format)==="reel")
+    .reduce((sum,p)=>sum+(p.views??0),0);
+  const fallbackInsight=feed.length>=3&&reels.length>0&&reels.length<feed.length&&
+    observed.length===feed.length&&totalViews>0&&reelViews>0?
+    {headline:"Reels accounted for "+Math.round(100*reelViews/totalViews)+"% of Instagram feed views.",
+      detail:reels.length+" Reels contributed "+reelViews.toLocaleString("en-US")+
+        " of "+totalViews.toLocaleString("en-US")+" recorded views across "+feed.length+
+        " feed posts. Totals reflect the latest capture."}
+    :null;
+  const insight=reviewed?.reviewedAt&&reviewed.insight?reviewed.insight:fallbackInsight;
   const action=reviewed?.reviewedAt?reviewed.action:
     metaLeads!=null&&metaLeads>0?
       "Check whether Meta submissions turned into real replies and consultation requests.":
     googleActions!=null&&googleActions>0?
       "Match Google conversion actions with new CRM inquiries and appointment requests.":
       "Confirm weekly CRM outcomes before changing acquisition investment.";
-  return {metrics,paid,published,conversation,action};
+  return {metrics,paid,published,conversation,insight,action};
 }
