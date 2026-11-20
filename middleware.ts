@@ -1,33 +1,12 @@
 import {NextResponse,type NextRequest} from "next/server";
-import {createServerClient} from "@supabase/ssr";
-
-/** Public pages remain read-only; only the explicit /frew/owner route uses
- * authenticated cookies and a separate private RLS-protected table. */
-export async function middleware(request:NextRequest){
+/** Read-only SIGNAL and outcomes reports require no Supabase Auth cookie. 
+ * Owner-only write actions still enforce auth and RLS independently. */
+export function middleware(request:NextRequest){
   if(request.nextUrl.hostname==="social-signal-iota.vercel.app"){
     const destination=new URL(request.nextUrl.pathname+request.nextUrl.search,
       "https://social-signal-amy-dos-projects.vercel.app");
     return NextResponse.redirect(destination,308);
   }
-  if(!request.nextUrl.pathname.startsWith("/frew/owner")||
-      request.nextUrl.pathname.startsWith("/frew/owner/login")){
-    return NextResponse.next();
-  }
-  const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if(!url||!key)return NextResponse.next();
-  let response=NextResponse.next({request});
-  const supabase=createServerClient(url,key,{
-    cookies:{
-      getAll(){return request.cookies.getAll();},
-      setAll(items){
-        items.forEach(({name,value})=>request.cookies.set(name,value));
-        response=NextResponse.next({request});
-        items.forEach(({name,value,options})=>response.cookies.set(name,value,options));
-      }
-    }
-  });
-  await supabase.auth.getUser();
-  return response;
+  return NextResponse.next();
 }
 export const config={matcher:["/:path*"]};
