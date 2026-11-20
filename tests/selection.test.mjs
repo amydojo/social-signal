@@ -30,7 +30,7 @@ test("features select actual creatives, including carousels, without fixed post 
     post("carousel","2026-11-20","Carousel",900,90),
     post("other","2026-11-20","Reel",1000,10),
     post("story","2026-11-20","Story",20000,3),
-    post("tiktok","2026-11-20","Video",8000,80,"TikTok")];
+    post("tiktok","2026-11-20","Video",8000,80,0,"TikTok")];
   const f=chooseWeeklyFeatures(posts);
   assert.equal(f[0].post.id,"reel");
   assert.equal(f[1].post.id,"carousel");
