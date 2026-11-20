@@ -220,7 +220,7 @@ begin
            jsonb_array_length(p_payload->'channels'),p_status);
   return next_revision;
 end;
-$function$
+$function$;
 
 revoke all on function public.publish_signal_week(date,timestamptz,text,date,jsonb,boolean)
   from PUBLIC,anon,authenticated;
