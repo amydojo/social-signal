@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { PostVisual, StoryVisual, MediaPreviewModal } from "./media-views";
 import { historicalPosts, historicalStories, historicalDaily } from "./history-data";
 import archiveIndex from "../public/media/archive/index.json";
+import {formatCaptureDate} from "../lib/signal/reporting-time";
 import type {LeadershipChannel} from "./frew/frew-data";
 import {
   BarChart3, Download, ExternalLink, FileText, Grid2X2, Instagram,
@@ -305,7 +306,7 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
           <h1>{tabs.find(t=>t.id===tab)?.name}</h1>
           <div className="header-sub">
             {tab==="archive"?"Sep–Nov 2026":date(selectedWeek)+"–"+date(endOfWeek(selectedWeek))+", 2026"}
-            <span>·</span> Updated {new Date(snapshot.captured_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"America/Los_Angeles"})}
+            <span>·</span> Updated {formatCaptureDate(snapshot.captured_at)}
           </div>
         </div>
         <div className="app-header-actions">
@@ -543,7 +544,7 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
 
       <MediaPreviewModal key={selectedPost?.id??selectedStory?.id??"none"} post={selectedPost} story={selectedStory} onClose={closeMedia}/>
       <footer className="app-footer">
-        <span>OPUS / SIGNAL · Captured {new Date(snapshot.captured_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"America/Los_Angeles"})}</span>
+        <span>OPUS / SIGNAL · Captured {formatCaptureDate(snapshot.captured_at)}</span>
         <span>Read-only · Published reporting snapshot</span>
       </footer>
     </main>
