@@ -1,6 +1,7 @@
 import type {LeadershipLog,LeadershipChannel} from "./frew-data";
 import type {PublicOverview} from "../../lib/signal/publication";
 import type {PublicAcquisition} from "../../lib/signal/acquisition";
+import type {CRMWeek} from "../../lib/signal/read-crm-weekly";
 
 export type PulseIndicator={label:string;value:number|null;detail:string;unit?:"USD"};
 export type PaidIndicator={value:number|null;period:string|null;note:string};
@@ -20,7 +21,7 @@ const metric=(channel:LeadershipChannel|undefined,name:string)=>
 const isInstagram=(p:LeadershipLog)=>p.platform==="Instagram"&&p.account.toLowerCase()==="@opusplasticsurgery";
 const isStory=(p:LeadershipLog)=>label(p.format)==="story";
 
-export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChannel[],reviewed?:PublicOverview,acquisition?:PublicAcquisition):ExecutivePulse{
+export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChannel[],reviewed?:PublicOverview,acquisition?:PublicAcquisition,crmWeek?:CRMWeek):ExecutivePulse{
   const feed=rows.filter(p=>isInstagram(p)&&!isStory(p));
   const reels=feed.filter(p=>label(p.format)==="reel");
   const carousels=feed.filter(p=>label(p.format)==="carousel");
@@ -63,10 +64,13 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
         detail:(ig?.period??"Selected reporting week")+" · recorded interactions"}
       :null;
   const metrics:PulseIndicator[]=[
-    {label:"NEW INQUIRIES",value:newLeadEvidence?.value??null,
-      detail:newLeadEvidence?.value!=null
-        ?newLeadEvidence.detail
-        :"Not yet available for this week"},
+    crmWeek?
+      {label:"CRM CONTACTS RECORDED",value:crmWeek.total,
+        detail:`${crmWeek.website} website First Access · ${crmWeek.meta} Meta forms · ${crmWeek.instagram} Instagram DMs · ${crmWeek.direct4d} 4D scheduling · ${crmWeek.other} other. As of ${crmWeek.dataThrough}; includes existing patients, not bookings.`}:
+      {label:"NEW INQUIRIES",value:newLeadEvidence?.value??null,
+        detail:newLeadEvidence?.value!=null
+          ?newLeadEvidence.detail
+          :"Not yet available for this week"},
     {label:"SURGICAL CONSULTS · BOOKED STAGE",value:surgicalBooked?.value??null,
       detail:surgicalBooked?.value!=null
         ?surgicalBooked.detail
@@ -129,6 +133,13 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
       detail:verifiedBreakdown
         ?`${breakdown![0]} First Access · ${breakdown![1]} Instagram DMs · ${breakdown![2]} direct. ${newLeadEvidence.detail.split("·")[0].trim()}. CRM intake routes, not confirmed first-touch attribution.`
         :`${newLeadEvidence.value} contacts · ${newLeadEvidence.detail}. CRM intake, not verified bookings.`
+    });
+  }
+  if(!newLeadEvidence&&crmWeek){
+    highlights.push({
+      label:"CRM INTAKE",
+      headline:`${crmWeek.total} CRM contacts recorded during this week.`,
+      detail:`${crmWeek.website} Website First Access · ${crmWeek.meta} Meta forms · ${crmWeek.instagram} Instagram DMs · ${crmWeek.direct4d} 4D scheduling · ${crmWeek.other} other. Dated contact records, including existing patients; not confirmed bookings.`
     });
   }
   const rankedFeed=[...feed].filter(p=>p.views!=null&&p.views>0)

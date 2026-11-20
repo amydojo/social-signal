@@ -206,3 +206,42 @@ test("historical weeks do not inherit new CRM or First Access cohort highlights"
   assert.match(p.highlights[0].detail,/lifetime post counts/);
   assert.equal(buildExecutivePulse([],[]).highlights.length,0);
 });
+
+test("reconstructed contact dates fill older weeks without inventing consultation bookings",()=>{
+  for(const [week,total,website,meta,direct4d] of [
+    ["2026-11-02",22,4,4,7],
+    ["2026-11-09",19,5,0,9],
+    ["2026-11-16",15,10,0,2]
+  ]){
+    const crm={
+      weekStart:week,dataThrough:week==="2026-11-16"?"2026-11-19":"2026-11-15",
+      snapshotDate:"2026-11-20",total,website,meta,direct4d,
+      instagram:week==="2026-11-16"?3:4,other:total-website-meta-direct4d-(week==="2026-11-16"?3:4),
+      paidSearch:0,paidSocial:0,organicSearch:0,socialMedia:0,directTraffic:0,referral:0,
+      unattributed:total,backdatedImports:0
+    };
+    const pulse=buildExecutivePulse([],[],undefined,undefined,crm);
+    assert.equal(pulse.metrics[0].value,total);
+    assert.equal(pulse.metrics[0].label,"CRM CONTACTS RECORDED");
+    assert.match(pulse.metrics[0].detail,/4D scheduling/);
+    assert.match(pulse.metrics[0].detail,/not bookings/);
+    assert.equal(pulse.metrics[1].value,null);
+    assert.equal(pulse.highlights[0].label,"CRM INTAKE");
+    assert.doesNotMatch(pulse.highlights[0].detail,/consultations booked/i);
+  }
+});
+test("reviewed narrative remains separate from contact-event backfill",()=>{
+  const crm={weekStart:"2026-11-16",dataThrough:"2026-11-19",snapshotDate:"2026-11-20",
+    total:15,website:10,meta:0,instagram:3,direct4d:2,other:0,
+    paidSearch:8,paidSocial:0,organicSearch:0,socialMedia:1,directTraffic:1,referral:0,
+    unattributed:5,backdatedImports:0};
+  const reviewed={statement:"New inquiries",summary:"Sourced CRM",
+    action:"Review",reviewedAt:"2026-11-20",
+    indicators:[{label:"New CRM lead contacts",value:15,
+      detail:"Nov 16–19 · First Access 10 · Instagram DM 3 · Direct 2"}]};
+  const p=buildExecutivePulse([],[],reviewed,undefined,crm);
+  assert.equal(p.metrics[0].value,15);
+  assert.equal(p.metrics[0].label,"CRM CONTACTS RECORDED");
+  assert.equal(p.highlights[0].label,"PATIENT DEMAND");
+  assert.match(p.highlights[0].detail,/CRM intake routes/);
+});
