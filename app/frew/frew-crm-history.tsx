@@ -46,7 +46,7 @@ export default function FrewCRMHistory({weeks,state}:{weeks:CRMWeek[];state:"liv
       <div>
         <span className="crm-history-kicker">HISTORICAL CRM INTAKE</span>
         <h2>When contacts entered the pipeline</h2>
-        <p>Event-dated weekly contact records · ${fmt(all)} total · ${fmt(backdated)} original lead dates restored from imports</p>
+        <p>Event-dated weekly contact records · {fmt(all)} total · {fmt(backdated)} original lead dates restored from imports</p>
       </div>
       <div className="crm-history-total" aria-label={fmt(all)+" recorded contacts"}>
         <strong>{fmt(all)}</strong>
