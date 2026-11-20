@@ -20,6 +20,10 @@ export type LeadershipLog = {
   /** Source-provided image, only used if no local archived thumbnail exists. */
   coverUrl?:string|null;
   comments:number|null;shares:number|null;saves:number|null;
+  /** Provider-supplied interaction aggregate. May be known when breakdown fields are not. */
+  interactions?:number|null;
+  /** Impression counts are distinct from views (notably Facebook albums). */
+  impressions?:number|null;
   status:"On time"|"Late"|"Skipped"|null;
   ctaChecked:boolean|null;complianceChecked:boolean|null;
 };
