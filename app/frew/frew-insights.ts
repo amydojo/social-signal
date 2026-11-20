@@ -118,7 +118,7 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
   // Executive readout: recorded results, not internal reminders or follow-up tasks.
   // Historical snapshots remain explicitly labeled; do not confuse them with this week's activity.
   const highlights:ExecutiveHighlight[]=[];
-  if(newLeadEvidence?.value!=null){
+  if(!crmWeek&&newLeadEvidence?.value!=null){
     const first=newLeadEvidence.detail.match(/First Access\s+(\d+)\b/i);
     const dm=newLeadEvidence.detail.match(/Instagram DM\s+(\d+)\b/i);
     const direct=newLeadEvidence.detail.match(/\bDirect\s+(\d+)\b/i);
@@ -135,7 +135,7 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
         :`${newLeadEvidence.value} contacts · ${newLeadEvidence.detail}. CRM intake, not verified bookings.`
     });
   }
-  if(!newLeadEvidence&&crmWeek){
+  if(crmWeek){
     highlights.push({
       label:"CRM INTAKE",
       headline:`${crmWeek.total} CRM contacts recorded during this week.`,
