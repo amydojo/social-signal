@@ -1,222 +1,255 @@
 {
-  "archived_at": "2026-11-16",
-  "source": "Metricool public Instagram assets, archived as immutable JPEG files in repo",
+  "archived_at": "2026-11-20T00:40:00.951Z",
+  "source": "Verified original post media URLs",
   "total": 31,
   "saved": 29,
   "unavailable": 2,
   "assets": [
     {
       "id": "hist-ig-DcxAe9JJGuk",
+      "source_link": "https://www.instagram.com/reel/DcxAe9JJGuk/",
       "file": "/media/archive/ig-DcxAe9JJGuk.jpg",
       "status": "saved",
       "bytes": 208304,
-      "git_blob_sha": "efc58dc2795178d29f51b8f7988df366975f06c7"
+      "sha256": "8387ee6f5ed838674ad79b0b579857806532e7a0b235de5b3e4d41a87cdb6455"
     },
     {
       "id": "hist-ig-Dc4w6rdCRCi",
+      "source_link": "https://www.instagram.com/p/Dc4w6rdCRCi/",
       "file": "/media/archive/ig-Dc4w6rdCRCi.jpg",
       "status": "saved",
       "bytes": 1050144,
-      "git_blob_sha": "4df33301cb4a008df9583b7c29be1ce792504879"
+      "sha256": "d56b88e210230a1a882563fead41abd0327e9b643a4e4510610dff6873cfefff"
     },
     {
       "id": "hist-ig-DdDCiJAibqY",
+      "source_link": "https://www.instagram.com/p/DdDCiJAibqY/",
       "file": "/media/archive/ig-DdDCiJAibqY.jpg",
       "status": "saved",
       "bytes": 697995,
-      "git_blob_sha": "94a42759bb3497dd4c3d4e312f75505d4d8d4941"
+      "sha256": "25ecf72d112f29b17dca8794878e66c2dca8be1d3974591d19d5c2b815bfd790"
     },
     {
       "id": "hist-ig-DdFmzGYw1rt",
+      "source_link": "https://www.instagram.com/reel/DdFmzGYw1rt/",
       "file": "/media/archive/ig-DdFmzGYw1rt.jpg",
       "status": "saved",
       "bytes": 119356,
-      "git_blob_sha": "0436127271026932f93e911175290ca9e826dd61"
+      "sha256": "41073bc4493cf1e02c64eb02d8abe0303010f5f265ac9395d00b86e53be10528"
     },
     {
       "id": "hist-ig-DdcNYcPh2w9",
+      "source_link": "https://www.instagram.com/p/DdcNYcPh2w9/",
       "file": "/media/archive/ig-DdcNYcPh2w9.jpg",
       "status": "saved",
       "bytes": 197486,
-      "git_blob_sha": "2b1c0ad4ecd5510f8e26c02cf07a252b1e7e841f"
+      "sha256": "fee9bb99b05b723d662d1dc06a15f47c6ef7d3cbc7e874504fbd66ea2ae38fca"
     },
     {
       "id": "hist-ig-DdkgItIJs8a",
+      "source_link": "https://www.instagram.com/reel/DdkgItIJs8a/",
       "file": "/media/archive/ig-DdkgItIJs8a.jpg",
       "status": "saved",
       "bytes": 120053,
-      "git_blob_sha": "8d17d5e2f4561b3e7312a30620b73e6bc6a459cb"
+      "sha256": "c48cbbb3303ba59659ac0207ad72daea103649c49f04ebf1a2644b051eeed36b"
     },
     {
       "id": "hist-ig-DdpAHyLj5n7",
+      "source_link": "https://www.instagram.com/p/DdpAHyLj5n7/",
       "file": "/media/archive/ig-DdpAHyLj5n7.jpg",
       "status": "saved",
       "bytes": 74984,
-      "git_blob_sha": "11abf9f47d40da079c7e66f0995fcc157cf2d0c9"
+      "sha256": "32ed9c831fa9fe413398a51c1f5bbf5540378666297a705cf5a51354e8774918"
     },
     {
       "id": "hist-ig-Dd7rgNGsHPe",
+      "source_link": "https://www.instagram.com/reel/Dd7rgNGsHPe/",
       "file": "/media/archive/ig-Dd7rgNGsHPe.jpg",
       "status": "saved",
       "bytes": 172706,
-      "git_blob_sha": "1b2d6ab5d74ddf455f43a9d6182b84a0e22f3d9c"
+      "sha256": "995efaa48eb676fed1dee3422ce90d70ec58db8be60148b4903ec1e9103ef50a"
     },
     {
       "id": "hist-ig-DeIm9KtGD7E",
+      "source_link": "https://www.instagram.com/p/DeIm9KtGD7E/",
       "file": "/media/archive/ig-DeIm9KtGD7E.jpg",
       "status": "saved",
       "bytes": 1490408,
-      "git_blob_sha": "44a5b423a387744175d0554057514df5c920e6cd"
+      "sha256": "aac7306a6cb3f5cfa87101ef4f5b74687f16bac9317dae71892a974f06020dd7"
     },
     {
       "id": "hist-ig-DeNtFFJs_hD",
+      "source_link": "https://www.instagram.com/reel/DeNtFFJs_hD/",
       "file": "/media/archive/ig-DeNtFFJs_hD.jpg",
       "status": "saved",
       "bytes": 243438,
-      "git_blob_sha": "7a69704f7c892202fa551903fafdd9283b26864b"
+      "sha256": "693e41c83facd9b52c9ff1c2eb36363d0c1a59f50a17a3811bc7ec1cdeb5f18d"
     },
     {
       "id": "hist-ig-DedLabgCRY7",
+      "source_link": "https://www.instagram.com/p/DedLabgCRY7/",
       "file": "/media/archive/ig-DedLabgCRY7.jpg",
       "status": "saved",
       "bytes": 432071,
-      "git_blob_sha": "6960731bfca24967d073177e0bdb957f4c26217e"
+      "sha256": "bb9d94212145af80ea6d6a7d563476cacfe568d7166a1bd2c8000eafe3ad6c2c"
     },
     {
       "id": "hist-ig-Dekq7V9PXK6",
+      "source_link": "https://www.instagram.com/reel/Dekq7V9PXK6/",
       "file": "/media/archive/ig-Dekq7V9PXK6.jpg",
       "status": "saved",
       "bytes": 63185,
-      "git_blob_sha": "8e3ea8c3b8de1daabc84371d254850ec48ad09f2"
+      "sha256": "c51a3ddf72d199eabd7e0e7ffdc097ecac9495b16db3154f4635b82dc69f75ca"
     },
     {
       "id": "hist-ig-DfBM_1jMNlt",
+      "source_link": "https://www.instagram.com/reel/DfBM_1jMNlt/",
       "file": "/media/archive/ig-DfBM_1jMNlt.jpg",
       "status": "saved",
       "bytes": 113021,
-      "git_blob_sha": "0360e3c54192e8ece4122ee1393e8262ce2c91cc"
+      "sha256": "237d6ea9474be43e1615382af771da7c6ceacb0c66f38c9d6fd93ec8995c5573"
     },
     {
       "id": "hist-ig-DfDxzJgDyg_",
+      "source_link": "https://www.instagram.com/p/DfDxzJgDyg_/",
       "file": "/media/archive/ig-DfDxzJgDyg_.jpg",
       "status": "saved",
       "bytes": 56094,
-      "git_blob_sha": "c726bbc84eb4e1ed2cd08eabf45edfd9420a6bf1"
+      "sha256": "6e637df6e7369d784e43a5867642edb437efe5faaf8fb1901d19b69b888f46ad"
     },
     {
       "id": "hist-ig-DfGjIlvhWb9",
+      "source_link": "https://www.instagram.com/reel/DfGjIlvhWb9/",
       "file": "/media/archive/ig-DfGjIlvhWb9.jpg",
       "status": "saved",
       "bytes": 123175,
-      "git_blob_sha": "985c41942c8aa8fe815ad907fd79c484c4de224b"
+      "sha256": "271e681bb675161192588c37a72da2f0f1e29e9be6f9aaf59ac501ab264bce03"
     },
     {
       "id": "hist-ig-DfI36pSMOv_",
+      "source_link": "https://www.instagram.com/reel/DfI36pSMOv_/",
       "file": "/media/archive/ig-DfI36pSMOv_.jpg",
       "status": "saved",
       "bytes": 128227,
-      "git_blob_sha": "9c5976e25dab33b580c15698633125e5bb106ad9"
+      "sha256": "5e4342c029b32e6aaca2ddf8558774b3edcbdc4e1f5b1cee933b580e939a025a"
     },
     {
       "id": "hist-ig-DfTRuknpjs4",
+      "source_link": "https://www.instagram.com/reel/DfTRuknpjs4/",
       "file": "/media/archive/ig-DfTRuknpjs4.jpg",
       "status": "saved",
       "bytes": 31065,
-      "git_blob_sha": "8ecca7aabbdadfceb326c2cf51443e3509ec86d6"
+      "sha256": "5f28d4bf2ba2a222cc479ac41db0e231c55afa44575a3a74dabde28797a038c8"
     },
     {
       "id": "hist-ig-DfV4gNXGqE5",
+      "source_link": "https://www.instagram.com/p/DfV4gNXGqE5/",
       "file": "/media/archive/ig-DfV4gNXGqE5.jpg",
       "status": "saved",
       "bytes": 261090,
-      "git_blob_sha": "11271fdfefdd6cb431614bfb7d15109dfdcc72b2"
+      "sha256": "1dbd7055751def04467b9279a641dd2381c835a8437ebd3b9db8bea92a1928c1"
     },
     {
       "id": "hist-ig-DfYdRdXMZGy",
+      "source_link": "https://www.instagram.com/reel/DfYdRdXMZGy/",
       "file": "/media/archive/ig-DfYdRdXMZGy.jpg",
       "status": "saved",
       "bytes": 112038,
-      "git_blob_sha": "88efc1f8cd15b4f22df9131a9cfe91f1bacfb066"
+      "sha256": "324257e29a1077affd369cf350cacdf30270cf085b87ef280070b32cb36528e5"
     },
     {
       "id": "hist-ig-DfbA4-kCWIU",
+      "source_link": "https://www.instagram.com/p/DfbA4-kCWIU/",
       "file": "/media/archive/ig-DfbA4-kCWIU.jpg",
       "status": "saved",
       "bytes": 58321,
-      "git_blob_sha": "93265f0c03ad8eb012d8e9258f60e5eadab52343"
+      "sha256": "38193e9232b4f92d15f585005a519c5398ce26ea94ee5c07d54e13c45a0f526b"
     },
     {
       "id": "hist-story-20261108174720",
+      "source_link": "https://www.instagram.com/stories/opusplasticsurgery/4026028703817292544",
       "file": "/media/archive/story-4026028703817292544.jpg",
-      "status": "source_expired"
+      "status": "unavailable",
+      "error": "HTTP 403"
     },
     {
       "id": "hist-story-20261108190622",
+      "source_link": "https://www.instagram.com/stories/opusplasticsurgery/4026086809062875268",
       "file": "/media/archive/story-4026086809062875268.jpg",
-      "status": "source_expired"
+      "status": "unavailable",
+      "error": "HTTP 403"
     },
     {
       "id": "ig-Dfiwcicsux9.jpg",
+      "source_link": null,
       "file": "/media/archive/ig-Dfiwcicsux9.jpg",
       "status": "saved",
       "bytes": 27818,
-      "git_blob_sha": "aa7a36923ee04cc8370e6ddbbc0d6990c8090096"
+      "sha256": "cd532021a2fcab289bbb740f92a674f5c89fb983061d672c35333c1b9b3fdad6"
     },
     {
       "id": "ig-DfqeQMZMKqR.jpg",
+      "source_link": null,
       "file": "/media/archive/ig-DfqeQMZMKqR.jpg",
       "status": "saved",
       "bytes": 97901,
-      "git_blob_sha": "3bc2956674825e83f1b4b553f5f70aa87af00628"
+      "sha256": "c93be6c64410d6bb374436db6c6ea3ed30f7850a478ed4fb379f6c2c9b9d075c"
     },
     {
       "id": "ig-DftDagtkR6i.jpg",
+      "source_link": null,
       "file": "/media/archive/ig-DftDagtkR6i.jpg",
       "status": "saved",
       "bytes": 77924,
-      "git_blob_sha": "7f6b18de4e6194a00a5184ce2bc457e918d06c2e"
+      "sha256": "ce7f3b33c2e6a8deccd9ff861ee203038d8e9ea5b60256138b95dc7a953c3bdb"
     },
     {
       "id": "story-4028418628042958579.jpg",
+      "source_link": null,
       "file": "/media/archive/story-4028418628042958579.jpg",
       "status": "saved",
       "bytes": 194962,
-      "git_blob_sha": "d72e2c0fb669ca1c462a4bd454d94b90787c4978"
+      "sha256": "4b776b3aaa820439f5fd50a9195c23a64809128e9ae0695f5d56f15c70c1bed6"
     },
     {
       "id": "story-4028917016156957382.jpg",
+      "source_link": null,
       "file": "/media/archive/story-4028917016156957382.jpg",
       "status": "saved",
       "bytes": 36751,
-      "git_blob_sha": "78ceba639aea465caa4f99e134b561388752dbf5"
+      "sha256": "e729de38572c18d4fdcc72df16f268432020b9f0a2b77ce80956a9eba462f234"
     },
     {
       "id": "story-4028991426934165974.jpg",
+      "source_link": null,
       "file": "/media/archive/story-4028991426934165974.jpg",
       "status": "saved",
       "bytes": 31103,
-      "git_blob_sha": "6a9286e875f1331ea2bf4ff42deb678c10a93f56"
+      "sha256": "59a687c8215f8f01cd9b667d12c89e555c166f746ad071ab5ac6aba051016702"
     },
     {
       "id": "story-4029678919615431097.jpg",
+      "source_link": null,
       "file": "/media/archive/story-4029678919615431097.jpg",
       "status": "saved",
       "bytes": 41168,
-      "git_blob_sha": "af9674a510a072664873b1b222839d897df40f62"
+      "sha256": "ce85761c91fde1c8c12665b5859b0d13b58bcfea2e46a9f1e51e7c600e80f539"
     },
     {
       "id": "story-4029794339689513300.jpg",
+      "source_link": null,
       "file": "/media/archive/story-4029794339689513300.jpg",
       "status": "saved",
       "bytes": 59040,
-      "git_blob_sha": "7c9e359c25a96df1b6a30b303b5d16c715c0c9bc"
+      "sha256": "ee8b8d55f1d93af469f0cd702c517a68d82117ca4e1d90c590213a53f63abf2e"
     },
     {
       "id": "story-4029892425459815224.jpg",
+      "source_link": null,
       "file": "/media/archive/story-4029892425459815224.jpg",
       "status": "saved",
       "bytes": 117784,
-      "git_blob_sha": "4fc44f1a5f9467fb713673b2e2e762d8293806e3"
+      "sha256": "5e1cddd9a4a1a0e95ff63291dbae6275ffbf03317f67e7ee447603400916e2e1"
     }
   ]
 }
