@@ -1,0 +1,45 @@
+/* Executive evidence derived from the CRM export; never patient-level records. */
+.crm-clinical{padding:44px 0 47px;border-bottom:1px solid #d6cac1}
+.crm-clinical-titlebar{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:24px}
+.crm-clinical-eyebrow,.crm-clinical-reconciliation-title>span{font-size:10px;letter-spacing:.14em;font-weight:750;color:#9d614b}
+.crm-clinical-titlebar h2{font-size:clamp(26px,3vw,37px);font-weight:610;letter-spacing:-.047em;line-height:1.16;margin:9px 0 0}
+.crm-clinical-asof{font-size:9px;font-weight:720;color:#887a6d;letter-spacing:.07em;white-space:nowrap}
+.crm-clinical-columns{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.crm-clinical-panel{border:1px solid #d7cac0;background:#fffcf7;padding:22px 24px 21px;min-width:0}
+.crm-clinical-panel-top{display:flex;justify-content:space-between;align-items:flex-start;gap:15px}
+.crm-clinical-panel-top span{font-size:9px;letter-spacing:.105em;font-weight:730;line-height:1.4;color:#91624d}
+.crm-clinical-panel-top span:last-child{font-size:8px;font-weight:640;color:#9d8a7e;text-align:right}
+.crm-clinical-headline{display:flex;align-items:flex-end;gap:19px;padding:19px 0 17px}
+.crm-clinical-headline strong{font-size:clamp(52px,6vw,74px);line-height:.84;letter-spacing:-.068em;font-weight:570;font-variant-numeric:tabular-nums;color:#2b2420}
+.crm-clinical-headline p{font-size:12px;color:#63574f;line-height:1.55;max-width:248px;margin:0}
+.crm-clinical-statusline{display:flex;gap:11px 18px;flex-wrap:wrap;padding:12px 0;border-top:1px solid #e7ddd5;font-size:10px;color:#62554d;font-weight:600}
+.crm-clinical-statusline>span{display:inline-flex;align-items:center;gap:7px}
+.crm-clinical-dot{width:9px;height:9px;border-radius:100%;display:inline-block}
+.crm-clinical-dot.confirmed{background:#614536}
+.crm-clinical-dot.unconfirmed{background:#d2aa8e}
+.crm-clinical-weeks{display:grid;gap:14px;margin-top:13px;margin-bottom:15px}
+.crm-clinical-week-header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:11px;font-weight:620;color:#4a3b33}
+.crm-clinical-week-header strong{font-size:14px;font-variant-numeric:tabular-nums}
+.crm-clinical-track{height:10px;display:flex;overflow:hidden;background:repeating-linear-gradient(90deg,#f0e8e1,#f0e8e1 calc(20% - 1px),#e4d8ce calc(20% - 1px),#e4d8ce 20%);margin-top:7px}
+.crm-clinical-track span{height:100%;display:block;flex-shrink:0}
+.crm-clinical-track .confirmed{background:#614536}
+.crm-clinical-track .unconfirmed{background:#c89476}
+.crm-clinical-google-grid{display:grid;grid-template-columns:1fr 1fr;column-gap:17px;row-gap:18px;margin-top:8px;padding:18px 0;border-top:1px solid #e7ddd5}
+.crm-clinical-google-grid>div{display:flex;flex-direction:column;gap:6px}
+.crm-clinical-google-grid strong{font-size:26px;font-weight:590;letter-spacing:-.05em;color:#3b2e29;font-variant-numeric:tabular-nums}
+.crm-clinical-google-grid span{font-size:10px;line-height:1.4;color:#6d6259}
+.crm-clinical-small{color:#8e7b70;font-size:10px;line-height:1.7;margin:12px 0 0}
+.crm-clinical-reconciliation{padding-top:27px}
+.crm-clinical-reconciliation-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:13px}
+.crm-clinical-reconciliation-title p{margin:0;color:#8e7d70;font-size:11px}
+.crm-clinical-recon-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #d9cdc3;border-bottom:1px solid #d9cdc3}
+.crm-clinical-recon-grid>div{padding:23px 18px 21px 0}
+.crm-clinical-recon-grid>div+div{border-left:1px solid #dfd5cd;padding-left:19px}
+.crm-clinical-recon-grid>div>span{font-size:9px;letter-spacing:.11em;font-weight:730;color:#99715e}
+.crm-clinical-recon-numbers{display:flex;align-items:center;gap:13px;margin-top:12px}
+.crm-clinical-recon-numbers strong{font-size:35px;font-weight:590;letter-spacing:-.07em;line-height:1;color:#3e3029;font-variant-numeric:tabular-nums}
+.crm-clinical-recon-numbers span{font-size:11px;line-height:1.45;color:#574940}
+.crm-clinical-recon-grid p{font-size:10px;color:#8c7a6c;line-height:1.65;margin:13px 0 0}
+.crm-clinical-foot{font-size:10px;color:#8c7d71;line-height:1.7;margin:14px 0 0}
+@media(max-width:800px){.crm-clinical-columns{grid-template-columns:1fr}.crm-clinical-headline strong{font-size:60px}.crm-clinical-reconciliation-title{display:block}.crm-clinical-reconciliation-title p{margin-top:7px}}
+@media(max-width:550px){.crm-clinical{padding:33px 0}.crm-clinical-titlebar{display:block}.crm-clinical-titlebar h2{font-size:27px}.crm-clinical-asof{display:block;margin-top:13px}.crm-clinical-panel{padding:20px 17px}.crm-clinical-panel-top{gap:8px}.crm-clinical-headline{gap:13px}.crm-clinical-headline p{font-size:11px}.crm-clinical-recon-grid{grid-template-columns:1fr}.crm-clinical-recon-grid>div{padding:19px 0}.crm-clinical-recon-grid>div+div{border-left:0;border-top:1px solid #e2d6ce;padding-left:0}}
