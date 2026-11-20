@@ -24,6 +24,14 @@ revisioned with full prior payload retained privately. The `payload` must have:
   five indicators, all vetted as public-safe.
 - `diagnostics`: reserved for validated richer performance facts.
 - `coverage`: reserved for channel connection/data-missing status.
+- `acquisition`: optional, reviewed **historical cohort** aggregation only.
+  Includes source-evidence class (campaign tag, click ID, tracked link,
+  first-session attribution), counts and stage totals, no contact identifiers.
+  Cohorts can overlap; never add routes into an all-channel lead total.
+- `overview.reviewedAt`: optional ISO date marking a human-verified editorial
+  interpretation. The public Weekly Pulse uses reviewed conclusions; ordinary
+  auto summaries do not silently override them. Preserve reviewed narrative
+  across daily Metricool refreshes until genuinely superseded.
 
 Do not copy raw CRM rows, unpublished content, email addresses, auth identities,
 access tokens or raw, unreviewed analytics payloads into the public table.
@@ -61,3 +69,24 @@ feature PR. To unpublish a particular week, a trusted owner may set
 Prefer permanent local `/media/archive/` images. Third-party CDN `coverUrl`
 tokens can expire and should be archived on ingestion. Unavailable media
 must render a placeholder, never a neighboring Story's image.
+
+## CRM attribution import contract
+
+The private `signal_private.acquisition_snapshots` relation stores dated
+aggregate evidence and reconciliation only. Its schema has no anonymous API
+access. Never store CRM contact rows, IDs, emails, phone numbers, appointment
+notes or unrestricted JSON exports in SIGNAL. De-duplicate source records in
+the upstream audit *before* publishing counts. Distinguish contacts, CRM
+opportunities, platform actions and confirmed appointments. A current CRM stage
+is **not** an appointment event log. Do not infer weekly arrivals from older
+contacts or compare progression without comparable cohort maturity.
+
+The public `acquisition` field in a weekly publication is only a pointer to
+a labeled, reviewed historical aggregate baseline and must remain marked
+`historical_cohort`. A daily sync must carry it forward unchanged, or obtain
+a newer reviewed baseline before replacing it. Do not copy this historical
+cohort into newly published weeks as weekly acquisition results.
+
+Verified weekly outcomes remain in the **owner-only**
+`public.signal_owner_outcomes` relation and require manual confirmation;
+the anonymous Weekly Pulse must not query the private table.
