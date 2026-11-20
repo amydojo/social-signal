@@ -35,3 +35,9 @@ test("the private weekly write action still checks both authentication and owner
   assert.match(actions,/member\?\.role!=="owner"/);
   assert.match(actions,/from\("signal_owner_outcomes"\)/);
 });
+
+test("legacy owner sign-in route is now just a redirect to public preview",()=>{
+  const login=readFileSync(new URL("../app/frew/owner/login/page.tsx",import.meta.url),"utf8");
+  assert.match(login,/redirect\("\/frew\/owner"\)/);
+  assert.doesNotMatch(login,/signInWithOtp|requestOwnerLink|createSignalServerClient/);
+});
