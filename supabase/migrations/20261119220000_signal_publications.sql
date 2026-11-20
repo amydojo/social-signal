@@ -143,50 +143,10 @@ begin
   end if;
   if exists (
     select 1 from jsonb_array_elements(p_payload->'posts') p(item)
-    where (p.item->>'url') is not null and (p.item->>'url') !~* '^https://'
-       or (p.item->>'coverUrl') is not null and (p.item->>'coverUrl') !~* '^https://'
-       or (p.item->>'thumbnailPath') is not null and
-          (p.item->>'thumbnailPath') !~ '^/media/archive/[a-zA-Z0-9_.-]+
-  if found and p_captured_at<existing.captured_at then
-    raise exception 'stale capture: newer report is already published';
-  end if;
-  if found and p_captured_at=existing.captured_at
-     and p_payload=existing.payload and p_status=existing.status
-     and p_published=existing.published and p_data_through is not distinct from existing.data_through
-  then
-    return existing.revision; -- exact replay is idempotent
-  end if;
-  next_revision:=coalesce(existing.revision,0)+1;
-  if found then
-    insert into public.signal_publication_history(
-      week_start,revision,payload,captured_at,status,published
-    ) values(existing.week_start,existing.revision,existing.payload,
-             existing.captured_at,existing.status,existing.published);
-    update public.signal_published_reports
-      set status=p_status,data_through=p_data_through,captured_at=p_captured_at,
-          payload=p_payload,published=p_published,revision=next_revision,updated_at=now()
-      where week_start=p_week;
-  else
-    insert into public.signal_published_reports(
-      week_start,week_end,status,data_through,captured_at,payload,published,revision
-    ) values (p_week,p_week+6,p_status,p_data_through,p_captured_at,p_payload,p_published,1);
-  end if;
-  insert into public.signal_publication_runs(
-    week_start,captured_at,revision,post_count,channel_count,status
-  ) values(p_week,p_captured_at,next_revision,jsonb_array_length(p_payload->'posts'),
-           jsonb_array_length(p_payload->'channels'),p_status);
-  return next_revision;
-end;
-$$;
-
-revoke all on function public.publish_signal_week(date,timestamptz,text,date,jsonb,boolean)
-  from PUBLIC,anon,authenticated;
-comment on table public.signal_published_reports is
-  'Explicitly approved public-safe weekly reporting payloads only. Source tables remain RLS-private; no CRM or internal account notes.';
-comment on function public.publish_signal_week(date,timestamptz,text,date,jsonb,boolean) is
-  'Trusted publisher. Atomic revision history, idempotence and stale-capture refusal. Never callable by site visitors.';
-commit;
-
+    where ((p.item->>'url') is not null and (p.item->>'url') !~* '^https://')
+       or ((p.item->>'coverUrl') is not null and (p.item->>'coverUrl') !~* '^https://')
+       or ((p.item->>'thumbnailPath') is not null and
+          (p.item->>'thumbnailPath') !~ '^/media/archive/[a-zA-Z0-9_.-]+')
   ) then
     raise exception 'unsafe public media or post URL';
   end if;
