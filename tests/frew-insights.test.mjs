@@ -14,10 +14,11 @@ const channel=(platform,metrics,account="OPUS Search")=>({
 test("executive paid actions remain separate from unverified bookings",()=>{
   const v=buildExecutivePulse([post("a","Instagram","@opusplasticsurgery","Reel",120,8)],
     [channel("Google Ads",{Conversions:5,"Cost / conversion":15.26,Spend:76.28})]);
-  assert.equal(v.metrics[0].value,5);
-  assert.equal(v.metrics[1].value,15.26);
-  assert.equal(v.metrics[2].value,null);
-  assert.match(v.action,/Aesthetix/);
+  assert.equal(v.metrics[0].value,null);
+  assert.equal(v.metrics[1].value,null);
+  assert.equal(v.metrics[2].value,1);
+  assert.equal(v.metrics[3].value,5);
+  assert.match(v.action,/Tamara/);
 });
 test("cadence uses only the requested OPUS account and weekday Story dates",()=>{
   const posts=[
@@ -36,8 +37,8 @@ test("cadence uses only the requested OPUS account and weekday Story dates",()=>
   assert.equal(p.primary[2].observed,2);
   assert.equal(p.secondary[0].observed,null);
   assert.equal(p.secondary[1].observed,null);
-  assert.match(p.creative.headline,/reel1/);
-  assert.match(p.creative.headline,/reel2/);
+  assert.match(p.published.headline,/3 Instagram posts/);
+  assert.match(p.published.detail,/reel1|reel2|c/);
 });
 test("empty channels are unverified rather than measured zero",()=>{
   const v=buildExecutivePulse([],[]);
@@ -49,6 +50,7 @@ test("empty channels are unverified rather than measured zero",()=>{
 });
 test("measured zero actions preserve zero without inventing cost",()=>{
   const v=buildExecutivePulse([], [channel("Google Ads",{Conversions:0,Spend:15.50})]);
-  assert.equal(v.metrics[0].value,0);
+  assert.equal(v.metrics[0].value,null);
   assert.equal(v.metrics[1].value,null);
+  assert.equal(v.metrics[3].value,0);
 });

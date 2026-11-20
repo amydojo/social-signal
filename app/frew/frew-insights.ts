@@ -7,6 +7,8 @@ export type ExecutivePulse={
   primary:CadenceItem[];
   secondary:CadenceItem[];
   creative:{headline:string;evidence:string;interpretation:string};
+  published:{headline:string;detail:string};
+  conversation:{headline:string;detail:string};
   action:string|null;
   verification:{observed:number;checked:number;sourceAvailable:boolean};
   comparisonNote:string;
@@ -43,13 +45,12 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
   const cost=google?metric(google,"Cost / conversion"):
     meta&&paidValue!=null&&paidValue>0&&metric(meta,"Spend")!=null?
     (metric(meta,"Spend") as number)/paidValue:null;
-  const paidKind=google?"GOOGLE ADS CONVERSIONS":meta?"META LEADS":"AD RESULTS";
-  const reelViews=sumIfComplete(reels)??metric(channels.find(c=>c.platform==="Instagram"&&c.account==="@opusplasticsurgery"),"Reel views");
   const metrics:PulseIndicator[]=[
-    {label:paidKind,value:paidValue,detail:paid?.period??"No ad results available"},
-    {label:"COST PER CONVERSION",value:cost,detail:cost==null?"Not reported":(meta&&!google?"Based on Meta’s reported leads":"From Google Ads"),unit:"USD"},
-    {label:"CONSULTS BOOKED",value:null,detail:"Not yet checked in Aesthetix"},
-    {label:"REEL VIEWS",value:reelViews,detail:reels.length+" Instagram Reels · so far"}
+    {label:"CONSULTS BOOKED",value:null,detail:"Private · see owner report"},
+    {label:"INQUIRIES CONFIRMED",value:null,detail:"Check in Aesthetix"},
+    {label:"POSTS DOCUMENTED",value:feed.length||null,detail:"OPUS Instagram · feed posts"},
+    {label:google?"GOOGLE AD ACTIONS":meta?"META LEADS":"AD RESULTS",value:paidValue,
+      detail:paid?.period??"Not available"}
   ];
   const count=(platform:string,format:string,account?:string):number|null=>{
     const candidates=rows.filter(p=>p.platform===platform&&(!account||p.account.toLowerCase()===account.toLowerCase())&&label(p.format)===format);
@@ -67,38 +68,33 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
     {key:"results",label:"Results posts",observed:rows.filter(p=>p.platform==="Instagram"&&p.account.toLowerCase()==="@opusresults").length||null,target:2,detail:"@opusresults not linked"},
     {key:"gbp",label:"Google Business posts",observed:count("Google Business Profile","post"),target:1,detail:"Post count not available"}
   ];
-  const ranked=feed.filter(p=>p.views!=null).sort((a,b)=>(b.views??0)-(a.views??0));
-  const bestViewed=ranked[0];
-  const eligible=feed.filter(p=>p.views!=null&&p.views>=100&&interactions(p)!=null);
-  const mostEngaging=[...eligible].sort((a,b)=>
-    (interactions(b)??0)/(b.views??1)-(interactions(a)??0)/(a.views??1))[0];
-  let creative:ExecutivePulse["creative"];
-  if(bestViewed&&mostEngaging&&bestViewed.id!==mostEngaging.id){
-    const rate=(p:LeadershipLog)=>((interactions(p)??0)/(p.views??1)*100).toFixed(1);
-    creative={
-      headline:bestViewed.title+" got the most views. "+mostEngaging.title+" got more interactions for its views.",
-      evidence:bestViewed.views?.toLocaleString("en-US")+" views on the top post. "+mostEngaging.title+" had "+rate(mostEngaging)+" interactions per 100 views, compared with "+rate(bestViewed)+" for the top post.",
-      interpretation:"That’s useful to know, but views aren’t consults. Keep an eye on replies and actual inquiries too."
-    };
-  }else if(bestViewed){
-    creative={
-      headline:bestViewed.title+" got the most views.",
-      evidence:bestViewed.views?.toLocaleString("en-US")+" views so far.",
-      interpretation:"Check what people asked or saved before choosing the next topic."
-    };
-  }else{
-    creative={
-      headline:"We don’t have enough post data to pick a top post yet.",
-      evidence:"Some post numbers haven’t come through.",
-      interpretation:"We can revisit this when more post data comes in."
-    };
-  }
+  // No "winner" inferred from views: this is about what was published.
+  const published={
+    headline:feed.length?
+      feed.length+" Instagram "+(feed.length===1?"post":"posts")+" recorded, including "+
+      reels.length+" "+(reels.length===1?"Reel":"Reels")+" and "+
+      carousels.length+" "+(carousels.length===1?"carousel":"carousels")+"."
+      :"No OPUS Instagram feed posts recorded for these dates.",
+    detail:feed.length?
+      "Recent topics: "+[...feed].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,2).map(p=>p.title).join(" · ")+"."
+      :"A missing post list isn't proof that nothing was published."
+  };
+  const igChannel=channels.find(c=>c.platform==="Instagram"&&c.account.toLowerCase()==="@opusplasticsurgery");
+  const replies=metric(igChannel,"Story replies");
+  const conversation={
+    headline:replies==null?"Story replies aren't available for this week.":
+      replies+" "+(replies===1?"Story reply":"Story replies")+" recorded.",
+    detail:"We still need the actual questions from comments, DMs and Aesthetix to understand patient intent."
+  };
+  const creative={
+    headline:published.headline,
+    evidence:published.detail,
+    interpretation:"Review audience questions and booked inquiries before calling any post a success."
+  };
   const checked=feed.filter(p=>p.status!=null&&p.ctaChecked!=null&&p.complianceChecked!=null).length;
-  const action=paidValue!=null&&paidValue>0?
-    "Check how many ad results became real inquiries and booked consults in Aesthetix.":
-    "Check the latest inquiries, then confirm the next posts for Friday.";
+  const action="Check booked consults with Tamara and confirm what still needs Frew's approval.";
   return {
-    metrics,primary,secondary,creative,action,
+    metrics,primary,secondary,creative,published,conversation,action,
     verification:{observed:feed.length,checked,sourceAvailable:checked>0},
     comparisonNote:"These numbers come from different dates and sources. We shouldn’t call it a week-over-week increase or decrease until the time ranges match."
   };

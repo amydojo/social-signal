@@ -13,11 +13,11 @@ function Track({item}:{item:CadenceItem}){
   </div>;
 }
 export default function FrewExecutiveBrief({pulse,partial}:{pulse:ExecutivePulse;partial:boolean}){
-  return <section className="pulse-decision" aria-label="Weekly posts and notes">
+  return <section className="pulse-decision" aria-label="Weekly work and next steps">
     <div className="pulse-decision-head">
       <div>
-        <span className="pulse-decision-kicker">POSTS &amp; NOTES</span>
-        <h2>How the week is going</h2>
+        <span className="pulse-decision-kicker">THE WEEK AT OPUS</span>
+        <h2>What happened, what still needs checking</h2>
       </div>
       <span className="pulse-decision-status">{partial?"SO FAR":"WEEK TOTAL"}</span>
     </div>
@@ -26,22 +26,22 @@ export default function FrewExecutiveBrief({pulse,partial}:{pulse:ExecutivePulse
     </div>
     <div className="pulse-brief-grid">
       <article>
-        <span className="pulse-brief-no">POSTS</span>
-        <h3>What got attention</h3>
-        <strong>{pulse.creative.headline}</strong>
-        <p>{pulse.creative.evidence}</p>
+        <span className="pulse-brief-no">PUBLISHED</span>
+        <h3>What went out</h3>
+        <strong>{pulse.published.headline}</strong>
+        <p>{pulse.published.detail}</p>
       </article>
       <article>
-        <span className="pulse-brief-no">NEXT</span>
-        <h3>What I'd try again</h3>
-        <strong>One Reel answering a real patient question. One showing more of Frew and the team.</strong>
-        <p>{pulse.creative.interpretation}</p>
+        <span className="pulse-brief-no">PATIENT QUESTIONS</span>
+        <h3>What people asked</h3>
+        <strong>{pulse.conversation.headline}</strong>
+        <p>{pulse.conversation.detail}</p>
       </article>
       <article>
         <span className="pulse-brief-no">TO CHECK</span>
         <h3>Did anyone book?</h3>
-        <strong>Ad conversions aren't the same as booked consults.</strong>
-        <p>We still need the Aesthetix numbers. Post approvals and medical review aren't tracked in this public report either.</p>
+        <strong>The public report doesn't have verified consultation totals.</strong>
+        <p>Check those numbers in Aesthetix. We also don't have Frew's post approvals or medical checks recorded here yet.</p>
       </article>
     </div>
     <details className="pulse-plan-details">
