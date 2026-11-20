@@ -4,11 +4,13 @@ import type {PublicAcquisition} from "../../lib/signal/acquisition";
 
 export type PulseIndicator={label:string;value:number|null;detail:string;unit?:"USD"};
 export type PaidIndicator={value:number|null;period:string|null;note:string};
+export type ExecutiveHighlight={label:string;headline:string;detail:string};
 export type ExecutivePulse={
   metrics:PulseIndicator[];
   paid:{google:PaidIndicator;meta:PaidIndicator};
   published:{headline:string;detail:string};
   conversation:{headline:string;detail:string};
+  highlights:ExecutiveHighlight[];
   insight:{headline:string;detail:string}|null;
   action:string;
 };
@@ -109,5 +111,44 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
     googleActions!=null&&googleActions>0?
       "Match Google conversion actions with new CRM inquiries and appointment requests.":
       "Confirm weekly CRM outcomes before changing acquisition investment.";
-  return {metrics,paid,published,conversation,insight,action};
+  // Executive readout: recorded results, not internal reminders or follow-up tasks.
+  // Historical snapshots remain explicitly labeled; do not confuse them with this week's activity.
+  const highlights:ExecutiveHighlight[]=[];
+  if(newLeadEvidence?.value!=null){
+    const first=newLeadEvidence.detail.match(/First Access\s+(\d+)\b/i);
+    const dm=newLeadEvidence.detail.match(/Instagram DM\s+(\d+)\b/i);
+    const direct=newLeadEvidence.detail.match(/\bDirect\s+(\d+)\b/i);
+    const breakdown=first&&dm&&direct
+      ?[Number(first[1]),Number(dm[1]),Number(direct[1])]:null;
+    const verifiedBreakdown=breakdown&&breakdown.reduce((n,x)=>n+x,0)===newLeadEvidence.value;
+    highlights.push({
+      label:"PATIENT DEMAND",
+      headline:verifiedBreakdown&&breakdown![0]>newLeadEvidence.value/2
+        ?"First Access accounted for most new inquiries."
+        :"New inquiries entered through the CRM.",
+      detail:verifiedBreakdown
+        ?`${breakdown![0]} First Access · ${breakdown![1]} Instagram DMs · ${breakdown![2]} direct. ${newLeadEvidence.detail.split("·")[0].trim()}. CRM intake routes, not confirmed first-touch attribution.`
+        :`${newLeadEvidence.value} contacts · ${newLeadEvidence.detail}. CRM intake, not verified bookings.`
+    });
+  }
+  const rankedFeed=[...feed].filter(p=>p.views!=null&&p.views>0)
+    .sort((a,b)=>(b.views??0)-(a.views??0)||b.date.localeCompare(a.date));
+  if(rankedFeed.length){
+    const top=rankedFeed[0];
+    const runnerUp=rankedFeed[1];
+    highlights.push({
+      label:"CONTENT SIGNAL",
+      headline:`“${top.title}” led recorded Instagram views.`,
+      detail:`${(top.views??0).toLocaleString("en-US")} cumulative views at capture${runnerUp?`, ahead of “${runnerUp.title}” at ${(runnerUp.views??0).toLocaleString("en-US")}`:""}. These are lifetime post counts; publication dates differ.`
+    });
+  }
+  const metaNative=acquisition?.analysis?.opportunityGroups.find(g=>g.name==="Meta native forms");
+  if(firstAccess&&metaNative&&firstAccess.opportunities>0&&metaNative.opportunities>0){
+    highlights.push({
+      label:"INTAKE QUALITY",
+      headline:"Website First Access is further along in the recorded pipeline.",
+      detail:`${firstAccess.advancedStage} of ${firstAccess.opportunities} website opportunities are booked-or-later, versus ${metaNative.advancedStage} of ${metaNative.opportunities} Meta-native. CRM stage snapshot as of ${firstAccessAsOf}; different cohort ages, not a controlled test.`
+    });
+  }
+  return {metrics,paid,published,conversation,highlights,insight,action};
 }

@@ -172,3 +172,37 @@ test("no third KPI is rendered when neither outcomes nor interactions exist",()=
   const pulse=buildExecutivePulse([],[]);
   assert.equal(pulse.metrics.length,2);
 });
+
+test("weekly executive highlights report patient demand, strongest content, and intake quality without tasks",()=>{
+  const overview={statement:"Inquiries",summary:"Intake",action:"Follow up",
+    reviewedAt:"2026-11-20",indicators:[
+      {label:"New CRM lead contacts",value:15,
+       detail:"Nov 16–19 · First Access 10 · Instagram DM 3 · Direct 2"}
+    ]};
+  const acquisition={asOf:"2026-11-20",scope:"historical_cohort",
+    analysis:{opportunityGroups:[
+      {name:"Website First Access",opportunities:29,advancedStage:14},
+      {name:"Meta native forms",opportunities:16,advancedStage:1}
+    ]}};
+  const posts=[
+    post("Frew + Tamara Q&A","Instagram","@opusplasticsurgery","Reel",1458,"2026-11-18"),
+    post("How do breast implants fit?","Instagram","@opusplasticsurgery","Reel",1039,"2026-11-17"),
+    post("Other account","Instagram","@dr.frew","Reel",9999,"2026-11-18")
+  ];
+  const pulse=buildExecutivePulse(posts,[],overview,acquisition);
+  assert.deepEqual(pulse.highlights.map(x=>x.label),["PATIENT DEMAND","CONTENT SIGNAL","INTAKE QUALITY"]);
+  assert.match(pulse.highlights[0].headline,/First Access accounted/);
+  assert.match(pulse.highlights[0].detail,/10 First Access · 3 Instagram DMs · 2 direct/);
+  assert.match(pulse.highlights[1].detail,/1,458 cumulative views/);
+  assert.doesNotMatch(pulse.highlights[1].headline,/Other account/);
+  assert.match(pulse.highlights[2].detail,/14 of 29.*1 of 16/);
+  assert.match(pulse.highlights[2].detail,/not a controlled test/);
+  assert.doesNotMatch(pulse.highlights.map(x=>x.headline+" "+x.detail).join(" "),/review messages|follow up|confirm appointments|next action/i);
+});
+test("historical weeks do not inherit new CRM or First Access cohort highlights",()=>{
+  const posts=[post("Historic Reel","Instagram","@opusplasticsurgery","Reel",123,"2026-11-10")];
+  const p=buildExecutivePulse(posts,[]);
+  assert.deepEqual(p.highlights.map(x=>x.label),["CONTENT SIGNAL"]);
+  assert.match(p.highlights[0].detail,/lifetime post counts/);
+  assert.equal(buildExecutivePulse([],[]).highlights.length,0);
+});
