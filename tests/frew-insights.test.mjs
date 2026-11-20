@@ -55,3 +55,17 @@ test("story replies are not appointments",()=>{
   assert.match(p.conversation.headline,/6 Story replies/);
   assert.equal(p.metrics[1].value,null);
 });
+
+
+test("reviewed public CRM totals may populate Pulse without inventing conversions",()=>{
+  const outcome={
+    weekStart:"2026-11-16",source:"Aesthetix verified aggregate",
+    verifiedAt:"2026-11-20",inquiriesReceived:8,qualifiedInquiries:3,
+    consultationsRequested:2,consultationsBooked:1
+  };
+  const p=buildExecutivePulse([],[channel("Google Ads",{Conversions:5})],undefined,outcome);
+  assert.equal(p.metrics[0].value,8);
+  assert.equal(p.metrics[1].value,1);
+  assert.equal(p.metrics[2].value,3);
+  assert.equal(p.paid.google.value,5);
+});
