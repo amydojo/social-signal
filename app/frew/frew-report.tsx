@@ -334,7 +334,7 @@ export default function FrewDashboard({published=[]}:{published?:PublicWeek[]}){
   const channels=live?.channels??(old?nov2Channels:current?currentChannels:previous?latestChannels:channelOverviewFromPosts(rows,period));
   const posts=rows.filter(p=>!isStory(p));
   const stories=rows.filter(isStory);
-  const detail=period in performanceByWeek?performanceByWeek[period as keyof typeof performanceByWeek]:null;
+  const detail=live?.diagnostics??(period in performanceByWeek?performanceByWeek[period as keyof typeof performanceByWeek]:null);
   const diagnosticsFor=(post:LeadershipLog|undefined)=>detail?.reels.find(x=>x.id===post?.id);
   const featured=chooseWeeklyFeatures(rows);
   const first=featured[0]?.post;
@@ -450,7 +450,7 @@ export default function FrewDashboard({published=[]}:{published?:PublicWeek[]}){
       <FrewAccounts
         period={period}
         channels={channels}
-        otherAccounts={old?[]:otherAccounts}
+        otherAccounts={old?[]:live?.coverage?live.coverage.filter(c=>!c.linked).map(({platform,account})=>({platform,account})):otherAccounts}
       />
 
       <section className="executive-bottom">
