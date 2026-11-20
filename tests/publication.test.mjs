@@ -68,3 +68,33 @@ test("preserves source-reported interactions when saves/shares are unreported",(
   bad.payload.posts[0].impressions=-2;
   assert.equal(parsePublishedReport(bad),null);
 });
+
+test("a reviewed overview and aggregate-only CRM acquisition snapshot are accepted",()=>{
+  const p=original();
+  p.payload.overview.reviewedAt="2026-11-20";
+  p.payload.acquisition={
+    asOf:"2026-11-20",scope:"historical_cohort",source:"Aesthetix Nov 20 export",
+    routes:[{route:"Meta First Access",evidence:"campaign_tag",contacts:36,
+      stages:[{stage:"Cold",contacts:21},{stage:"Lead",contacts:15}]}],
+    websiteFirstTouch:[],
+    finding:"Human reply progression still needs checking.",
+    decision:"Review native form follow-up before increasing spend."
+  };
+  const parsed=parsePublishedReport(p);
+  assert.ok(parsed);
+  assert.equal(parsed.overview.reviewedAt,"2026-11-20");
+  assert.equal(parsed.acquisition.routes[0].contacts,36);
+});
+test("raw contact identifiers in acquisition payload are rejected",()=>{
+  const p=original();
+  p.payload.acquisition={
+    asOf:"2026-11-20",scope:"historical_cohort",source:"Aesthetix",
+    routes:[{route:"Meta First Access",evidence:"campaign_tag",contacts:36,email:"person@example.com"}],
+    websiteFirstTouch:[],finding:"Historical cohort",decision:"Verify appointment progression"
+  };
+  assert.equal(parsePublishedReport(p),null);
+});
+test("unreviewed timestamp or invalid editorial date are rejected",()=>{
+  const p=original();p.payload.overview.reviewedAt="tomorrow";
+  assert.equal(parsePublishedReport(p),null);
+});

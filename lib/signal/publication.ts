@@ -1,16 +1,18 @@
 import type {LeadershipChannel,LeadershipLog} from "../../app/frew/frew-data";
 import type {PerformanceWeek} from "../../app/frew/frew-performance";
+import {parsePublicAcquisition,type PublicAcquisition} from "./acquisition";
 
 /** Public-safe projection: never hydrate arbitrary private source records into pages. */
 export type PublicOverview={
   statement:string;summary:string;action:string;
+  reviewedAt?:string;
   indicators:{label:string;value:number|null;detail:string}[];
 };
 export type PublicWeek={
   weekStart:string;weekEnd:string;status:"in_progress"|"complete";
   capturedAt:string;dataThrough:string|null;revision:number;
   posts:LeadershipLog[];channels:LeadershipChannel[];
-  overview?:PublicOverview;diagnostics?:PerformanceWeek;
+  overview?:PublicOverview;acquisition?:PublicAcquisition;diagnostics?:PerformanceWeek;
   coverage?:{platform:string;account:string;linked:boolean;note?:string}[];
 };
 const string=(x:unknown,n=500)=>typeof x==="string"&&x.length>0&&x.length<=n;
@@ -78,8 +80,9 @@ function parseChannel(x:unknown):LeadershipChannel|null{
   };
 }
 function parseOverview(x:unknown):PublicOverview|null{
-  if(!obj(x)||!attrs(x,["statement","summary","action","indicators"])||
+  if(!obj(x)||!attrs(x,["statement","summary","action","indicators","reviewedAt"])||
     !string(x.statement,250)||!string(x.summary,800)||!string(x.action,500)||
+    (x.reviewedAt!=null&&!dateValid(x.reviewedAt))||
     !Array.isArray(x.indicators)||x.indicators.length>5)return null;
   const indicators:PublicOverview["indicators"]=[];
   for(const v of x.indicators){
@@ -89,7 +92,8 @@ function parseOverview(x:unknown):PublicOverview|null{
       detail:v.detail as string});
   }
   return {statement:x.statement as string,summary:x.summary as string,
-    action:x.action as string,indicators};
+    action:x.action as string,indicators,
+    ...(x.reviewedAt?{reviewedAt:x.reviewedAt as string}:{})};
 }
 function parseDiagnostics(x:unknown):PerformanceWeek|null{
   if(!obj(x)||!attrs(x,["reels","stories","keyword","audience"])||
@@ -146,7 +150,7 @@ export function parsePublishedReport(row:unknown):PublicWeek|null{
     row.schema_version!==1||typeof row.revision!=="number"||row.revision<1||!obj(row.payload)
   )return null;
   const payload=row.payload as Record<string,unknown>;
-  if(!attrs(payload,["posts","channels","overview","diagnostics","coverage"])||
+  if(!attrs(payload,["posts","channels","overview","acquisition","diagnostics","coverage"])||
     !Array.isArray(payload.posts)||!Array.isArray(payload.channels)||
     payload.posts.length>400||payload.channels.length>40)return null;
   const posts=payload.posts.map(post=>parsePost(post,row.week_start as string));
@@ -155,9 +159,11 @@ export function parsePublishedReport(row:unknown):PublicWeek|null{
   const unique=new Set(posts.map(post=>post?.id));
   if(unique.size!==posts.length)return null;
   const overview=payload.overview==null?undefined:parseOverview(payload.overview);
+  const acquisition=payload.acquisition==null?undefined:parsePublicAcquisition(payload.acquisition);
   const diagnostics=payload.diagnostics==null?undefined:parseDiagnostics(payload.diagnostics);
   const coverage=payload.coverage==null?undefined:parseCoverage(payload.coverage);
-  if((payload.overview!=null&&!overview)||
+  if((payload.acquisition!=null&&!acquisition)||
+    (payload.overview!=null&&!overview)||
     (payload.diagnostics!=null&&!diagnostics)||
     (payload.coverage!=null&&!coverage))return null;
   // Only reviewed overview/diagnostic keys can reach public UI; never forward
@@ -168,6 +174,7 @@ export function parsePublishedReport(row:unknown):PublicWeek|null{
     dataThrough:(row.data_through as string|null)??null,revision:row.revision as number,
     posts:posts as LeadershipLog[],channels:channels as LeadershipChannel[],
     ...(overview?{overview}:{}),
+    ...(acquisition?{acquisition}:{}),
     ...(diagnostics?{diagnostics}:{}),
     ...(coverage?{coverage}:{})
   };
