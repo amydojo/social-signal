@@ -1,5 +1,4 @@
--- Public read-only aggregate outcome publication. The private CRM and owner tables
--- stay closed to anonymous reads and all anonymous writes.
+-- Public read-only reviewed aggregate outcomes; no private table grants.
 begin;
 CREATE OR REPLACE FUNCTION public.publish_signal_week(p_week date, p_captured_at timestamp with time zone, p_status text, p_data_through date, p_payload jsonb, p_published boolean DEFAULT true)
  RETURNS integer
@@ -113,13 +112,35 @@ begin
       where k.key not in ('channel','contacts')
     ) then raise exception 'unrecognized first touch field'; end if;
   end if;
-
-  -- Reviewed public-only weekly outcome aggregates. No contact-level fields.
+  -- Public reporting permits typed, reviewed weekly aggregates only.
   if p_payload ? 'outcomes' then
     if jsonb_typeof(p_payload->'outcomes') <> 'object' or
-       p_payload->'outcomes'->>'weekStart' <> p_week::text or
-       p_payload->'outcomes'->>'source' <> 'Aesthetix verified aggregate' or
-       (p_payload->'outcomes'->>'verifiedAt') !~ '^\\d{4}-\\d{2}-\\d{2}
+       p_payload->'outcomes'->>'weekStart' is distinct from p_week::text or
+       p_payload->'outcomes'->>'source' is distinct from 'Aesthetix verified aggregate' or
+       jsonb_typeof(p_payload->'outcomes'->'verifiedAt') is distinct from 'string' or
+       (p_payload->'outcomes'->>'verifiedAt') !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' or
+       (p_payload->'outcomes'->>'verifiedAt') < p_week::text or
+       not (p_payload->'outcomes' ?& array[
+         'weekStart','source','verifiedAt','inquiriesReceived',
+         'qualifiedInquiries','consultationsRequested','consultationsBooked'])
+    then raise exception 'invalid public outcome source, period or structure'; end if;
+    if exists (
+      select 1 from jsonb_object_keys(p_payload->'outcomes') k
+      where k not in ('weekStart','source','verifiedAt','inquiriesReceived',
+        'qualifiedInquiries','consultationsRequested','consultationsBooked')
+    ) then raise exception 'unrecognized public outcomes field'; end if;
+    if exists (
+      select 1 from jsonb_each(p_payload->'outcomes') m(key,val)
+      where m.key in ('inquiriesReceived','qualifiedInquiries',
+        'consultationsRequested','consultationsBooked')
+        and m.val <> 'null'::jsonb and (
+          jsonb_typeof(m.val)<>'number'
+          or m.val::text !~ '^[0-9]{1,7}$'
+          or (m.val::text)::numeric>1000000
+        )
+    ) then raise exception 'invalid public outcomes count'; end if;
+  end if;
+  select * into existing from public.signal_published_reports
     where week_start=p_week for update;
   if found and p_captured_at<existing.captured_at then
     raise exception 'stale capture: newer report is already published';
@@ -138,6 +159,7 @@ begin
          coalesce(existing.payload->'overview'->>'reviewedAt','')) then
     p_payload:=jsonb_set(p_payload,'{overview}',existing.payload->'overview',true);
   end if;
+  -- Keep a reviewed aggregate through ordinary daily platform refreshes.
   if found and existing.payload ? 'outcomes'
      and (not (p_payload ? 'outcomes') or
        coalesce(p_payload->'outcomes'->>'verifiedAt','') <
@@ -171,126 +193,6 @@ begin
            jsonb_array_length(p_payload->'channels'),p_status);
   return next_revision;
 end;
-$function$
- or
-       (p_payload->'outcomes'->>'verifiedAt') < p_week::text or
-       not (p_payload->'outcomes' ?& array[
-         'weekStart','source','verifiedAt','inquiriesReceived',
-         'qualifiedInquiries','consultationsRequested','consultationsBooked'])
-    then
-      raise exception 'invalid public outcome source, period or structure';
-    end if;
-    if exists (
-      select 1 from jsonb_object_keys(p_payload->'outcomes') k
-      where k not in ('weekStart','source','verifiedAt','inquiriesReceived',
-        'qualifiedInquiries','consultationsRequested','consultationsBooked')
-    ) then raise exception 'unrecognized public outcomes field'; end if;
-    if exists (
-      select 1 from jsonb_each(p_payload->'outcomes') m(key,val)
-      where m.key in ('inquiriesReceived','qualifiedInquiries',
-        'consultationsRequested','consultationsBooked')
-        and m.val <> 'null'::jsonb and (
-          jsonb_typeof(m.val)<>'number'
-          or m.val::text !~ '^[0-9]{1,7}
-    where week_start=p_week for update;
-  if found and p_captured_at<existing.captured_at then
-    raise exception 'stale capture: newer report is already published';
-  end if;
-  -- Preserve human-reviewed business context across automatic daily refreshes.
-  -- Do not carry it to another reporting week, and do not regress the as-of date.
-  if found and existing.payload ? 'acquisition'
-     and (not (p_payload ? 'acquisition') or
-       coalesce(p_payload->'acquisition'->>'asOf','') <
-         coalesce(existing.payload->'acquisition'->>'asOf','')) then
-    p_payload:=jsonb_set(p_payload,'{acquisition}',existing.payload->'acquisition',true);
-  end if;
-  if found and existing.payload->'overview' ? 'reviewedAt'
-     and (not (p_payload->'overview' ? 'reviewedAt') or
-       coalesce(p_payload->'overview'->>'reviewedAt','') <
-         coalesce(existing.payload->'overview'->>'reviewedAt','')) then
-    p_payload:=jsonb_set(p_payload,'{overview}',existing.payload->'overview',true);
-  end if;
-  if found and p_captured_at=existing.captured_at
-     and p_payload=existing.payload and p_status=existing.status
-     and p_published=existing.published and p_data_through is not distinct from existing.data_through
-  then
-    return existing.revision; -- exact replay is idempotent
-  end if;
-  next_revision:=coalesce(existing.revision,0)+1;
-  if found then
-    insert into public.signal_publication_history(
-      week_start,revision,payload,captured_at,status,published
-    ) values(existing.week_start,existing.revision,existing.payload,
-             existing.captured_at,existing.status,existing.published);
-    update public.signal_published_reports
-      set status=p_status,data_through=p_data_through,captured_at=p_captured_at,
-          payload=p_payload,published=p_published,revision=next_revision,updated_at=now()
-      where week_start=p_week;
-  else
-    insert into public.signal_published_reports(
-      week_start,week_end,status,data_through,captured_at,payload,published,revision
-    ) values (p_week,p_week+6,p_status,p_data_through,p_captured_at,p_payload,p_published,1);
-  end if;
-  insert into public.signal_publication_runs(
-    week_start,captured_at,revision,post_count,channel_count,status
-  ) values(p_week,p_captured_at,next_revision,jsonb_array_length(p_payload->'posts'),
-           jsonb_array_length(p_payload->'channels'),p_status);
-  return next_revision;
-end;
-$function$
-
-          or (m.val::text)::numeric>1000000
-        )
-    ) then raise exception 'invalid public outcomes count'; end if;
-  end if;
-  select * into existing from public.signal_published_reports
-    where week_start=p_week for update;
-  if found and p_captured_at<existing.captured_at then
-    raise exception 'stale capture: newer report is already published';
-  end if;
-  -- Preserve human-reviewed business context across automatic daily refreshes.
-  -- Do not carry it to another reporting week, and do not regress the as-of date.
-  if found and existing.payload ? 'acquisition'
-     and (not (p_payload ? 'acquisition') or
-       coalesce(p_payload->'acquisition'->>'asOf','') <
-         coalesce(existing.payload->'acquisition'->>'asOf','')) then
-    p_payload:=jsonb_set(p_payload,'{acquisition}',existing.payload->'acquisition',true);
-  end if;
-  if found and existing.payload->'overview' ? 'reviewedAt'
-     and (not (p_payload->'overview' ? 'reviewedAt') or
-       coalesce(p_payload->'overview'->>'reviewedAt','') <
-         coalesce(existing.payload->'overview'->>'reviewedAt','')) then
-    p_payload:=jsonb_set(p_payload,'{overview}',existing.payload->'overview',true);
-  end if;
-  if found and p_captured_at=existing.captured_at
-     and p_payload=existing.payload and p_status=existing.status
-     and p_published=existing.published and p_data_through is not distinct from existing.data_through
-  then
-    return existing.revision; -- exact replay is idempotent
-  end if;
-  next_revision:=coalesce(existing.revision,0)+1;
-  if found then
-    insert into public.signal_publication_history(
-      week_start,revision,payload,captured_at,status,published
-    ) values(existing.week_start,existing.revision,existing.payload,
-             existing.captured_at,existing.status,existing.published);
-    update public.signal_published_reports
-      set status=p_status,data_through=p_data_through,captured_at=p_captured_at,
-          payload=p_payload,published=p_published,revision=next_revision,updated_at=now()
-      where week_start=p_week;
-  else
-    insert into public.signal_published_reports(
-      week_start,week_end,status,data_through,captured_at,payload,published,revision
-    ) values (p_week,p_week+6,p_status,p_data_through,p_captured_at,p_payload,p_published,1);
-  end if;
-  insert into public.signal_publication_runs(
-    week_start,captured_at,revision,post_count,channel_count,status
-  ) values(p_week,p_captured_at,next_revision,jsonb_array_length(p_payload->'posts'),
-           jsonb_array_length(p_payload->'channels'),p_status);
-  return next_revision;
-end;
-$function$
-;
-revoke all on function public.publish_signal_week(date,timestamptz,text,date,jsonb,boolean)
- from PUBLIC,anon,authenticated;
+$function$;
+revoke all on function public.publish_signal_week(date,timestamptz,text,date,jsonb,boolean) from PUBLIC,anon,authenticated;
 commit;
