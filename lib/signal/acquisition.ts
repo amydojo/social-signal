@@ -20,7 +20,7 @@ const obj=(x:unknown):x is Record<string,unknown>=>!!x&&typeof x==="object"&&!Ar
 const keys=(x:Record<string,unknown>,allowed:string[])=>Object.keys(x).every(k=>allowed.includes(k));
 const date=(x:unknown)=>typeof x==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(Date.parse(x+"T12:00:00Z"))&&
   new Date(x+"T12:00:00Z").toISOString().slice(0,10)===x;
-const count=(x:unknown)=>Number.isSafeInteger(x)&&typeof x==="number"&&x>=0&&x<=1000000;
+const count=(x:unknown)=>typeof x==="number"&&Number.isSafeInteger(x)&&x>=0&&x<=1000000;
 const text=(x:unknown,max:number)=>typeof x==="string"&&x.length>0&&x.length<=max&&
   !/[<>@]/.test(x)&&!/(https?:\/\/|\b\d{3}[-. ]\d{3}[-. ]\d{4}\b)/i.test(x);
 export function parsePublicAcquisition(x:unknown):PublicAcquisition|null{

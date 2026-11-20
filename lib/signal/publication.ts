@@ -1,6 +1,6 @@
 import type {LeadershipChannel,LeadershipLog} from "../../app/frew/frew-data";
 import type {PerformanceWeek} from "../../app/frew/frew-performance";
-import {parsePublicAcquisition,type PublicAcquisition} from "./acquisition";
+import {parsePublicAcquisition,type PublicAcquisition} from "./acquisition.ts";
 
 /** Public-safe projection: never hydrate arbitrary private source records into pages. */
 export type PublicOverview={
