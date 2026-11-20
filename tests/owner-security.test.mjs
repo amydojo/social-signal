@@ -17,3 +17,22 @@ test("public Week reader does not import or query the private outcomes table",()
   const route=readFileSync(new URL("../app/api/publications/route.ts",import.meta.url),"utf8");
   assert.doesNotMatch(read+route,/signal_owner_outcomes/);
 });
+
+
+test("anonymous outcomes report has no protected table or editable form",()=>{
+  const page=readFileSync(new URL("../app/frew/owner/page.tsx",import.meta.url),"utf8");
+  assert.match(page,/loadPublishedWeeksWithState/);
+  assert.doesNotMatch(page,/createSignalServerClient|auth\.getUser|signal_owner_outcomes|signal_members|saveOwnerCounts/);
+  assert.doesNotMatch(page,/<form|type="submit"/);
+  assert.match(page,/No confirmed CRM outcome totals/);
+});
+test("old sign-in link resolves to the public reporting route",()=>{
+  const login=readFileSync(new URL("../app/frew/owner/login/page.tsx",import.meta.url),"utf8");
+  assert.match(login,/redirect\("\/frew\/owner"\)/);
+  assert.doesNotMatch(login,/requestOwnerLink|signInWithOtp/);
+});
+test("private outcome writes remain owner-only",()=>{
+  const act=readFileSync(new URL("../app/frew/owner/actions.ts",import.meta.url),"utf8");
+  assert.match(act,/supabase\.auth\.getUser\(\)/);
+  assert.match(act,/member\?\.role!=="owner"/);
+});
