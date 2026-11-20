@@ -235,7 +235,7 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
   const visualStories=sortedStories.filter(storyHasPreview);
   const savedStoryPreviews=visualStories.filter(storyHasCover).length;
   const temporaryStoryPreviews=visualStories.length-savedStoryPreviews;
-  const storyWithoutCover=sortedStories.filter(s=>!storyHasCover(s));
+  const storyWithoutCover=sortedStories.filter(s=>!storyHasPreview(s));
   const shownPosts=periodPosts.filter(p=>(platform==="all"||p.platform===platform)&&p.title.toLowerCase().includes(search.toLowerCase()));
   // Use the same deduplicated publication set as the Posts tab.
   const allInstagramPosts=allPosts.filter(p=>p.platform==="instagram").sort((a,b)=>b.published_on.localeCompare(a.published_on));
