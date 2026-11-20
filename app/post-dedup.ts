@@ -6,7 +6,7 @@
 export function uniquePostsByIdentity<T extends {id:string;platform:string;permalink:string|null|undefined}>(posts:T[]):T[]{
   const mapped=new Map<string,T>();
   for(const post of posts){
-    const canonical=(post.permalink??"").trim().split(/[?#]/)[0].replace(/\/+$/,"").toLowerCase();
+    const canonical=(post.permalink??"").trim().split(/[?#]/)[0].replace(/\/+$/,"");
     const key=post.platform.toLowerCase()+"|"+(canonical||post.id);
     mapped.set(key,post);
   }

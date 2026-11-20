@@ -24,3 +24,11 @@ test("missing permalinks use IDs instead of collapsing different posts",()=>{
   const x=uniquePostsByIdentity([p("a","instagram",null,3),p("b","instagram",null,4)]);
   assert.equal(x.length,2);
 });
+
+test("Instagram shortcodes are case-sensitive and must not be collapsed",()=>{
+  const x=uniquePostsByIdentity([
+    p("upper","instagram","https://www.instagram.com/reel/AbC123/",100),
+    p("lower","instagram","https://www.instagram.com/reel/abc123/",20)
+  ]);
+  assert.equal(x.length,2);
+});
