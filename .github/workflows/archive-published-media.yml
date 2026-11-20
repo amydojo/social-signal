@@ -1,0 +1,36 @@
+name: Archive new SIGNAL media
+on:
+  schedule:
+    - cron: '23 18 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: signal-public-media
+  cancel-in-progress: false
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check archive script syntax
+        run: node --check scripts/archive-published-media.mjs
+      - name: Fetch and preserve approved public creative
+        run: node scripts/archive-published-media.mjs
+      - name: Commit only newly saved media
+        run: |
+          git config user.name 'signal-media-bot'
+          git config user.email 'signal-media-bot@users.noreply.github.com'
+          git add public/media/archive
+          if git diff --cached --quiet; then
+            echo 'No new media to preserve'
+          else
+            git commit -m 'Preserve newly published OPUS story and post thumbnails'
+            git push origin HEAD:main
+          fi
