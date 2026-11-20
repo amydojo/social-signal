@@ -12,6 +12,7 @@ import FrewAccounts from "./frew-accounts";
 import {performanceByWeek,type ReelSignal} from "./frew-performance";
 import {frewStoryCovers,frewCarouselCovers} from "./frew-media";
 import {chooseWeeklyFeatures,groupPostsByWeek,channelOverviewFromPosts,labelWeek,isStory,interactionCount} from "./frew-selection";
+import type {PublicWeek} from "../../lib/signal/publication";
 
 type Period=string;
 const savedCovers=new Set(archiveIndex.assets.filter(a=>a.status==="saved").map(a=>a.file));
@@ -310,11 +311,14 @@ function Feature({post,rank,metricLabel,signal}:{post:LeadershipLog;rank:string;
   </article>;
 }
 
-export default function FrewDashboard(){
-  const [period,setPeriod]=useState<Period>(newestWeek);
+export default function FrewDashboard({published=[]}:{published?:PublicWeek[]}){
+  const reportIndex=new Map(published.map(report=>[report.weekStart,report]));
+  const availableWeeks=[...new Set([...reportWeeks,...published.map(report=>report.weekStart)])].sort((a,b)=>b.localeCompare(a));
+  const mostRecent=availableWeeks[0]??newestWeek;
+  const [period,setPeriod]=useState<Period>(mostRecent);
   useEffect(()=>{
     const q=new URLSearchParams(window.location.search).get("week");
-    if(q&&reportWeeks.includes(q))setPeriod(q);
+    if(q&&availableWeeks.includes(q))setPeriod(q);
   },[]);
   const changePeriod=(p:Period)=>{
     setPeriod(p);
@@ -325,16 +329,18 @@ export default function FrewDashboard(){
   const old=period==="2026-11-02";
   const current=period==="2026-11-16";
   const previous=period==="2026-11-09";
-  const rows=reportRowsByWeek[period]??[];
-  const channels=old?nov2Channels:current?currentChannels:previous?latestChannels:channelOverviewFromPosts(rows,period);
+  const live=reportIndex.get(period);
+  const rows=live?.posts??reportRowsByWeek[period]??[];
+  const channels=live?.channels??(old?nov2Channels:current?currentChannels:previous?latestChannels:channelOverviewFromPosts(rows,period));
   const posts=rows.filter(p=>!isStory(p));
   const stories=rows.filter(isStory);
-  const detail=period in performanceByWeek?performanceByWeek[period as keyof typeof performanceByWeek]:null;
+  const detail=live?.diagnostics??(period in performanceByWeek?performanceByWeek[period as keyof typeof performanceByWeek]:null);
   const diagnosticsFor=(post:LeadershipLog|undefined)=>detail?.reels.find(x=>x.id===post?.id);
   const featured=chooseWeeklyFeatures(rows);
   const first=featured[0]?.post;
   const second=featured[1]?.post;
-  const periodLabel=labelWeek(period).toUpperCase()+", "+period.slice(0,4)+(current?" · WEEK TO DATE":"");
+  const partial=live?.status==="in_progress"||(!live&&current);
+  const periodLabel=labelWeek(period).toUpperCase()+", "+period.slice(0,4)+(partial?" · WEEK TO DATE":"");
   const instagramPosts=posts.filter(p=>p.platform==="Instagram");
   const instagramReels=instagramPosts.filter(p=>p.format.trim().toLowerCase()==="reel");
   const reelViews=instagramReels.length&&instagramReels.every(p=>p.views!=null)
@@ -349,7 +355,7 @@ export default function FrewDashboard(){
   const knownInteractions=instagramPosts.map(interactionCount);
   const interactionTotal=knownInteractions.length&&knownInteractions.every(v=>v!=null)
     ?knownInteractions.reduce<number>((sum,v)=>sum+(v??0),0):null;
-  const report=old?{
+  const report=live?.overview??(old?{
     statement:"People and practical advice led the week.",
     summary:"Meet Tamara and the lipo + tummy tuck Reel drew the most views.",
     indicators:[
@@ -392,7 +398,7 @@ export default function FrewDashboard(){
       {label:"STORY IMPRESSIONS",value:capturedStoryImpressions,detail:"Captured Stories · not unique viewers"}
     ],
     action:"Review the strongest creative and update next week's content."
-  };
+  });
   return <div className="executive-shell">
     <header className="executive-masthead">
       <div className="executive-brand"><span className="executive-logomark">O.</span><span>OPUS<span className="executive-word-divider">/</span> WEEKLY PULSE</span></div>
@@ -404,7 +410,7 @@ export default function FrewDashboard(){
           <span>{periodLabel}</span>
           <label className="executive-week-control"><CalendarDays size={15}/><span className="sr-only">Choose reporting week</span>
             <select value={period} onChange={e=>changePeriod(e.target.value as Period)}>
-              {reportWeeks.map(w=><option key={w} value={w}>{labelWeek(w)}{w===newestWeek&&current?" · WTD":""}</option>)}
+              {availableWeeks.map(w=><option key={w} value={w}>{labelWeek(w)}{w===mostRecent&&(reportIndex.get(w)?.status==="in_progress"||(!reportIndex.has(w)&&w===newestWeek))?" · WTD":""}</option>)}
             </select>
           </label>
         </div>
@@ -444,7 +450,7 @@ export default function FrewDashboard(){
       <FrewAccounts
         period={period}
         channels={channels}
-        otherAccounts={old?[]:otherAccounts}
+        otherAccounts={old?[]:live?.coverage?live.coverage.filter(c=>!c.linked).map(({platform,account})=>({platform,account})):otherAccounts}
       />
 
       <section className="executive-bottom">
@@ -526,7 +532,7 @@ export default function FrewDashboard(){
             weekStart={period}
             featured={[first,second].filter((p):p is LeadershipLog=>Boolean(p)).map(p=>({id:p.id,title:p.title}))}
           />
-          <span>{current?"Updated Nov 19, 2026 · In progress":previous?"Updated Nov 19, 2026":old?"Historical report":"Week data as captured"}</span>
+          <span>{live?`Captured ${new Date(live.capturedAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}${partial?" · In progress":""}`:current?"Updated Nov 19, 2026 · In progress":previous?"Updated Nov 19, 2026":old?"Historical report":"Week data as captured"}</span>
         </div>
       </footer>
     </main>
