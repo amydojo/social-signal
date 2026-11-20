@@ -157,8 +157,8 @@ function CarouselShowcase({posts}:{posts:LeadershipLog[]}){
           <div className="pulse-carousel-platforms">
             {group.versions.map(p=><div key={p.id}>
               <span>{p.platform}</span>
-              <strong>{fmt(p.views)}</strong>
-              <small>{p.platform==="Facebook"?"impressions / views":"views"}</small>
+              <strong>{fmt(p.views??p.impressions)}</strong>
+              <small>{p.views!=null?"views":p.impressions!=null?"impressions":"not reported"}</small>
             </div>)}
           </div>
           {group.versions.length>1&&<span className="pulse-crosspost-note">Shared creative · separate account results</span>}
@@ -285,8 +285,8 @@ function StoryGallery({stories,period}:{stories:LeadershipLog[];period:string}){
 }
 function DownloadCsv({rows,period}:{rows:LeadershipLog[];period:string}){
   return <button type="button" className="executive-export" onClick={()=>{
-    const head=["Date","Platform","Account","Format","Post","Post link","Views / story impressions","Likes","Comments","Shares","Saves"];
-    const data=rows.map(p=>[p.date,p.platform,p.account,p.format,p.title,p.url,p.views,p.likes,p.comments,p.shares,p.saves]);
+    const head=["Date","Platform","Account","Format","Post","Post link","Views / story impressions","Post impressions","Interactions","Likes","Comments","Shares","Saves"];
+    const data=rows.map(p=>[p.date,p.platform,p.account,p.format,p.title,p.url,p.views,p.impressions,p.interactions,p.likes,p.comments,p.shares,p.saves]);
     const blob=new Blob([csv([head,...data])],{type:"text/csv;charset=utf-8"});
     const file=URL.createObjectURL(blob);
     const link=document.createElement("a");link.href=file;link.download="OPUS_Weekly_Results_"+period+".csv";link.click();URL.revokeObjectURL(file);
@@ -512,7 +512,7 @@ export default function FrewDashboard({published=[]}:{published?:PublicWeek[]}){
             <div className="executive-detail-list">{posts.map(p=><div key={p.id}>
               <span>{day(p.date)}</span>
               <div>{p.url?<a href={p.url} target="_blank" rel="noopener noreferrer">{p.title}<ExternalLink size={12}/></a>:p.title}<small>{p.platform} · {p.format}</small></div>
-              <strong>{fmt(p.views)}</strong>
+              <strong>{fmt(p.views??p.impressions)}{p.views==null&&p.impressions!=null?<small> impressions</small>:null}</strong>
             </div>)}</div>
           </details>
           <StoryGallery period={period} stories={stories}/>
