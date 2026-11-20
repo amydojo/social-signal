@@ -688,3 +688,10 @@
 .executive-feature-action a{display:inline-flex;align-items:center;gap:7px;color:#814b39;text-decoration:none;border-bottom:1px solid #b58d7a;padding-bottom:5px}
 .executive-feature-action a:hover{color:#533126;border-bottom-color:#533126}
 .executive-feature-action span{font-weight:500;color:#96877b}
+
+/* Separate advertising units in the fourth executive card. */
+.executive-paid-split{min-width:0;overflow-wrap:anywhere}
+.executive-paid-row{display:flex;align-items:baseline;gap:15px;margin:8px 0 10px;flex-wrap:wrap}
+.executive-paid-row>span{display:flex;flex-direction:column;gap:4px;min-width:54px;font-size:9px;letter-spacing:.05em;font-weight:700}
+.executive-paid-row strong{font-size:clamp(23px,2.4vw,33px);letter-spacing:-.04em;line-height:1.1}
+.executive-paid-row small{font-size:9px;line-height:1.4;letter-spacing:0;font-weight:450}

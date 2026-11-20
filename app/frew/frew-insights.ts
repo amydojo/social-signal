@@ -1,8 +1,11 @@
 import type {LeadershipLog,LeadershipChannel} from "./frew-data";
+import type {PublicOverview} from "../../lib/signal/publication";
 
 export type PulseIndicator={label:string;value:number|null;detail:string;unit?:"USD"};
+export type PaidIndicator={value:number|null;period:string|null;note:string};
 export type ExecutivePulse={
   metrics:PulseIndicator[];
+  paid:{google:PaidIndicator;meta:PaidIndicator};
   published:{headline:string;detail:string};
   conversation:{headline:string;detail:string};
   action:string;
@@ -13,25 +16,32 @@ const metric=(channel:LeadershipChannel|undefined,name:string)=>
 const isInstagram=(p:LeadershipLog)=>p.platform==="Instagram"&&p.account.toLowerCase()==="@opusplasticsurgery";
 const isStory=(p:LeadershipLog)=>label(p.format)==="story";
 
-export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChannel[]):ExecutivePulse{
+export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChannel[],reviewed?:PublicOverview):ExecutivePulse{
   const feed=rows.filter(p=>isInstagram(p)&&!isStory(p));
   const reels=feed.filter(p=>label(p.format)==="reel");
   const carousels=feed.filter(p=>label(p.format)==="carousel");
-  const google=channels.find(c=>c.platform==="Google Ads"&&metric(c,"Conversions")!=null);
-  const meta=channels.find(c=>c.platform==="Meta Ads"&&metric(c,"Leads")!=null);
-  const paid=google&&(metric(google,"Conversions")??0)>0?google:
-    meta&&(metric(meta,"Leads")??0)>0?meta:
-    google??meta;
-  const paidValue=paid?metric(paid,paid.platform==="Google Ads"?"Conversions":"Leads"):null;
+  const google=channels.find(c=>c.platform==="Google Ads");
+  const meta=channels.find(c=>c.platform==="Meta Ads");
+  const googleActions=metric(google,"Conversions");
+  const metaLeads=metric(meta,"Leads");
+  const metaImpressions=metric(meta,"Impressions");
 
-  // No posting targets, punctuality statuses, inferred absences, or grades.
+  // Anonymous public page has no owner-only Aesthetix numbers. Never use ad
+  // events or old cohorts as this week's qualified inquiries or bookings.
   const metrics:PulseIndicator[]=[
-    {label:"CONSULTS BOOKED",value:null,detail:"Private · see owner report"},
-    {label:"INQUIRIES CONFIRMED",value:null,detail:"Check in Aesthetix"},
-    {label:"POSTS DOCUMENTED",value:feed.length||null,detail:"OPUS Instagram · feed posts"},
-    {label:paid?.platform==="Google Ads"?"GOOGLE AD ACTIONS":paid?.platform==="Meta Ads"?"META LEADS":"AD RESULTS",
-      value:paidValue,detail:paid?.period??"Not available"}
+    {label:"NEW CRM INQUIRIES",value:null,detail:"Weekly CRM count to verify"},
+    {label:"CONSULTS BOOKED",value:null,detail:"Private appointment totals not published"},
+    {label:"QUALIFIED CONVERSATIONS",value:null,detail:"Human reply review needed"}
   ];
+  const paid:{
+    google:PaidIndicator;meta:PaidIndicator
+  }={
+    google:{value:googleActions,period:google?.period??null,
+      note:googleActions==null?"Conversions unverified":"Platform actions · not booked consults"},
+    meta:{value:metaLeads,period:meta?.period??null,
+      note:metaLeads!=null?"Native form leads · not appointments":
+        metaImpressions===0?"0 reported impressions · lead count unknown":"Lead count not available"}
+  };
   const latest=[...feed].sort((a,b)=>b.date.localeCompare(a.date)||a.id.localeCompare(b.id)).slice(0,2);
   const published={
     headline:feed.length?
@@ -43,15 +53,18 @@ export function buildExecutivePulse(rows:LeadershipLog[],channels:LeadershipChan
       "Recent: "+latest.map(p=>p.date+" · "+p.title).join(" / ")+". Open the posts and dates below."
       :"The available records may be incomplete. Check source accounts before drawing conclusions."
   };
-  const igChannel=channels.find(c=>c.platform==="Instagram"&&c.account.toLowerCase()==="@opusplasticsurgery");
-  const replies=metric(igChannel,"Story replies");
+  const ig=channels.find(c=>c.platform==="Instagram"&&c.account.toLowerCase()==="@opusplasticsurgery");
+  const replies=metric(ig,"Story replies");
   const conversation={
     headline:replies==null?"Story replies aren't available for this week.":
       replies+" "+(replies===1?"Story reply":"Story replies")+" recorded.",
-    detail:"The actual questions in comments, DMs and Aesthetix still need to be reviewed before we can describe patient intent."
+    detail:"The actual questions in comments, DMs and Aesthetix still need review before drawing conclusions about patient intent."
   };
-  return {
-    metrics,published,conversation,
-    action:"Confirm inquiries and booked consults in Aesthetix, then review decisions that need Frew."
-  };
+  const action=reviewed?.reviewedAt?reviewed.action:
+    metaLeads!=null&&metaLeads>0?
+      "Check whether Meta submissions turned into real replies and consultation requests.":
+    googleActions!=null&&googleActions>0?
+      "Match Google conversion actions with new CRM inquiries and appointment requests.":
+      "Confirm weekly CRM outcomes before changing acquisition investment.";
+  return {metrics,paid,published,conversation,action};
 }

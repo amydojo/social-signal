@@ -340,13 +340,21 @@ export default function FrewDashboard({published=[],readState="live"}:{published
   const stories=rows.filter(isStory);
   // Published reporting never borrows diagnostics from a different, static capture.
   const detail=live?(live.diagnostics??null):(period in performanceByWeek?performanceByWeek[period as keyof typeof performanceByWeek]:null);
-  const brief=buildExecutivePulse(rows,channels);
+  const reviewedOverview=live?.overview?.reviewedAt?live.overview:undefined;
+  const brief=buildExecutivePulse(rows,channels,reviewedOverview);
   const featured=chooseWeeklySpotlights(rows);
   const first=featured[0]?.post;
   const second=featured[1]?.post;
   const partial=live?.status==="in_progress"||(!live&&current);
   const periodLabel=labelWeek(period).toUpperCase()+", "+period.slice(0,4)+(partial?" · WEEK TO DATE":"");
-  const intro=writeWeekIntro(rows,channels);
+  const fallbackIntro=writeWeekIntro(rows,channels);
+  // Only explicitly reviewed, dated editorial findings may replace the
+  // ordinary auto-generated recap; daily sync summaries are unreviewed.
+  const intro=reviewedOverview?{
+    headline:reviewedOverview.statement,
+    summary:reviewedOverview.summary,
+    next:reviewedOverview.action
+  }:fallbackIntro;
   return <div className="executive-shell">
     <header className="executive-masthead">
       <div className="executive-brand"><span className="executive-logomark">O.</span><span>OPUS<span className="executive-word-divider">/</span> WEEKLY PULSE</span></div>
@@ -372,7 +380,7 @@ export default function FrewDashboard({published=[],readState="live"}:{published
         </p>
         <div className="executive-hero-grid">
           <div className="executive-hero-copy">
-            <div className="executive-dispatch-kicker" aria-hidden="true">OPUS <span> / </span> THIS WEEK</div>
+            <div className="executive-dispatch-kicker" aria-hidden="true">OPUS <span> / </span> {reviewedOverview?"REVIEWED INSIGHT · "+day(reviewedOverview.reviewedAt!):"THIS WEEK"}</div>
             <h1>{intro.headline}</h1>
             <p>{intro.summary}</p>
           </div>
@@ -383,12 +391,21 @@ export default function FrewDashboard({published=[],readState="live"}:{published
         </div>
       </section>
 
-      <section className="executive-indicators" aria-label="Key weekly metrics">
+      <section className="executive-indicators" aria-label="Business outcomes and paid acquisition">
         {brief.metrics.map(m=><div key={m.label} className="executive-indicator">
           <div className="executive-indicator-label">{m.label}</div>
           <strong>{m.value==null?"—":m.unit==="USD"?"$"+m.value.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):fmt(m.value)}</strong>
           <small>{m.detail}</small>
         </div>)}
+        <div className="executive-indicator executive-paid-split">
+          <div className="executive-indicator-label">PAID ACQUISITION</div>
+          <div className="executive-paid-row">
+            <span>GOOGLE <strong>{fmt(brief.paid.google.value)}</strong><small>reported actions</small></span>
+            <span>META <strong>{fmt(brief.paid.meta.value)}</strong><small>form leads</small></span>
+          </div>
+          <small>{brief.paid.google.period??"Google period unknown"} · {brief.paid.meta.period??"Meta period unknown"}</small>
+          <small>{brief.paid.meta.note}. Ad events are not confirmed appointments.</small>
+        </div>
       </section>
 
       <FrewExecutiveBrief pulse={brief} partial={partial}/>
