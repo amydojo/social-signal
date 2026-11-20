@@ -305,7 +305,7 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
           <h1>{tabs.find(t=>t.id===tab)?.name}</h1>
           <div className="header-sub">
             {tab==="archive"?"Sep–Nov 2026":date(selectedWeek)+"–"+date(endOfWeek(selectedWeek))+", 2026"}
-            <span>·</span> Updated {new Date(snapshot.captured_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
+            <span>·</span> Updated {new Date(snapshot.captured_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"America/Los_Angeles"})}
           </div>
         </div>
         <div className="app-header-actions">
@@ -543,7 +543,7 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
 
       <MediaPreviewModal key={selectedPost?.id??selectedStory?.id??"none"} post={selectedPost} story={selectedStory} onClose={closeMedia}/>
       <footer className="app-footer">
-        <span>OPUS / SIGNAL · Captured {new Date(snapshot.captured_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</span>
+        <span>OPUS / SIGNAL · Captured {new Date(snapshot.captured_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"America/Los_Angeles"})}</span>
         <span>Read-only · Published reporting snapshot</span>
       </footer>
     </main>
