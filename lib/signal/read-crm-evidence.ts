@@ -97,7 +97,7 @@ export function parseCRMConsultWeeks(v:unknown,snapshot:CRMClinicalSnapshot):CRM
   for(const row of v){
     if(!object(row)||!date(row.snapshot_date)||row.snapshot_date!==snapshot.snapshotDate||
        !date(row.week_start)||(new Date(row.week_start+"T12:00:00Z")).getUTCDay()!==1||
-       !(row.week_start as string>snapshot.snapshotDate)||
+       !((row.week_start as string)>snapshot.snapshotDate)||
        seen.has(row.week_start as string))return null;
     const keys=["scheduled_count","confirmed_count","unconfirmed_count","website_route_count","other_route_count"] as const;
     if(keys.some(key=>!count(row[key])))return null;
