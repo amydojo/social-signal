@@ -54,6 +54,7 @@ type Props = {
   coverage:Coverage[]; socialDaily:DailySocial[]; adsDaily:AdsDay[];
   insights:Insight[]; experiments:Experiment[];
   channelsByWeek?:Record<string,LeadershipChannel[]>;
+  insightsByWeek?:Record<string,Insight[]>;
 };
 type Tab = "overview"|"posts"|"stories"|"archive"|"sources";
 type Platform = "instagram"|"facebook"|"all";
@@ -147,7 +148,7 @@ function ExportActions({posts,period}:{posts:Post[];period:string}) {
   </div>;
 }
 
-export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,socialDaily,adsDaily,insights,experiments,channelsByWeek}:Props) {
+export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,socialDaily,adsDaily,insights,experiments,channelsByWeek,insightsByWeek}:Props) {
   const [tab,setTab]=useState<Tab>("overview");
   const [navCollapsed,setNavCollapsed]=useState(false);
   const [mobileNavOpen,setMobileNavOpen]=useState(false);
@@ -251,8 +252,10 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
     {id:"archive" as Tab,name:"Archive",icon:BarChart3},
     {id:"sources" as Tab,name:"Data & ads",icon:Database}
   ];
-  const findings=insights.filter(i=>i.kind==="finding");
-  const actions=insights.filter(i=>i.kind==="action");
+  // Historical weeks cannot inherit the newest week's narrative.
+  const weekInsights=insightsByWeek?.[selectedWeek]??(channelsByWeek?[]:insights);
+  const findings=weekInsights.filter(i=>i.kind==="finding");
+  const actions=weekInsights.filter(i=>i.kind==="action");
   const limitations=coverage.filter(c=>c.limitation);
   const metaDays=adsDaily.filter(d=>d.meta_spend!==null);
   const googleDays=adsDaily.filter(d=>d.google_spend!==null);
