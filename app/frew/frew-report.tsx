@@ -352,13 +352,13 @@ export default function FrewDashboard({published=[],readState="live"}:{published
   // ordinary auto-generated recap; daily sync summaries are unreviewed.
   const intro=reviewedOverview?{
     headline:reviewedOverview.statement,
-    summary:reviewedOverview.summary,
+    summary:reviewedOverview.deck??reviewedOverview.summary,
     next:reviewedOverview.action
   }:fallbackIntro;
   return <div className="executive-shell">
     <header className="executive-masthead">
       <div className="executive-brand"><span className="executive-logomark">O.</span><span>OPUS<span className="executive-word-divider">/</span> WEEKLY PULSE</span></div>
-      <a href="/frew/owner" className="pulse-preview-link">Test outcomes <span aria-hidden="true">↗</span></a>
+
  
     </header>
     <main className="executive-main">
@@ -381,7 +381,7 @@ export default function FrewDashboard({published=[],readState="live"}:{published
         </p>
         <div className="executive-hero-grid">
           <div className="executive-hero-copy">
-            <div className="executive-dispatch-kicker" aria-hidden="true">OPUS <span> / </span> {reviewedOverview?"REVIEWED INSIGHT · "+day(reviewedOverview.reviewedAt!):"THIS WEEK"}</div>
+            <div className="executive-dispatch-kicker" aria-hidden="true">OPUS <span> / </span> {"THIS WEEK"}</div>
             <h1>{intro.headline}</h1>
             <p>{intro.summary}</p>
           </div>
@@ -431,6 +431,10 @@ export default function FrewDashboard({published=[],readState="live"}:{published
       <section className="executive-bottom">
         <h2 className="executive-bottom-title">All the numbers</h2>
         <div className="executive-detail-controls">
+          {reviewedOverview?.deck&&<details className="executive-detail pulse-context-detail">
+            <summary>Patient interest &amp; consultations <span>Full readout</span><ChevronDown size={17}/></summary>
+            <div className="pulse-context-body"><p>{reviewedOverview.summary}</p></div>
+          </details>}
           {detail&&<details className="executive-detail">
             <summary>Video and Story details <span>Video · Stories{detail.keyword?" · Search":""}</span><ChevronDown size={17}/></summary>
             <div className="executive-signal-details">
