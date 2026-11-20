@@ -1,15 +1,16 @@
 import {NextResponse,type NextRequest} from "next/server";
 import {createServerClient} from "@supabase/ssr";
 
-/** Public pages remain read-only; only the explicit /frew/owner route uses
- * authenticated cookies and a separate private RLS-protected table. */
+/** /frew/owner is a public, read-only preview; authentication is still
+ * required by the separate private CRM write actions. */
 export async function middleware(request:NextRequest){
   if(request.nextUrl.hostname==="social-signal-iota.vercel.app"){
     const destination=new URL(request.nextUrl.pathname+request.nextUrl.search,
       "https://social-signal-amy-dos-projects.vercel.app");
     return NextResponse.redirect(destination,308);
   }
-  if(!request.nextUrl.pathname.startsWith("/frew/owner")||
+  if(request.nextUrl.pathname==="/frew/owner"||
+      !request.nextUrl.pathname.startsWith("/frew/owner")||
       request.nextUrl.pathname.startsWith("/frew/owner/login")){
     return NextResponse.next();
   }

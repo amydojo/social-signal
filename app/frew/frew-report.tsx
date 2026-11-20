@@ -358,6 +358,7 @@ export default function FrewDashboard({published=[],readState="live"}:{published
   return <div className="executive-shell">
     <header className="executive-masthead">
       <div className="executive-brand"><span className="executive-logomark">O.</span><span>OPUS<span className="executive-word-divider">/</span> WEEKLY PULSE</span></div>
+      <a href="/frew/owner" className="pulse-preview-link">Test outcomes <span aria-hidden="true">↗</span></a>
  
     </header>
     <main className="executive-main">
