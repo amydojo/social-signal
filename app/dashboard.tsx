@@ -7,6 +7,8 @@ import archiveIndex from "../public/media/archive/index.json";
 import {formatCaptureDate} from "../lib/signal/reporting-time";
 import {uniquePostsByIdentity} from "./post-dedup";
 import type {LeadershipChannel} from "./frew/frew-data";
+import type {PublicAcquisition} from "../lib/signal/acquisition";
+import AcquisitionView from "./acquisition-view";
 import {
   BarChart3, Download, ExternalLink, FileText, Grid2X2, Instagram,
   Database, ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, Eye, Layers, Check, AlertCircle, PanelLeftClose, PanelLeftOpen, Menu, CalendarDays, ClipboardList
@@ -54,6 +56,7 @@ type Props = {
   snapshot:Snapshot; weeks:Snapshot[]; posts:Post[]; stories:Story[];
   coverage:Coverage[]; socialDaily:DailySocial[]; adsDaily:AdsDay[];
   insights:Insight[]; experiments:Experiment[];
+  acquisition?:PublicAcquisition|null;
   channelsByWeek?:Record<string,LeadershipChannel[]>;
   insightsByWeek?:Record<string,Insight[]>;
 };
@@ -149,7 +152,7 @@ function ExportActions({posts,period}:{posts:Post[];period:string}) {
   </div>;
 }
 
-export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,socialDaily,adsDaily,insights,experiments,channelsByWeek,insightsByWeek}:Props) {
+export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,socialDaily,adsDaily,insights,experiments,channelsByWeek,insightsByWeek,acquisition}:Props) {
   const [tab,setTab]=useState<Tab>("overview");
   const [navCollapsed,setNavCollapsed]=useState(false);
   const [mobileNavOpen,setMobileNavOpen]=useState(false);
@@ -278,7 +281,7 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
   return <div className={"app-shell"+(navCollapsed?" nav-collapsed":"")+(mobileNavOpen?" nav-mobile-open":"")}>
     <aside className="app-sidebar">
       <div className="sidebar-top">
-        <div className="logo"><span className="logo-symbol">S<span>.</span></span><span className="logo-word">SIGNAL<small>OPUS / SOCIAL</small></span></div>
+        <div className="logo"><span className="logo-symbol">S<span>.</span></span><span className="logo-word">SIGNAL<small>OPUS / INTELLIGENCE</small></span></div>
         <span className="mobile-current-view">{tabs.find(t=>t.id===tab)?.name}</span>
         <button type="button" className="sidebar-toggle" onClick={toggleNav}
           title={navCollapsed?"Expand sidebar":"Collapse sidebar"}
@@ -462,6 +465,7 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
         </section>}
       </>}
 
+      {tab==="sources"&&<AcquisitionView snapshot={acquisition??null}/>}
       {tab==="sources" && (weekChannels ? <>
         <div className="content-columns">
           {weekChannels.filter(c=>c.platform==="Google Ads"||c.platform==="Meta Ads").map(c=>

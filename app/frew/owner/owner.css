@@ -39,3 +39,9 @@
 .pulse-owner-week-picker a:focus-visible{outline:2px solid #9d624e;outline-offset:3px}
 .pulse-owner-form{margin-top:0;padding-top:8px;border-top:0}
 @media(max-width:610px){.pulse-owner-week-picker{justify-content:flex-start}}
+
+/* Two real CRM outcomes and two non-interchangeable paid platform measures. */
+.pulse-owner-summary{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.pulse-owner-summary>div{padding:23px 17px;min-width:0}
+.pulse-owner-summary strong{font-size:clamp(29px,3.1vw,43px)}
+@media(max-width:850px){.pulse-owner-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
