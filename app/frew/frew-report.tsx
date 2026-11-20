@@ -463,7 +463,7 @@ export default function FrewDashboard({published=[],readState="live"}:{published
             </div>
           </details>}
           <details className="executive-detail">
-            <summary>Every post <span>{posts.length} posts</span><ChevronDown size={17}/></summary>
+            <summary>Every post · all platforms <span>{posts.length} records including Facebook</span><ChevronDown size={17}/></summary>
             <div className="executive-detail-list">{posts.map(p=><div key={p.id}>
               <span>{day(p.date)}</span>
               <div>{p.url?<a href={p.url} target="_blank" rel="noopener noreferrer">{p.title}<ExternalLink size={12}/></a>:p.title}<small>{p.platform} · {p.format}</small></div>

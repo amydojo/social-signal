@@ -5,6 +5,7 @@ import { PostVisual, StoryVisual, MediaPreviewModal } from "./media-views";
 import { historicalPosts, historicalStories, historicalDaily } from "./history-data";
 import archiveIndex from "../public/media/archive/index.json";
 import {formatCaptureDate} from "../lib/signal/reporting-time";
+import {uniquePostsByIdentity} from "./post-dedup";
 import type {LeadershipChannel} from "./frew/frew-data";
 import {
   BarChart3, Download, ExternalLink, FileText, Grid2X2, Instagram,
@@ -180,9 +181,8 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
   const closeMedia=useCallback(()=>{setSelectedPost(null);setSelectedStory(null)},[]);
   const openPost=useCallback((p:Post)=>{setSelectedStory(null);setSelectedPost(p)},[]);
   const openStory=useCallback((s:Story)=>{setSelectedPost(null);setSelectedStory(s)},[]);
-  const allPosts:Post[]=[...new Map(
-    [...historicalPosts,...posts].map(p=>[p.platform+"|"+(p.permalink||p.id),p])
-  ).values()];
+  // Newer provider snapshots replace older observations of the same publication.
+  const allPosts:Post[]=uniquePostsByIdentity([...historicalPosts,...posts]);
   const allStories:Story[]=[...new Map(
     [...historicalStories,...stories].map(story=>[story.permalink||story.id,story])
   ).values()];
@@ -228,7 +228,8 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
   const visualStories=sortedStories.filter(storyHasCover);
   const storyWithoutCover=sortedStories.filter(s=>!storyHasCover(s));
   const shownPosts=periodPosts.filter(p=>(platform==="all"||p.platform===platform)&&p.title.toLowerCase().includes(search.toLowerCase()));
-  const allInstagramPosts=[...historicalPosts,...posts.filter(p=>p.platform==="instagram")].sort((a,b)=>b.published_on.localeCompare(a.published_on));
+  // Use the same deduplicated publication set as the Posts tab.
+  const allInstagramPosts=allPosts.filter(p=>p.platform==="instagram").sort((a,b)=>b.published_on.localeCompare(a.published_on));
   const archivePosts=allInstagramPosts.filter(p=>(archiveMonth==="all"||p.published_on.startsWith(archiveMonth))&&p.title.toLowerCase().includes(archiveSearch.toLowerCase()));
   const historyVisualStories=historicalStories.filter(s=>Boolean(s.thumbnail_path)&&savedHistoricalFiles.has(s.thumbnail_path!));
   const weeklyHistory=useMemo(()=>{
@@ -346,7 +347,7 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
         <section className="stats-grid" aria-label="Weekly Instagram statistics">
           {latestWeek ? <>
             <Stat label="Feed views" value={num(snapshot.feed_views)} note={periodIgPosts.length+" posts · lifetime views at export"}/>
-            <Stat label="Interactions" value={num(snapshot.feed_interactions)} note="Instagram feed"/>
+            <Stat label="Interactions" value={num(snapshot.feed_interactions)} note="Source aggregate · post details may be incomplete"/>
             <Stat label="Story impressions" value={num(snapshot.story_impressions)} note={periodStories.length+" Stories"}/>
             <Stat label="Story replies" value={num(snapshot.story_replies)} note="Across published Stories"/>
           </> : <>
@@ -428,7 +429,7 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
 
       {tab==="archive"&&<>
         <section className="stats-grid stats-grid-three">
-          <Stat label="Instagram posts" value={num(allInstagramPosts.length)} note="Since Sep 2 · 2 sources merged"/>
+          <Stat label="Unique Instagram posts" value={num(allInstagramPosts.length)} note="Since Sep 2 · source links deduplicated"/>
           <Stat label="Historical view days" value={num(historicalDaily.filter(d=>d.account_views!=null).length)} note="Before Nov 9"/>
           <Stat label="Older Stories logged" value={num(historicalStories.length)} note="Original images expired for this period"/>
         </section>
@@ -440,7 +441,7 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
             </div>
             <label className="search-wrap"><span className="sr-only">Search historical content</span><input value={archiveSearch} onChange={e=>setArchiveSearch(e.target.value)} placeholder="Search content"/></label>
           </div>
-          <div className="archive-info"><span>{archivePosts.length} posts</span><span>Views shown are cumulative as of Nov 16—not views earned during the posting week</span></div>
+          <div className="archive-info"><span>{archivePosts.length} unique posts</span><span>Post views are cumulative at each recorded capture, not traffic earned in the posting week; capture dates vary</span></div>
           <div className="media-grid">{archivePosts.map(p=><PostVisual key={p.id} post={p} onOpen={openPost}/>)}</div>
           {archivePosts.length===0&&<p className="small-note">No posts for that filter.</p>}
         </section>
