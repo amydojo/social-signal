@@ -342,6 +342,8 @@ export default function FrewDashboard({published=[],readState="live"}:{published
   const detail=live?(live.diagnostics??null):(period in performanceByWeek?performanceByWeek[period as keyof typeof performanceByWeek]:null);
   const reviewedOverview=live?.overview?.reviewedAt?live.overview:undefined;
   const brief=buildExecutivePulse(rows,channels,reviewedOverview,live?.acquisition);
+  const firstAccessCohort=live?.acquisition?.analysis?.opportunityGroups.find(group=>group.name==="Website First Access");
+  const firstAccessAsOf=live?.acquisition?.asOf;
   const featured=chooseWeeklySpotlights(rows);
   const first=featured[0]?.post;
   const second=featured[1]?.post;
@@ -394,11 +396,28 @@ export default function FrewDashboard({published=[],readState="live"}:{published
       </section>
 
       <section className="executive-indicators" aria-label="Business outcomes and paid acquisition">
-        {brief.metrics.map(m=><div key={m.label} className="executive-indicator">
-          <div className="executive-indicator-label">{m.label}</div>
-          <strong>{m.value==null?"—":m.unit==="USD"?"$"+m.value.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):fmt(m.value)}</strong>
-          <small>{m.detail}</small>
-        </div>)}
+        {brief.metrics.map(m=>m.label==="FIRST ACCESS CONSULT PROGRESS"&&firstAccessCohort&&firstAccessCohort.opportunities>0?
+          <div key={m.label} className="executive-indicator executive-stage-indicator">
+            <div className="executive-indicator-label">FIRST ACCESS · WEBSITE</div>
+            <div className="executive-stage-volume">
+              <strong>{fmt(firstAccessCohort.opportunities)}</strong>
+              <span>CRM opportunities</span>
+            </div>
+            <div className="executive-stage-track" role="img"
+              aria-label={firstAccessCohort.advancedStage+" of "+firstAccessCohort.opportunities+" website First Access opportunities are in booked-or-later consultation or surgery stages; "+(firstAccessCohort.opportunities-firstAccessCohort.advancedStage)+" are in other CRM stages."}>
+              <span style={{width:(100*firstAccessCohort.advancedStage/firstAccessCohort.opportunities)+"%"}}/>
+            </div>
+            <div className="executive-stage-legend">
+              <span><i aria-hidden="true" className="executive-stage-dot advanced"/><b>{fmt(firstAccessCohort.advancedStage)}</b> booked or later</span>
+              <span><i aria-hidden="true" className="executive-stage-dot other"/><b>{fmt(firstAccessCohort.opportunities-firstAccessCohort.advancedStage)}</b> other stages</span>
+            </div>
+            <small>{firstAccessAsOf?"As of "+day(firstAccessAsOf)+" · ":""}Historical CRM cohort, not weekly bookings</small>
+          </div>:
+          <div key={m.label} className="executive-indicator">
+            <div className="executive-indicator-label">{m.label}</div>
+            <strong>{m.value==null?"—":m.unit==="USD"?"$"+m.value.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):fmt(m.value)}</strong>
+            <small>{m.detail}</small>
+          </div>)}
         <div className="executive-indicator executive-paid-split">
           <div className="executive-indicator-label">PAID ACQUISITION</div>
           <div className="executive-paid-row">
