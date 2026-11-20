@@ -17,6 +17,8 @@ import type {PublicWeek} from "../../lib/signal/publication";
 import type {PublicReadState} from "../../lib/signal/read-public";
 import {buildExecutivePulse} from "./frew-insights";
 import FrewExecutiveBrief from "./frew-executive";
+import FrewCRMHistory from "./frew-crm-history";
+import type {CRMWeek,CRMWeeklyRead} from "../../lib/signal/read-crm-weekly";
 import {writeWeekIntro} from "./frew-voice";
 
 type Period=string;
@@ -315,7 +317,7 @@ function Feature({post,rank}:{post:LeadershipLog;rank:string}){
   </article>;
 }
 
-export default function FrewDashboard({published=[],readState="live"}:{published?:PublicWeek[];readState?:PublicReadState}){
+export default function FrewDashboard({published=[],readState="live",crmHistory=[],crmReadState="empty"}:{published?:PublicWeek[];readState?:PublicReadState;crmHistory?:CRMWeek[];crmReadState?:CRMWeeklyRead["state"]}){
   const reportIndex=new Map(published.map(report=>[report.weekStart,report]));
   const availableWeeks=[...new Set([...reportWeeks,...published.map(report=>report.weekStart)])].sort((a,b)=>b.localeCompare(a));
   const mostRecent=availableWeeks[0]??newestWeek;
@@ -341,7 +343,8 @@ export default function FrewDashboard({published=[],readState="live"}:{published
   // Published reporting never borrows diagnostics from a different, static capture.
   const detail=live?(live.diagnostics??null):(period in performanceByWeek?performanceByWeek[period as keyof typeof performanceByWeek]:null);
   const reviewedOverview=live?.overview?.reviewedAt?live.overview:undefined;
-  const brief=buildExecutivePulse(rows,channels,reviewedOverview,live?.acquisition);
+  const crmForWeek=crmHistory.find(w=>w.weekStart===period);
+  const brief=buildExecutivePulse(rows,channels,reviewedOverview,live?.acquisition,crmForWeek);
   const firstAccessCohort=live?.acquisition?.analysis?.opportunityGroups.find(group=>group.name==="Website First Access");
   const firstAccessAsOf=live?.acquisition?.asOf;
   const featured=chooseWeeklySpotlights(rows);
@@ -430,6 +433,7 @@ export default function FrewDashboard({published=[],readState="live"}:{published
       </section>
 
       <FrewExecutiveBrief pulse={brief} partial={partial}/>
+      <FrewCRMHistory weeks={crmHistory} state={crmReadState}/>
       <section className="executive-creative-section">
         <div className="executive-section-heading">
           <h2>From this week’s posts</h2>
