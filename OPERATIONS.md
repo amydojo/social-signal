@@ -11,7 +11,9 @@ Updated November 19, 2026. See also `lib/signal/README.md` for the database publ
 - **Vercel:** project `prj_0sRMDNJOi4UC0d66uZ7Jr6fC7iiD`
 - **Supabase:** project `ziohpcywjirynydjhgoe`
 
-The public site is intentionally **read-only without login**, at the owner's request. It exposes selected reviewed social performance—not patient, lead/CRM, private internal approval, access-token, or otherwise sensitive information. Anybody with the URLs can read the published data. Never treat an obscure URL or `robots: noindex` as an authentication boundary.
+The public `/` and `/frew` pages remain **read-only without login**. They expose selected reviewed social performance—not patient, lead/CRM, private internal approval, access-token, or otherwise sensitive information.
+
+The separate `/frew/owner` area is owner-authenticated and reads/writes only `signal_owner_outcomes`: weekly aggregate counts manually verified in Aesthetix, with no patient identities or notes. `/frew/owner/login` sends a one-time link only to existing Supabase users; access requires an existing `signal_members.role='owner'` membership. A new team member must be provisioned explicitly. Public URLs and `/api/publications` never read this table. Anybody with the URLs can read the published data. Never treat an obscure URL or `robots: noindex` as an authentication boundary.
 
 No viewer sign-in is required for reporting or the lighthearted anonymous emoji stickers. Old auth callback routes and `signal_frew_stamps` remain for historical compatibility, not the public interaction.
 
@@ -49,3 +51,9 @@ For code changes, use an isolated branch, PR and **SIGNAL quality gate** (`npm t
 To stop a faulty public report, use a trusted SQL action to unpublish the affected week; RLS then hides it. Previous versions are preserved in `signal_publication_history`. For a UI regression, revert the PR/commit. Private source tables and sticker feedback must remain untouched.
 
 The GitHub repository is currently **public**. Do not check credentials or private data into it. Changing visibility later will not erase material already exposed in earlier history.
+
+## Private outcome reconciliation
+
+The protected page `/frew/owner` records only counts (inquiries, qualified inquiries, consultation requests and bookings) for a Monday-based week. Values are nullable: missing is not zero. This is **manual**, not a live Aesthetix integration. Owner permissions use Supabase Auth and RLS; `anon` cannot select the table. Never publish owner outcomes to `signal_published_reports` or include individual patients, CRM records or identifying notes.
+
+Schema migration: `supabase/migrations/20261120043000_signal_owner_outcomes.sql`. Auth email-link redirects must be allowed at `https://opussignal.vercel.app/auth/callback`. Confirm the intended Frew user is explicitly added to `signal_members` before granting access; no automatic invitations or membership expansion were performed.
