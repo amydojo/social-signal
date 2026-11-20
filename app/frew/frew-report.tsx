@@ -124,15 +124,12 @@ function coverFor(p:LeadershipLog){
   return p.coverUrl??frewCarouselCovers[p.url]??currentCoverFallbacks[p.url]??null;
 }
 function storyCoverFor(story:LeadershipLog){
-  // Prefer immutable saved files. Source thumbnails can expire and must never
-  // be replaced with another story's creative.
+  // Prefer permanently archived matching Story media over expiring CDN URLs.
   if(story.thumbnailPath&&savedCovers.has(story.thumbnailPath))return story.thumbnailPath;
-  if(story.coverUrl)return story.coverUrl;
   const storyId=story.url?.match(/\/stories\/[^/]+\/(\d+)/)?.[1]??"";
-  if(!storyId)return null;
-  const archived="/media/archive/story-"+storyId+".jpg";
-  if(savedCovers.has(archived))return archived;
-  return frewStoryCovers[storyId]??null;
+  const archived=storyId?"/media/archive/story-"+storyId+".jpg":"";
+  if(archived&&savedCovers.has(archived))return archived;
+  return story.coverUrl??(storyId?frewStoryCovers[storyId]:null)??null;
 }
 function CarouselShowcase({posts}:{posts:LeadershipLog[]}){
   const groups:{key:string;cover:LeadershipLog;versions:LeadershipLog[]}[]=[];
