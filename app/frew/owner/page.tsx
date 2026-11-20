@@ -22,7 +22,7 @@ const fields=[
   {key:"consultations_booked",label:"Consultations booked",detail:"Confirmed appointment on the schedule"}
 ] as const;
 function weekValid(v:string){
-  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(v))return false;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return false;
   const d=new Date(v+"T12:00:00Z");
   return d.getUTCDay()===1&&d.toISOString().slice(0,10)===v;
 }

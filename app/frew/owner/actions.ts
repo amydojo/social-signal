@@ -7,13 +7,13 @@ import {createSignalServerClient} from "../../../lib/supabase/server";
 function counts(value:FormDataEntryValue|null):number|null{
   const raw=String(value??"").trim();
   if(!raw)return null;
-  if(!/^\\d{1,7}$/.test(raw))throw new Error("Enter non-negative whole-number counts only.");
+  if(!/^\d{1,7}$/.test(raw))throw new Error("Enter non-negative whole-number counts only.");
   const num=Number(raw);
   if(!Number.isSafeInteger(num)||num>1000000)throw new Error("Count exceeds the allowed range.");
   return num;
 }
 function isMondayWeek(v:string):boolean{
-  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(v))return false;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return false;
   const date=new Date(v+"T12:00:00Z");
   return !Number.isNaN(date.getTime())&&date.toISOString().slice(0,10)===v&&date.getUTCDay()===1;
 }
@@ -42,7 +42,7 @@ export async function saveOwnerCounts(formData:FormData){
 }
 export async function requestOwnerLink(formData:FormData){
   const email=String(formData.get("email")??"").trim().toLowerCase();
-  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||email.length>250)
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>250)
     redirect("/frew/owner/login?error=invalid");
   const supabase=await createSignalServerClient();
   const {error}=await supabase.auth.signInWithOtp({
