@@ -18,6 +18,8 @@ import type {PublicReadState} from "../../lib/signal/read-public";
 import {buildExecutivePulse} from "./frew-insights";
 import FrewExecutiveBrief from "./frew-executive";
 import FrewCRMHistory from "./frew-crm-history";
+import FrewCRMClinicalEvidence from "./frew-crm-evidence";
+import type {CRMClinicalRead} from "../../lib/signal/read-crm-evidence";
 import type {CRMWeek,CRMWeeklyRead} from "../../lib/signal/read-crm-weekly";
 import {writeWeekIntro} from "./frew-voice";
 
@@ -317,7 +319,7 @@ function Feature({post,rank}:{post:LeadershipLog;rank:string}){
   </article>;
 }
 
-export default function FrewDashboard({published=[],readState="live",crmHistory=[],crmReadState="empty"}:{published?:PublicWeek[];readState?:PublicReadState;crmHistory?:CRMWeek[];crmReadState?:CRMWeeklyRead["state"]}){
+export default function FrewDashboard({published=[],readState="live",crmHistory=[],crmReadState="empty",clinicalEvidence}:{published?:PublicWeek[];readState?:PublicReadState;crmHistory?:CRMWeek[];crmReadState?:CRMWeeklyRead["state"];clinicalEvidence?:CRMClinicalRead}){
   const reportIndex=new Map(published.map(report=>[report.weekStart,report]));
   const availableWeeks=[...new Set([...reportWeeks,...published.map(report=>report.weekStart)])].sort((a,b)=>b.localeCompare(a));
   const mostRecent=availableWeeks[0]??newestWeek;
@@ -344,6 +346,9 @@ export default function FrewDashboard({published=[],readState="live",crmHistory=
   const detail=live?(live.diagnostics??null):(period in performanceByWeek?performanceByWeek[period as keyof typeof performanceByWeek]:null);
   const reviewedOverview=live?.overview?.reviewedAt?live.overview:undefined;
   const crmForWeek=crmHistory.find(w=>w.weekStart===period);
+  const clinicalSnapshot=clinicalEvidence?.snapshot;
+  const clinicalSnapshotDate=clinicalSnapshot?new Date(clinicalSnapshot.snapshotDate+"T12:00:00Z"):null;
+  const clinicalWeek=clinicalSnapshotDate?new Date(clinicalSnapshotDate.getTime()-((clinicalSnapshotDate.getUTCDay()+6)%7)*86400000).toISOString().slice(0,10):null;
   const brief=buildExecutivePulse(rows,channels,reviewedOverview,live?.acquisition,crmForWeek);
   const firstAccessCohort=live?.acquisition?.analysis?.opportunityGroups.find(group=>group.name==="Website First Access");
   const firstAccessAsOf=live?.acquisition?.asOf;
@@ -433,6 +438,7 @@ export default function FrewDashboard({published=[],readState="live",crmHistory=
       </section>
 
       <FrewExecutiveBrief pulse={brief} partial={partial}/>
+      {clinicalSnapshot&&clinicalEvidence?.state==="live"&&clinicalWeek===period&&<FrewCRMClinicalEvidence snapshot={clinicalSnapshot} weeks={clinicalEvidence.weeks}/>}
       <FrewCRMHistory weeks={crmHistory} state={crmReadState}/>
       <section className="executive-creative-section">
         <div className="executive-section-heading">
