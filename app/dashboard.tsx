@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { PostVisual, StoryVisual, MediaPreviewModal } from "./media-views";
 import { historicalPosts, historicalStories, historicalDaily } from "./history-data";
 import archiveIndex from "../public/media/archive/index.json";
+import type {LeadershipChannel} from "./frew/frew-data";
 import {
   BarChart3, Download, ExternalLink, FileText, Grid2X2, Instagram,
   Database, ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, Eye, Layers, Check, AlertCircle, PanelLeftClose, PanelLeftOpen, Menu, CalendarDays, ClipboardList
@@ -51,6 +52,7 @@ type Props = {
   snapshot:Snapshot; weeks:Snapshot[]; posts:Post[]; stories:Story[];
   coverage:Coverage[]; socialDaily:DailySocial[]; adsDaily:AdsDay[];
   insights:Insight[]; experiments:Experiment[];
+  channelsByWeek?:Record<string,LeadershipChannel[]>;
 };
 type Tab = "overview"|"posts"|"stories"|"archive"|"sources";
 type Platform = "instagram"|"facebook"|"all";
@@ -144,7 +146,7 @@ function ExportActions({posts,period}:{posts:Post[];period:string}) {
   </div>;
 }
 
-export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,socialDaily,adsDaily,insights,experiments}:Props) {
+export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,socialDaily,adsDaily,insights,experiments,channelsByWeek}:Props) {
   const [tab,setTab]=useState<Tab>("overview");
   const [navCollapsed,setNavCollapsed]=useState(false);
   const [mobileNavOpen,setMobileNavOpen]=useState(false);
@@ -254,6 +256,13 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
   const metaDays=adsDaily.filter(d=>d.meta_spend!==null);
   const googleDays=adsDaily.filter(d=>d.google_spend!==null);
   const metaTotal=metaDays.reduce((n,d)=>n+(d.meta_spend??0),0);
+  const weekChannels=channelsByWeek?.[selectedWeek];
+  const channelMetric=(c:LeadershipChannel,label:string)=>c.metrics.find(m=>m.label===label);
+  const fmtChannel=(c:LeadershipChannel,label:string)=>{
+    const m=channelMetric(c,label);
+    return m?.value==null?"—":m.unit==="USD"?money(m.value):
+      m.unit==="%"?m.value.toFixed(1)+"%":num(m.value);
+  };
   const selectedIndex=availableWeeks.indexOf(selectedWeek);
   const strongestPost=sortedPosts[0]??null;
   const mostInteractive=[...periodIgPosts].sort((a,b)=>(b.interactions??0)-(a.interactions??0))[0]??null;
@@ -448,7 +457,42 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
         </section>}
       </>}
 
-      {tab==="sources" && (latestWeek ? <>
+      {tab==="sources" && (weekChannels ? <>
+        <div className="content-columns">
+          {weekChannels.filter(c=>c.platform==="Google Ads"||c.platform==="Meta Ads").map(c=>
+            <section className="surface ad-card" key={c.platform+"|"+c.account}>
+              <SectionHead title={c.platform}/>
+              <strong className="ad-value">{c.platform==="Google Ads"?fmtChannel(c,"Conversions"):fmtChannel(c,"Spend")}</strong>
+              <span className="ad-caption">{c.platform==="Google Ads"?"Platform-reported conversions":"Reported spend"} · {c.period}</span>
+              <div className="source-status">{c.note||"Verified source period only"}</div>
+            </section>
+          )}
+        </div>
+        <section className="surface coverage-surface">
+          <SectionHead title="By connected account" meta={date(selectedWeek)+" – "+date(endOfWeek(selectedWeek))}/>
+          <div className="coverage-list">
+            {weekChannels.map(c=><details className="coverage-row" key={c.platform+"|"+c.account}>
+              <summary><span>{c.platform} · {c.account}</span>
+                <span className="coverage-summary">{c.period}</span><ChevronDown size={15}/></summary>
+              <div className="source-metric-grid">
+                {c.metrics.map(m=><div key={m.label}>
+                  <strong>{fmtChannel(c,m.label)}</strong><small>{m.label}</small>
+                </div>)}
+              </div>
+              {c.note&&<p>{c.note}</p>}
+            </details>)}
+          </div>
+        </section>
+        <p className="small-note">Published values are source-dated. A dash means unavailable, not zero; reported conversions are not verified bookings.</p>
+        <details className="surface expandable-block">
+          <summary>Notes & next tests <ChevronDown size={16}/></summary>
+          <div className="notes-list">
+            {findings.map(x=><div key={x.id}><b>{x.title}</b><p>{x.body}</p></div>)}
+            {actions.map(x=><div key={x.id}><b>{x.title}</b><p>{x.body}</p></div>)}
+            {experiments.map(x=><div key={x.id}><b>{x.title}</b><p>{x.hypothesis}</p></div>)}
+          </div>
+        </details>
+      </> : latestWeek ? <>
         <div className="content-columns">
           <section className="surface ad-card">
             <SectionHead title="Meta Ads"/>
@@ -466,7 +510,7 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
         <section className="surface coverage-surface">
           <SectionHead title="Source coverage" meta="@opusplasticsurgery"/>
           <div className="coverage-list">
-            {coverage.map(c=><details key={c.channel} className="coverage-row">
+            {coverage.map(c=><details key={c.channel+"|"+c.account} className="coverage-row">
               <summary><span>{c.channel}</span><span className="coverage-summary">{c.data}</span><ChevronDown size={15}/></summary>
               <p>{c.limitation}</p>
             </details>)}
@@ -493,14 +537,14 @@ export default function SignalDashboard({snapshot,weeks,posts,stories,coverage,s
         </details>
       </> : <section className="surface period-unavailable">
         <SectionHead title="Paid data" meta={date(selectedWeek)+" – "+date(endOfWeek(selectedWeek))}/>
-        <p>Earlier ad records aren't available here. Choose Nov 9–15 for the available data.</p>
+        <p>Verified paid breakdowns have not been published for this week. Choose a week with source-backed account data.</p>
         <button type="button" className="inline-action" onClick={()=>changeWeek(snapshot.week_start)}>View latest ad data <ArrowUpRight size={14}/></button>
       </section>)}
 
       <MediaPreviewModal key={selectedPost?.id??selectedStory?.id??"none"} post={selectedPost} story={selectedStory} onClose={closeMedia}/>
       <footer className="app-footer">
-        <span>OPUS / SIGNAL · Updated Nov 17, 2026</span>
-        <span>Read-only public snapshot · Not live</span>
+        <span>OPUS / SIGNAL · Captured {new Date(snapshot.captured_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</span>
+        <span>Read-only · Published reporting snapshot</span>
       </footer>
     </main>
   </div>;
